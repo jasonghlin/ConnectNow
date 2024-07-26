@@ -1,0 +1,339 @@
+html {
+    font-size: 62.5%;
+}
+
+body {
+    box-sizing: border-box;
+    font-size: 1.6rem;
+    font-family: Noto Sans TC, Sans-Serif;
+    background-color: rgb(32,33,36);
+    color: white;
+    position: relative;
+    overflow-x: hidden;
+    height: 95vh;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+footer {
+    position: absolute;
+    bottom: 2rem;
+    left: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.left-corner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.time-separater {
+    margin-left: 1rem;
+    margin-right: 1rem;
+}
+
+.controller {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.choose-icon {
+    position: fixed;
+    transform: translateY(20%);
+    background: none;
+    color: #aaa;
+    border: none;
+    margin-left: 1rem;
+    font-size: 3rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+/* .choose-icon:hover {
+    transform: translateY(-0.1rem);
+} */
+
+.mic-icon {
+    width: 8rem;
+    height: 4.8rem;
+    display: flex;
+    align-items: center;
+    background: #aaaaaa4c;
+    color: #fff;
+    border: none;
+    border-radius: 4rem;
+    font-size: 2rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    margin-right: 2rem;
+}
+
+.mic-icon:hover {
+    transform: translateY(-0.3rem);
+}
+
+.mic-icon > i {
+    position: absolute;
+    right: 1.9rem;
+}
+
+.video {
+    width: 8rem;
+    height: 4.8rem;
+    display: flex;
+    align-items: center;
+    background: #aaaaaa4c;
+    color: #fff;
+    border: none;
+    border-radius: 4rem;
+    font-size: 2rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    margin-right: 2rem;
+}
+
+.video:hover {
+    transform: translateY(-0.3rem);
+}
+
+.video > i {
+    position: absolute;
+    right: 1.9rem;
+}
+
+.share-screen {
+    width: 4.8rem;
+    height: 4.8rem;
+    background-color: #aaaaaa4c;
+    border-radius: 1rem;
+    border: none;
+    cursor: pointer;
+    margin-right: 1rem;
+    transition: all 0.3s;
+}
+
+.share-screen > img {
+    width: 70%;
+}
+
+.share-screen:hover {
+    transform: translateY(-0.3rem);
+}
+
+.hangout {
+    width: 4.8rem;
+    height: 4.8rem;
+    background-color: red;
+    border-radius: 1rem;
+    border: none;
+    cursor: pointer;
+    margin-right: 1rem;
+    color: white;
+    transition: all 0.3s;
+    font-size: 2rem;
+}
+
+.hangout:hover {
+    transform: translateY(-0.3rem);
+}
+
+.features {
+    display: flex;
+    margin-right: 2rem;
+    align-items: center;
+}
+
+.participants, .chat, .activities {
+    width: 4.8rem;
+    height: 4.8rem;
+    background: transparent;
+    border-radius: 1rem;
+    border: none;
+    cursor: pointer;
+    margin-right: 1rem;
+    transition: all 0.3s;
+    color: white;
+    font-size: 3rem;
+}
+
+.participants:hover, .chat:hover, .activities:hover {
+    transform: translateY(-0.3rem);
+}
+
+.mic-list > li {
+    list-style: none;
+}
+
+.local-stream {
+    width: 640px; /* 設定寬度 */
+    height: 360px; /* 設定高度 */
+    object-fit: cover; /* 設定適應模式，防止變形 */
+}
+
+.video-stream {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 2rem 2rem 2rem 2rem;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    transition: transform 0.3s ease-in-out;
+}
+
+video {
+    width: 64rem; /* 設定寬度 */
+    height: 36rem; /* 設定高度 */
+    object-fit: cover; /* 設定適應模式，防止變形 */
+    transform: none;
+}
+
+.video-line-up {
+    width: 32rem;
+    height: 18rem;
+    object-fit: cover;
+}
+
+.invert-screen {
+    transform: scaleX(-1);
+}
+
+body.panel-open .video-stream,
+body.panel-open footer {
+    transform: translateX(-40rem);
+}
+
+.chat-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.message-container {
+    margin-top: 1rem;
+    margin-left: 1rem;
+    height: 100%;
+    overflow-y: scroll;
+    
+}
+
+.send-container {
+    position: relative;
+}
+
+
+#message-input {
+    width: 100%;
+    padding: 1rem;
+    background-color: transparent;
+    border: .1rem solid #3c4043;
+    position: relative;
+    bottom: -3.8rem;
+    color: white;
+    
+}
+
+
+#send-button {
+    position: relative;
+    padding: 1rem;
+    left: 24.5rem;
+    background-color: transparent;
+    color: white;
+    border-width: .1rem;
+}
+
+.activities-panel, .users-panel, .chat-panel {
+    position: fixed;
+    top: 0;
+    right: -40rem;
+    width: 30rem;
+    height: 95vh;
+    background-color: #202124;
+    transition: right 0.3s ease-in-out;
+    z-index: 1000;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
+    border: .1rem solid white
+}
+
+.activities-panel.show, .users-panel.show, .chat-panel.show {
+    right: 0;
+}
+
+.activities-header, .users-header, .chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #3c4043;
+}
+
+.activities-header h2, .users-header h2, .chat-header h2 {
+    margin: 0;
+    font-size: 1.8rem;
+}
+
+#close-activities, #close-users, #close-chat {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.6rem;
+    cursor: pointer;
+}
+
+.activities-content, .users-content {
+    padding: 1rem;
+}
+
+/* whiteboard */
+.whiteboard-panel {
+    position: fixed;
+    top: 0;
+    right: -400px;
+    width: 400px;
+    height: 100%;
+    background-color: white;
+    transition: right 0.3s ease-in-out;
+    z-index: 1000;
+}
+
+.whiteboard-panel.show {
+    right: 0;
+}
+
+.whiteboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #f0f0f0;
+}
+
+.whiteboard-content {
+    padding: 10px;
+}
+
+#whiteboard-canvas {
+    border: 1px solid #ccc;
+}
+
+.whiteboard-controls {
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.hidden {
+    display: none;
+}
+

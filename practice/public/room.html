@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+        crossOrigin="anonymous" />
+</head>
+
+<body>
+    <header></header>
+    <div class="video-stream">
+        <!-- 動態生成 video -->
+        <div class="whiteboard-content">
+            <canvas id="whiteboard-canvas" width="800" height="600"></canvas>
+            <div class="whiteboard-controls">
+                <button class="clear-whiteboard">清除白板</button>
+                <input type="color" class="color-picker" value="#000000">
+                <input type="range" class="line-width" min="1" max="20" value="2">
+            </div>
+        </div>
+    </div>
+    <footer>
+        <div class="left-corner">
+            <div class="time-container">
+                <span class="morning-afternoon">上午</span>
+                <span class="hour">01</span>:<span class="minute">10</span>
+            </div>
+            <p class="time-separater">|</p>
+            <p class="meet-id">Meet-id: <span id="currentRoomId"></span></p>
+        </div>
+        <div class="controller">
+            <div>
+                <select class="mic-list hidden"></select>
+                <button class="mic-icon">
+                    <div class="choose-icon choose-mic">^</div>
+                    <i class="fas fa-microphone"></i>
+                </button>
+            </div>
+            <div>
+                <select class="video-list hidden"></select>
+                <button class="video">
+                    <span class="choose-icon choose-video">^</span>
+                    <i class="fas fa-video"></i>
+                </button>
+            </div>
+            <button class="share-screen">
+                <img src="/static/shareScreen.png" />
+            </button>
+            <button class="hangout">
+                <i class="fas fa-phone-slash"></i>
+            </button>
+        </div>
+        <div class="features">
+            <button class="participants">
+                <i class="fas fa-user-group"></i>
+            </button>
+            <button class="chat">
+                <i class="far fa-comment-dots"></i>
+            </button>
+            <button class="activities">
+                <i class="fas fa-shapes"></i>
+            </button>
+        </div>
+
+    </footer>
+    <div class="chat-panel">
+        <div class="chat-header">
+            <h2>聊天室</h2>
+            <button id="close-chat">X</button>
+        </div>
+        <div class="message-container"></div>
+        <div class="send-container">
+            <input id="message-input" type="text" placeholder="Type a message..." />
+            <button id="send-button">Send</button>
+        </div>
+
+    </div>
+    <div id="activities-panel" class="activities-panel">
+        <div class="activities-header">
+            <h2>活動</h2>
+            <button id="close-activities">X</button>
+        </div>
+        <div class="activities-content">
+            <div class="activities-wrapper">
+                <div class="white-board">
+                    <div class="icon-wrapper">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <div>
+                        <p>小白板</p>
+                        <p>一同集思廣益並構思點子</p>
+                    </div>
+                </div>
+
+                <div class="breakout-room">
+                    <div class="icon-wrapper">
+                        <i class="fas fa-people-group"></i>
+                    </div>
+                    <div>
+                        <p>分組</p>
+                        <p>一同集思廣益並構思點子</p>
+                    </div>
+                </div>
+
+                <div class="video-record">
+                    <div class="icon-wrapper">
+                        <i></i>
+                    </div>
+                    <div class="fas fa-record-vinyl">
+                        <p>錄製</p>
+                        <p>錄下會議過程供日後隨選觀看</p>
+                    </div>
+                </div>
+
+                <div class="poll">
+                    <div class="icon-wrapper">
+                        <i></i>
+                    </div>
+                    <div class="fas fa-record-vinyl">
+                        <p>意見調查</p>
+                        <p>收集並分析參與者的想法與意見</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="users-panel" class="users-panel">
+        <div class="users-header">
+            <h2>Users</h2>
+            <button id="close-users">X</button>
+        </div>
+        <div class="users-content">
+            <!-- 這裡可以動態生成用戶列表 -->
+        </div>
+    </div>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+    <script type="module" src="/static/shareScreen.js"></script>
+    <script type="module" src="/static/script.js"></script>
+    <script type="module" src="/static/activitiesPanel.js"></script>
+    <script type="module" src="/static/usersPanel.js"></script>
+    <script type="module" src="/static/chatPanel.js"></script>
+    <script type="module" src="/static/whiteboard.js"></script>
+
+
+</body>
+
+</html>

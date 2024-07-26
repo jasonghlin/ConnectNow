@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <header>
+        <div>logo</div>
+        <div>Connect Now</div>
+
+        <div class="overlay hidden"></div>
+        <div class="modal-container hidden">
+            <div class="modal-content">
+                <!-- 登入表單 -->
+                <div class="login-container hidden">
+                    <div class="gradient-bar"></div>
+                    <form action="" class="login-form">
+                        <div class="login-form-exit form-exit">
+                            <img src="/static/images/form-delete.png" alt="from-exit">
+                        </div>
+                        <h3>登入會員帳號</h3>
+                        <input id="login-email" class="form-input" type="email" placeholder="輸入電子信箱" name="login-email"
+                            required>
+                        <input id="login-password" class="form-input" type="password" placeholder="輸入密碼"
+                            name="login-password" required>
+                        <div class="login-error-message"></div>
+                        <button>登入帳戶</button>
+                        <div class="to-register-wrapper">
+                            <div>還沒有帳戶？</div>
+                            <div class="to-register-link">點此註冊</div>
+                        </div>
+                    </form>
+                </div>
+                <!-- 註冊表單 -->
+                <div class="register-container hidden">
+                    <div class="gradient-bar"></div>
+                    <form action="" class="register-form">
+                        <div class="register-form-exit form-exit">
+                            <img src="/static/images/form-delete.png" alt="from-exit">
+                        </div>
+                        <h3>註冊會員帳號</h3>
+                        <input id="register-name" class="form-input" type="text" placeholder="輸入姓名" name="register-name"
+                            required>
+                        <input id="register-email" class="form-input" type="email" placeholder="輸入電子郵件"
+                            name="register-email" required>
+                        <input id="register-password" class="form-input" type="password" placeholder="輸入密碼"
+                            name="register-password" required>
+                        <div class="register-error-message"></div>
+                        <button class="register-btn" type="submit">註冊新帳戶</button>
+                        <div class="to-login-wrapper">
+                            <div>已經有帳戶了？</div>
+                            <div class="to-login-link">點此登入</div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <button class="create-room-btn">發起會議</button>
+            <input type="text" id="room-number" placeholder="輸入會議代碼或連結">
+            <button class="join-room-btn">加入會議</button>
+        </div>
+    </header>
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+    <script type="module" src="/js/loginOutAndRegister.js"></script>
+    <script type="module" src="/static/routerRoom.js"></script>
+</body>
+
+</html>
