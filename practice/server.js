@@ -40,14 +40,12 @@ let options;
 if (ENV === "production") {
   options = {
     key: fs.readFileSync(
-      "/etc/letsencrypt/live/connectnow.cloudns.be/privkey.pem"
+      "/etc/letsencrypt/live/connectnow.website/privkey.pem"
     ),
     cert: fs.readFileSync(
-      "/etc/letsencrypt/live/connectnow.cloudns.be/fullchain.pem"
+      "/etc/letsencrypt/live/connectnow.website/fullchain.pem"
     ),
-    ca: fs.readFileSync(
-      "/etc/letsencrypt/live/connectnow.cloudns.be/chain.pem"
-    ),
+    ca: fs.readFileSync("/etc/letsencrypt/live/connectnow.website/chain.pem"),
   };
 }
 
