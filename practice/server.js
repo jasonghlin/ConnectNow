@@ -21,6 +21,7 @@ import {
   joinRoomInfo,
 } from "./models/createAndJoinMainRoom.js";
 import { getAllUsers } from "./models/getAllUsers.js";
+import fs from "fs";
 
 dotenv.config();
 const { JWT_SECRET_KEY, ENV } = process.env;
@@ -52,7 +53,7 @@ if (ENV === "production") {
 
 let server;
 if (ENV === "production") {
-  https.createServer(options, app).listen(443, () => {
+  server = https.createServer(options, app).listen(443, () => {
     console.log("HTTPS Server is running on port 443");
   });
 
