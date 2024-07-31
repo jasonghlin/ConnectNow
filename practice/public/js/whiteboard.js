@@ -38,7 +38,9 @@ function drawLine(x0, y0, x1, y1, color, width, emit) {
   if (!emit) {
     return;
   }
-  socket.emit("draw", { x0, y0, x1, y1, color, width });
+  const pathSegments = window.location.pathname.split("/");
+  const roomId = pathSegments[pathSegments.length - 1];
+  socket.emit("draw", { roomId, x0, y0, x1, y1, color, width });
 }
 
 function onMouseDown(e) {
@@ -82,7 +84,9 @@ function onMouseMove(e) {
 
 function clearWhiteboard() {
   context.clearRect(0, 0, canvas.width, canvas.height);
-  socket.emit("clear-whiteboard");
+  const pathSegments = window.location.pathname.split("/");
+  const roomId = pathSegments[pathSegments.length - 1];
+  socket.emit("clear-whiteboard", roomId);
 }
 
 function redrawWhiteboard(whiteboardState) {
@@ -130,7 +134,7 @@ function throttle(callback, delay) {
 function joinRoom(roomId, userId) {
   socket.emit("join-room", roomId, userId);
   // 加入房間後立即請求白板狀態
-  socket.emit("request-whiteboard-state");
+  socket.emit("request-whiteboard-state", roomId);
 }
 
 document.addEventListener("DOMContentLoaded", async () => {

@@ -78,12 +78,12 @@ const peerServer = ExpressPeerServer(server, {
 // app.use("/peerjs", peerServer);
 app.use(bodyParser.json());
 
-app.get("/js/loginOutAndRegister.js", (req, res) => {
+app.get("/utils/loginOutAndRegister.js", (req, res) => {
   res.sendFile(join(__dirname, "utils", "loginOutAndRegister.js"));
 });
 
-app.get("/utils/loginOutAndRegister", (req, res) => {
-  res.sendFile(join(__dirname, "utils", "loginOutAndRegister.js"));
+app.get("/utils/videoLayout.js", (req, res) => {
+  res.sendFile(join(__dirname, "utils", "videoLayout.js"));
 });
 
 let room;
@@ -103,20 +103,9 @@ app.get("/roomIdServer/:roomId", async (req, res) => {
 const roomWhiteboardStates = {};
 
 io.on("connection", (socket) => {
-  socket.on("draw-whiteboard", (data) => {
-    socket.broadcast.emit("on-draw-whiteboard", { x: data.x, y: data.y });
-  });
-
   socket.on("join-room", async (roomId, userId) => {
-    // room = await findAllRooms();
-    // room[roomId].push(userId);
     socket.join(roomId);
     socket.to(roomId).emit("user-connected", userId);
-
-    // 聊天室
-    socket.on("send-message", (roomId, message, userName) => {
-      socket.to(roomId).emit("receive-message", message, userName);
-    });
 
     // 初始化房間的白板狀態（如果還不存在）
     if (!roomWhiteboardStates[roomId]) {
@@ -137,15 +126,19 @@ io.on("connection", (socket) => {
       socket.to(roomId).emit("clear-whiteboard");
     });
 
-    socket.on("request-whiteboard-state", () => {
-      socket.emit("current-whiteboard-state", roomWhiteboardStates[roomId]);
+    socket.on("update-stream", (streamId, isScreenShare) => {
+      io.to(roomId).emit("update-stream", streamId, isScreenShare);
     });
 
     socket.on("disconnect", () => {
       socket.to(roomId).emit("user-disconnected", userId);
-      // TODO 修改邏輯
-      // room[roomId] = room[roomId].filter((id) => id !== userId);
     });
+  });
+
+  socket.on("request-whiteboard-state", (roomId) => {
+    if (roomWhiteboardStates[roomId]) {
+      socket.emit("current-whiteboard-state", roomWhiteboardStates[roomId]);
+    }
   });
 });
 

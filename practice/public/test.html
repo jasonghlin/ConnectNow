@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Breakout Room Interface</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* styles.css */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #controls {
+            margin: 20px;
+        }
+
+        #roomsContainer {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .group {
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            width: 200px;
+            min-height: 300px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .groupLabel {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .member {
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            padding: 5px;
+            margin: 5px 0;
+            cursor: grab;
+            width: 90%;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="controls">
+        <input type="number" id="groupCount" placeholder="Enter number of groups">
+        <button id="createGroups">Create Groups</button>
+    </div>
+    <div id="roomsContainer"></div>
+
+    <script>
+        // script.js
+        document.getElementById('createGroups').addEventListener('click', createGroups);
+
+        function createGroups() {
+            const groupCount = document.getElementById('groupCount').value;
+            const roomsContainer = document.getElementById('roomsContainer');
+            roomsContainer.innerHTML = '';
+
+            for (let i = 0; i < groupCount; i++) {
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'group';
+                groupDiv.id = `group-${i}`;
+                groupDiv.ondrop = drop;
+                groupDiv.ondragover = allowDrop;
+
+                const groupLabel = document.createElement('div');
+                groupLabel.className = 'groupLabel';
+                groupLabel.innerText = `Group ${i + 1}`;
+                groupDiv.appendChild(groupLabel);
+
+                for (let j = 0; j < 5; j++) { // assuming 5 members per group for demonstration
+                    const memberDiv = document.createElement('div');
+                    memberDiv.className = 'member';
+                    memberDiv.draggable = true;
+                    memberDiv.ondragstart = drag;
+                    memberDiv.id = `member-${i}-${j}`;
+                    memberDiv.innerText = `Member ${i + 1}-${j + 1}`;
+                    groupDiv.appendChild(memberDiv);
+                }
+
+                roomsContainer.appendChild(groupDiv);
+            }
+        }
+
+        function allowDrop(event) {
+            event.preventDefault();
+        }
+
+        function drag(event) {
+            event.dataTransfer.setData('text', event.target.id);
+        }
+
+        function drop(event) {
+            event.preventDefault();
+            const data = event.dataTransfer.getData('text');
+            const member = document.getElementById(data);
+            event.target.appendChild(member);
+        }
+
+    </script>
+</body>
+
+</html>

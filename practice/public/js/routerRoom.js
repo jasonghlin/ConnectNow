@@ -1,4 +1,4 @@
-import { checkStatus } from "../utils/loginOutAndRegister";
+import { checkStatus } from "../../utils/loginOutAndRegister.js";
 
 async function main() {
   const createRoomBtn = document.querySelector(".create-room-btn");

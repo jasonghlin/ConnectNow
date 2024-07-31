@@ -5,12 +5,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="/static/css/routerRoomStyle.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 </head>
 
 <body>
     <header>
-        <div>logo</div>
-        <div>Connect Now</div>
+        <div class="header">
+            <div class="logo-container">
+                <div class="logo"><img src="/static/images/google meet.png" alt="google meet png"></div>
+                <div>Connect Now</div>
+            </div>
+            <div class="header-right-part">
+                <div class="date-contaienr">
+                    <div class="time-container">
+                        <div class="noon">上午</div>
+                        <div><span class="hour">5</span>:<span class="minutes">16</span></div>
+                    </div>
+                    <div class="time-dot"> • </div>
+                    <div>
+                        <span class="month">7</span>月<span class="date">29</span>日<span class="day">週一</span>
+                    </div>
+                </div>
+                <div class="login-register">登入/註冊</div>
+            </div>
+            <div class="photo hidden">
+                <a href="/memberpage"><img src="/static/images/user.png" alt="user img"></a>
+            </div>
+        </div>
 
         <div class="overlay hidden"></div>
         <div class="modal-container hidden">
@@ -60,15 +84,30 @@
             </div>
         </div>
 
-        <div>
-            <button class="create-room-btn">發起會議</button>
-            <input type="text" id="room-number" placeholder="輸入會議代碼或連結">
-            <button class="join-room-btn">加入會議</button>
-        </div>
     </header>
+    <main>
+        <div class="join-meet-container">
+            <div class="slogan-1">
+                適合所有人使用的視訊通話和會議服務
+            </div>
+            <div class="slogan-2">
+                只要有 Connect Now，隨時隨地都能與他人聯繫、合作及舉辦慶祝活動
+            </div>
+            <div class="join-meet-btns">
+                <button class="create-room-btn">
+                    <span class="material-symbols-outlined">video_call</span>
+                    <span>發起會議</span>
+                </button>
+                <input type="text" id="room-number" placeholder="輸入會議代碼或連結">
+                <button class="join-room-btn">加入</button>
+            </div>
+        </div>
+    </main>
     <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
-    <script type="module" src="/js/loginOutAndRegister.js"></script>
-    <script type="module" src="/static/routerRoom.js"></script>
+    <script type="module" src="/utils/loginOutAndRegister.js"></script>
+    <script type="module" src="/static/js/routerRoom.js"></script>
+    <script type="module" src="/static/js/routerRoomLoginForm.js"></script>
+
 </body>
 
 </html>

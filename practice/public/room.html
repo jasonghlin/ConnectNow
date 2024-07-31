@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
         crossOrigin="anonymous" />
 </head>
@@ -14,7 +14,7 @@
     <header></header>
     <div class="video-stream">
         <!-- 動態生成 video -->
-        <div class="whiteboard-content">
+        <div class="whiteboard-content hidden">
             <canvas id="whiteboard-canvas" width="800" height="600"></canvas>
             <div class="whiteboard-controls">
                 <button class="clear-whiteboard">清除白板</button>
@@ -48,7 +48,7 @@
                 </button>
             </div>
             <button class="share-screen">
-                <img src="/static/shareScreen.png" />
+                <img src="/static/images/shareScreen.png" />
             </button>
             <button class="hangout">
                 <i class="fas fa-phone-slash"></i>
@@ -139,12 +139,13 @@
     </div>
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-    <script type="module" src="/static/shareScreen.js"></script>
-    <script type="module" src="/static/script.js"></script>
-    <script type="module" src="/static/activitiesPanel.js"></script>
-    <script type="module" src="/static/usersPanel.js"></script>
-    <script type="module" src="/static/chatPanel.js"></script>
-    <script type="module" src="/static/whiteboard.js"></script>
+    <script type="module" src="/static/js/shareScreen.js"></script>
+    <script type="module" src="/static/js/script.js"></script>
+    <script type="module" src="/static/js/activitiesPanel.js"></script>
+    <script type="module" src="/static/js/usersPanel.js"></script>
+    <script type="module" src="/static/js/chatPanel.js"></script>
+    <script type="module" src="/static/js/whiteboard.js"></script>
+    <script type="module" src="/static/js/videoLayout.js"></script>
 
 
 </body>
