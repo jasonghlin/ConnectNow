@@ -342,8 +342,8 @@ async function updateUsersList() {
 
     const peer = new Peer(undefined, {
       // host: "localhost",
-      host: "34.209.54.23",
-      port: 9001,
+      host: "www.pharmengineer.cloudns.be",
+      port: 443,
       path: "/myapp",
     });
 

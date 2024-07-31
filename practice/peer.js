@@ -1,7 +1,7 @@
 import { PeerServer } from "peer";
 
 PeerServer({
-  port: 9001,
+  port: 443,
   path: "/myapp",
   // proxied: false,
   proxied: true,
