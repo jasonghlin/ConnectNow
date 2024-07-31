@@ -341,7 +341,8 @@ async function updateUsersList() {
     }
 
     const peer = new Peer(undefined, {
-      host: "localhost",
+      // host: "localhost",
+      host: "172.31.21.222",
       port: 9001,
       path: "/myapp",
     });
