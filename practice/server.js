@@ -26,7 +26,6 @@ import fs from "fs";
 dotenv.config();
 const { JWT_SECRET_KEY, ENV } = process.env;
 
-// 获取当前文件的路径和目录
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -54,7 +53,7 @@ if (ENV === "production") {
 
 app.use(
   cors({
-    origin: "*", // 简单粗暴的方法，允许所有来源
+    origin: "*",
     methods: ["GET", "POST"],
     allowedHeaders: ["my-custom-header"],
     credentials: true,
@@ -108,15 +107,12 @@ io.on("connection", (socket) => {
     socket.join(roomId);
     socket.to(roomId).emit("user-connected", userId);
 
-    // 初始化房間的白板狀態（如果還不存在）
     if (!roomWhiteboardStates[roomId]) {
       roomWhiteboardStates[roomId] = [];
     }
 
-    // 發送當前白板狀態給新加入的用戶
     socket.emit("current-whiteboard-state", roomWhiteboardStates[roomId]);
 
-    // 小白板功能
     socket.on("draw", (data) => {
       roomWhiteboardStates[roomId].push(data);
       socket.to(roomId).emit("draw", data);
@@ -279,23 +275,35 @@ app.get("/api/allUsers", authenticateJWT, async (req, res) => {
   res.status(200).json(users);
 });
 
-// 只在非生產環境下啟動HTTP伺服器
-if (ENV !== "production") {
-  server.listen(8080, () => {
-    console.log("HTTP Server is running on port 8080");
-  });
-}
-
-// 在生產環境下啟動HTTPS伺服器
-if (ENV === "production") {
-  server.listen(443, () => {
-    console.log("HTTPS Server is running on port 443");
+// Ensure proper shutdown of the server
+const shutdownServer = () => {
+  server.close(() => {
+    console.log("Server closed");
+    process.exit(0);
   });
 
-  http
-    .createServer((req, res) => {
-      res.writeHead(301, { Location: "https://" + req.headers.host + req.url });
-      res.end();
-    })
-    .listen(80);
-}
+  setTimeout(() => {
+    console.error("Forcefully shutting down");
+    process.exit(1);
+  }, 10000);
+};
+
+process.on("SIGTERM", shutdownServer);
+process.on("SIGINT", shutdownServer);
+
+const port = ENV === "production" ? 443 : 8080;
+
+// Start the server
+server.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+  if (ENV === "production") {
+    http
+      .createServer((req, res) => {
+        res.writeHead(301, {
+          Location: "https://" + req.headers.host + req.url,
+        });
+        res.end();
+      })
+      .listen(80);
+  }
+});
