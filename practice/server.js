@@ -39,7 +39,7 @@ let options;
 if (ENV === "production") {
   options = {
     key: fs.readFileSync("/home/ubuntu/privkey.pem"),
-    cert: fs.readFileSync("/home/ubuntu/fullchain.pem"),
+    cert: fs.readFileSync("/home/ubuntu/certificate.pem"),
   };
 }
 
@@ -78,7 +78,7 @@ if (ENV === "production") {
     path: "/myapp",
     ssl: {
       key: fs.readFileSync("/home/ubuntu/privkey.pem"),
-      cert: fs.readFileSync("/home/ubuntu/fullchain.pem"),
+      cert: fs.readFileSync("/home/ubuntu/certificate.pem"),
     },
   });
 } else {
