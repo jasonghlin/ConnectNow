@@ -344,6 +344,7 @@ async function updateUsersList() {
       // host: "localhost",
       host: "www.pharmengineer.cloudns.be",
       port: 443,
+      secure: true,
       path: "/myapp",
     });
 
