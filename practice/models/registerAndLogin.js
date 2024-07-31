@@ -1,9 +1,10 @@
-import { pool, createDatabase, useDatabase } from "./mysql.js";
+import { pool, createDatabase, useDatabase, createUserTable } from "./mysql.js";
 
 async function get_user(request_body) {
   try {
     await createDatabase();
     await useDatabase();
+    await createUserTable();
     const query = "SELECT * FROM users WHERE email = ?";
     const values = [request_body.email];
 
