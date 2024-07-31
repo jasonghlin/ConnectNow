@@ -39,13 +39,9 @@ const app = express();
 let options;
 if (ENV === "production") {
   options = {
-    key: fs.readFileSync(
-      "/etc/letsencrypt/live/connectnow.website/privkey.pem"
-    ),
-    cert: fs.readFileSync(
-      "/etc/letsencrypt/live/connectnow.website/fullchain.pem"
-    ),
-    ca: fs.readFileSync("/etc/letsencrypt/live/connectnow.website/chain.pem"),
+    key: fs.readFileSync("/home/ubuntu/privkey.pem"),
+    cert: fs.readFileSync("/home/ubuntu/fullchain.pem"),
+    ca: fs.readFileSync("/home/ubuntu/chain.pem"),
   };
 }
 
