@@ -2,14 +2,25 @@ import dotenv from "dotenv";
 dotenv.config();
 import mysql from "mysql";
 
-const { MYSQL_PASSWORD } = process.env;
+const { MYSQL_USER, MYSQL_HOST, MYSQL_PASSWORD, ENV } = process.env;
 
-const pool = mysql.createPool({
-  connectionLimit: 10,
-  host: "localhost",
-  user: "root",
-  password: MYSQL_PASSWORD,
-});
+let pool;
+
+if (ENV === "production") {
+  pool = mysql.createPool({
+    connectionLimit: 10,
+    host: MYSQL_HOST,
+    user: MYSQL_USER,
+    password: MYSQL_PASSWORD,
+  });
+} else {
+  pool = mysql.createPool({
+    connectionLimit: 10,
+    host: "localhost",
+    user: "root",
+    password: MYSQL_PASSWORD,
+  });
+}
 
 function createDatabase() {
   return new Promise((resolve, reject) => {
