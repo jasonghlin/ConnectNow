@@ -1,5 +1,6 @@
 import express from "express";
 import http from "http";
+import https from "https";
 import { Server } from "socket.io";
 import { ExpressPeerServer } from "peer";
 import cors from "cors";
@@ -22,7 +23,7 @@ import {
 import { getAllUsers } from "./models/getAllUsers.js";
 
 dotenv.config();
-const { JWT_SECRET_KEY } = process.env;
+const { JWT_SECRET_KEY, ENV } = process.env;
 
 // 获取当前文件的路径和目录
 const __filename = fileURLToPath(import.meta.url);
@@ -33,7 +34,37 @@ EventEmitter.defaultMaxListeners = 100;
 const saltRounds = 10;
 
 const app = express();
-const server = http.createServer(app);
+
+let options;
+if (ENV === "production") {
+  options = {
+    key: fs.readFileSync(
+      "/etc/letsencrypt/live/connectnow.cloudns.be/privkey.pem"
+    ),
+    cert: fs.readFileSync(
+      "/etc/letsencrypt/live/connectnow.cloudns.be/fullchain.pem"
+    ),
+    ca: fs.readFileSync(
+      "/etc/letsencrypt/live/connectnow.cloudns.be/chain.pem"
+    ),
+  };
+}
+
+let server;
+if (ENV === "production") {
+  https.createServer(options, app).listen(443, () => {
+    console.log("HTTPS Server is running on port 443");
+  });
+
+  http
+    .createServer((req, res) => {
+      res.writeHead(301, { Location: "https://" + req.headers.host + req.url });
+      res.end();
+    })
+    .listen(80);
+} else {
+  server = http.createServer(app);
+}
 
 app.use(
   cors({
