@@ -47,16 +47,7 @@ if (ENV === "production") {
 
 let server;
 if (ENV === "production") {
-  server = https.createServer(options, app).listen(443, () => {
-    console.log("HTTPS Server is running on port 443");
-  });
-
-  http
-    .createServer((req, res) => {
-      res.writeHead(301, { Location: "https://" + req.headers.host + req.url });
-      res.end();
-    })
-    .listen(80);
+  server = https.createServer(options, app);
 } else {
   server = http.createServer(app);
 }
@@ -69,23 +60,6 @@ app.use(
     credentials: true,
   })
 );
-
-// app.use(
-//   cors({
-//     origin: function (origin, callback) {
-//       if (!origin) return callback(null, true);
-//       if (allowedOrigins.indexOf(origin) === -1) {
-//         const msg =
-//           "The CORS policy for this site does not allow access from the specified Origin.";
-//         return callback(new Error(msg), false);
-//       }
-//       return callback(null, true);
-//     },
-//     methods: ["GET", "POST"],
-//     allowedHeaders: ["my-custom-header"],
-//     credentials: true,
-//   })
-// );
 
 app.use("/static", express.static(join(__dirname, "public")));
 
@@ -103,7 +77,6 @@ const peerServer = ExpressPeerServer(server, {
   debug: true,
 });
 
-// app.use("/peerjs", peerServer);
 app.use(bodyParser.json());
 
 app.get("/utils/loginOutAndRegister.js", (req, res) => {
@@ -299,8 +272,6 @@ app.post("/api/joinMainRoom", authenticateJWT, async (req, res) => {
 
 // 分房間
 
-//
-
 app.get("/api/allUsers", authenticateJWT, async (req, res) => {
   const url = req.headers.referer.split("/");
   const roomId = url[url.length - 1];
@@ -308,6 +279,23 @@ app.get("/api/allUsers", authenticateJWT, async (req, res) => {
   res.status(200).json(users);
 });
 
-server.listen(8080, () => {
-  console.log("Server is running on port 8080");
-});
+// 只在非生產環境下啟動HTTP伺服器
+if (ENV !== "production") {
+  server.listen(8080, () => {
+    console.log("HTTP Server is running on port 8080");
+  });
+}
+
+// 在生產環境下啟動HTTPS伺服器
+if (ENV === "production") {
+  server.listen(443, () => {
+    console.log("HTTPS Server is running on port 443");
+  });
+
+  http
+    .createServer((req, res) => {
+      res.writeHead(301, { Location: "https://" + req.headers.host + req.url });
+      res.end();
+    })
+    .listen(80);
+}
