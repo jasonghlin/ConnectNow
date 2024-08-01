@@ -1,6 +1,6 @@
 import express from "express";
 import http from "http";
-import https from "https";
+// import https from "https";
 import { Server } from "socket.io";
 import { ExpressPeerServer } from "peer";
 import cors from "cors";
@@ -45,7 +45,8 @@ const app = express();
 
 let server;
 if (ENV === "production") {
-  server = https.createServer(app);
+  // server = https.createServer(app);
+  server = http.createServer(app);
 } else {
   server = http.createServer(app);
 }
@@ -303,7 +304,7 @@ const shutdownServer = () => {
 process.on("SIGTERM", shutdownServer);
 process.on("SIGINT", shutdownServer);
 
-const port = ENV === "production" ? 443 : 8080;
+const port = ENV === "production" ? 8080 : 8080;
 
 // Start the server
 server.listen(port, () => {
