@@ -85,6 +85,11 @@ if (ENV === "production") {
 
 app.use(bodyParser.json());
 
+// Health check endpoint
+app.get("/health", (req, res) => {
+  res.status(200).send("OK");
+});
+
 app.get("/utils/loginOutAndRegister.js", (req, res) => {
   res.sendFile(join(__dirname, "utils", "loginOutAndRegister.js"));
 });
