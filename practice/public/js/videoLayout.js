@@ -1,13 +1,14 @@
 let participantCount = 1;
 
 function updateVideoLayout() {
+  console.log("Updating video layout");
   const videoStream = document.querySelector(".video-stream");
   const videos = Array.from(videoStream.querySelectorAll("video"));
+  console.log(`Number of videos: ${videos.length}`);
 
   if (videos.length > 4) {
     videoStream.classList.add("many-participants");
 
-    // Create or get the small videos container
     let smallVideosContainer = videoStream.querySelector(
       ".small-videos-container"
     );
@@ -17,29 +18,24 @@ function updateVideoLayout() {
       videoStream.insertBefore(smallVideosContainer, videoStream.firstChild);
     }
 
-    // Arrange videos
     videos.forEach((video, index) => {
       if (index === 0) {
-        // First video (large, at bottom)
         video.classList.add("main-video");
         video.classList.remove("small-video");
         videoStream.appendChild(video);
       } else {
-        // Other videos (small, at top)
         video.classList.remove("main-video");
         video.classList.add("small-video");
         smallVideosContainer.appendChild(video);
       }
     });
 
-    // Adjust small videos container height based on number of videos
     const smallVideosCount = videos.length - 1;
-    const rows = Math.ceil(smallVideosCount / 3); // Assume 3 videos per row
-    smallVideosContainer.style.maxHeight = `${rows * 160}px`; // 150px height + 10px margin
+    const rows = Math.ceil(smallVideosCount / 3);
+    smallVideosContainer.style.maxHeight = `${rows * 160}px`;
   } else {
     videoStream.classList.remove("many-participants");
 
-    // Remove the small videos container if it exists
     const smallVideosContainer = videoStream.querySelector(
       ".small-videos-container"
     );
@@ -58,25 +54,31 @@ function updateVideoLayout() {
 
 function handleUserConnected() {
   participantCount++;
+  console.log(`User connected. Participant count: ${participantCount}`);
   updateVideoLayout();
 }
 
 function handleUserDisconnected(userId) {
   participantCount--;
+  console.log(
+    `User ${userId} disconnected. Participant count: ${participantCount}`
+  );
 
-  // Remove the disconnected user's video element
   const videoElement = document.querySelector(
     `video[data-user-id="${userId}"]`
   );
-  if (videoElement && videoElement.parentNode) {
-    videoElement.parentNode.removeChild(videoElement);
+  if (videoElement) {
+    if (videoElement.srcObject) {
+      const tracks = videoElement.srcObject.getTracks();
+      tracks.forEach((track) => track.stop());
+    }
+    videoElement.remove();
+    console.log(`Video element removed for user: ${userId}`);
   }
 
   updateVideoLayout();
 }
 
-// Initial layout update
 updateVideoLayout();
 
-// Export the functions for use in other files
 export { updateVideoLayout, handleUserConnected, handleUserDisconnected };

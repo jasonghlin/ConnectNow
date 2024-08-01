@@ -256,16 +256,43 @@ const updateRemoteVideos = (userId, stream, isScreenShare = false) => {
 // 移除遠程視訊
 // 断开连接时移除远程视频
 const removeRemoteVideo = (userId) => {
+  console.log(`Removing video for user: ${userId}`);
+  const videoElement = document.querySelector(
+    `video[data-user-id="${userId}"]`
+  );
+  if (videoElement) {
+    console.log(`Video element found for user: ${userId}`);
+    if (videoElement.srcObject) {
+      const tracks = videoElement.srcObject.getTracks();
+      tracks.forEach((track) => track.stop());
+    }
+    videoElement.remove();
+    console.log(`Video element removed for user: ${userId}`);
+  } else {
+    console.log(`No video element found for user: ${userId}`);
+  }
+
   const videoIndex = remoteVideos.findIndex((video) => video.userId === userId);
   if (videoIndex !== -1) {
-    const videoElement = remoteVideos[videoIndex].video;
-    if (videoElement && videoElement.parentNode) {
-      videoElement.parentNode.removeChild(videoElement);
-    }
     remoteVideos.splice(videoIndex, 1);
-    updateVideoLayout();
+    console.log(`User ${userId} removed from remoteVideos array`);
   }
+
+  if (peers[userId]) {
+    peers[userId].close();
+    delete peers[userId];
+    console.log(`Peer connection closed for user: ${userId}`);
+  }
+
+  updateVideoLayout();
 };
+
+window.addEventListener("beforeunload", () => {
+  socket.emit("disconnect");
+  for (let userId in peers) {
+    removeRemoteVideo(userId);
+  }
+});
 
 // 初始化用户面板事件监听器
 const usersButton = document.querySelector(".participants");
@@ -340,11 +367,19 @@ async function updateUsersList() {
       addVideoStream(myVideo, stream, "local");
     }
 
-    const peer = new Peer(undefined, {
-      // host: "localhost",
-      host: "www.pharmengineer.cloudns.be",
-      port: 443,
-      secure: true,
+    let peer;
+    // peer = new Peer(undefined, {
+    //   // host: "localhost",
+    //   host: "www.pharmengineer.cloudns.be",
+    //   port: 443,
+    //   secure: true,
+    //   path: "/myapp",
+    // });
+
+    peer = new Peer(undefined, {
+      host: "localhost",
+      // host: "www.pharmengineer.cloudns.be",
+      port: 9001,
       path: "/myapp",
     });
 
@@ -368,7 +403,7 @@ async function updateUsersList() {
 
     const connectToNewUser = (userId, stream) => {
       const call = peer.call(userId, stream);
-      call.on("stream", (userVideoStream) => {
+      call?.on("stream", (userVideoStream) => {
         const userVideo = document.createElement("video");
         userVideo.autoplay = true; // 确保视频自动播放
         userVideo.playsInline = true; // 确保在行内播放

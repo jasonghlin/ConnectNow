@@ -146,7 +146,11 @@
     <script type="module" src="/static/js/chatPanel.js"></script>
     <script type="module" src="/static/js/whiteboard.js"></script>
     <script type="module" src="/static/js/videoLayout.js"></script>
-
+    <script>
+        window.onerror = function (message, source, lineno, colno, error) {
+            console.error('An error occurred:', message, 'at', source, lineno, colno, error);
+        }
+    </script>
 
 </body>
 

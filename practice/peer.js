@@ -17,7 +17,7 @@ if (ENV === "production") {
   });
 } else {
   PeerServer({
-    port: 443,
+    port: 9001,
     path: "/myapp",
     // proxied: false,
     proxied: true,

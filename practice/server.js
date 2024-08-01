@@ -35,17 +35,17 @@ const saltRounds = 10;
 
 const app = express();
 
-let options;
-if (ENV === "production") {
-  options = {
-    key: fs.readFileSync("/home/ubuntu/privkey.pem"),
-    cert: fs.readFileSync("/home/ubuntu/cert.pem"),
-  };
-}
+// let options;
+// if (ENV === "production") {
+//   options = {
+//     key: fs.readFileSync("/home/ubuntu/privkey.pem"),
+//     cert: fs.readFileSync("/home/ubuntu/cert.pem"),
+//   };
+// }
 
 let server;
 if (ENV === "production") {
-  server = https.createServer(options, app);
+  server = https.createServer(app);
 } else {
   server = http.createServer(app);
 }
@@ -76,10 +76,6 @@ if (ENV === "production") {
   peerServer = ExpressPeerServer(server, {
     debug: true,
     path: "/myapp",
-    ssl: {
-      key: fs.readFileSync("/home/ubuntu/privkey.pem"),
-      cert: fs.readFileSync("/home/ubuntu/cert.pem"),
-    },
   });
 } else {
   peerServer = ExpressPeerServer(server, {
