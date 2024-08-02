@@ -11,17 +11,12 @@ import {
   handleUserConnected,
   handleUserDisconnected,
 } from "./videoLayout.js";
-import {
-  handleIncomingCall,
-  setLocalStream,
-  leaveRoom,
-} from "./groupHandler.js";
 
 // 全局變量
 let localStream = null; // 本地視訊流
 let currentStream = null; // 當前的流（視訊或螢幕）
 let videoEnabled = true; // 視訊狀態
-let remoteVideos = new Map(); // 遠程視訊列表
+let remoteVideos = []; // 遠程視訊列表
 let isScreenSharing = false; // 螢幕分享狀態
 
 // 獲取房間 ID
@@ -31,21 +26,9 @@ const roomId = pathSegments[pathSegments.length - 1];
 document.getElementById("currentRoomId").textContent = roomId;
 
 // 建立 Socket.io 連接
-let peerInstance = null;
 const socket = io("http://localhost:8080");
 const videoStreamDiv = document.querySelector(".video-stream");
 const peers = {};
-
-export function getPeer() {
-  if (!peerInstance) {
-    peerInstance = new Peer(undefined, {
-      host: "localhost",
-      port: 9001,
-      path: "/myapp",
-    });
-  }
-  return peerInstance;
-}
 
 // 主房間類
 class MainRoom {
@@ -163,36 +146,31 @@ const toggleVideo = () => {
 
 // 渲染遠程視訊
 const renderRemoteVideos = () => {
-  remoteVideos.forEach((video, userId) => {
+  remoteVideos.forEach(({ userId, video }) => {
     if (!videoStreamDiv.contains(video)) {
-      videoStreamDiv.appendChild(video);
+      videoStreamDiv.append(video);
     }
   });
-  updateVideoLayout();
 };
 
 // 更新遠程視訊
 const updateRemoteVideos = (userId, stream, isScreenShare = false) => {
-  if (remoteVideos.has(userId)) {
-    // 更新現有視頻
-    const existingVideo = remoteVideos.get(userId);
-    existingVideo.srcObject = stream;
-    if (isScreenShare) {
-      existingVideo.classList.remove("invert-screen");
-    } else {
-      existingVideo.classList.add("invert-screen");
-    }
+  const existingVideo = remoteVideos.find((video) => video.userId === userId);
+
+  if (existingVideo) {
+    // 使用者已存在，更新其視訊流
+    existingVideo.video.srcObject = stream;
   } else {
-    // 添加新視頻
+    // 新使用者，新增其視訊
     const userVideo = document.createElement("video");
-    userVideo.autoplay = true;
-    userVideo.playsInline = true;
+    userVideo.autoplay = true; // 確保視頻自動播放
+    userVideo.playsInline = true; // 確保在行內播放
     if (!isScreenShare) {
-      userVideo.classList.add("invert-screen");
+      userVideo.classList.add("invert-screen"); // 初始化为镜像显示
     }
     userVideo.setAttribute("data-user-id", userId);
     addVideoStream(userVideo, stream, userId);
-    remoteVideos.set(userId, userVideo);
+    remoteVideos.push({ userId, video: userVideo });
   }
   renderRemoteVideos();
 };
@@ -201,15 +179,25 @@ const updateRemoteVideos = (userId, stream, isScreenShare = false) => {
 // 断开连接时移除远程视频
 const removeRemoteVideo = (userId) => {
   console.log(`Removing video for user: ${userId}`);
-  const videoElement = remoteVideos.get(userId);
+  const videoElement = document.querySelector(
+    `video[data-user-id="${userId}"]`
+  );
   if (videoElement) {
+    console.log(`Video element found for user: ${userId}`);
     if (videoElement.srcObject) {
       const tracks = videoElement.srcObject.getTracks();
       tracks.forEach((track) => track.stop());
     }
     videoElement.remove();
-    remoteVideos.delete(userId);
     console.log(`Video element removed for user: ${userId}`);
+  } else {
+    console.log(`No video element found for user: ${userId}`);
+  }
+
+  const videoIndex = remoteVideos.findIndex((video) => video.userId === userId);
+  if (videoIndex !== -1) {
+    remoteVideos.splice(videoIndex, 1);
+    console.log(`User ${userId} removed from remoteVideos array`);
   }
 
   if (peers[userId]) {
@@ -271,7 +259,7 @@ async function updateUsersList() {
 // 主函數
 (async function () {
   try {
-    const payload = await checkStatus();
+    const payload = checkStatus();
     const path = window.location.pathname.split("/");
     const roomId = path[path.length - 1];
     const token = localStorage.getItem("session");
@@ -288,7 +276,6 @@ async function updateUsersList() {
       video: true,
       audio: true,
     });
-    setLocalStream(stream);
     localStream = stream;
     currentStream = stream;
 
@@ -302,7 +289,7 @@ async function updateUsersList() {
       addVideoStream(myVideo, stream, "local");
     }
 
-    // let peer;
+    let peer;
     // peer = new Peer(undefined, {
     //   // host: "localhost",
     //   host: "www.pharmengineer.cloudns.be",
@@ -311,7 +298,12 @@ async function updateUsersList() {
     //   path: "/myapp",
     // });
 
-    const peer = getPeer();
+    peer = new Peer(undefined, {
+      host: "localhost",
+      // host: "www.pharmengineer.cloudns.be",
+      port: 9001,
+      path: "/myapp",
+    });
 
     peer.on("open", (id) => {
       console.log("My peer ID is: " + id);
@@ -319,54 +311,46 @@ async function updateUsersList() {
       mainRoom.addPeer(id, peer);
     });
 
-    peer.on("call", handleIncomingCall);
-
-    // peer.on("call", (call) => {
-    //   call.answer(currentStream);
-    //   const userVideo = document.createElement("video");
-    //   call.on("stream", (userVideoStream) => {
-    //     updateRemoteVideos(call.peer, userVideoStream);
-    //   });
-
-    //   call.on("close", () => {
-    //     removeRemoteVideo(call.peer);
-    //   });
-    //   currentRoom.addPeer(call.peer, call);
-    // });
+    peer.on("call", (call) => {
+      call.answer(currentStream);
+      const userVideo = document.createElement("video");
+      call.on("stream", (userVideoStream) => {
+        updateRemoteVideos(call.peer, userVideoStream);
+      });
+      call.on("close", () => {
+        removeRemoteVideo(call.peer);
+      });
+      currentRoom.addPeer(call.peer, call);
+    });
 
     const connectToNewUser = (userId, stream) => {
       const call = peer.call(userId, stream);
-      call.on("stream", (userVideoStream) => {
-        updateRemoteVideos(userId, userVideoStream);
+      call?.on("stream", (userVideoStream) => {
+        const userVideo = document.createElement("video");
+        userVideo.autoplay = true; // 确保视频自动播放
+        userVideo.playsInline = true; // 确保在行内播放
+        userVideo.classList.add("invert-screen"); // 初始化为镜像显示
+        addVideoStream(userVideo, userVideoStream, userId);
       });
       call.on("close", () => {
         removeRemoteVideo(userId);
       });
 
       peers[userId] = call;
+      currentRoom.addPeer(userId, call);
     };
 
-    socket.on("user-connected", (peerId, userId) => {
-      console.log("New user connected:", userId);
-      connectToNewUser(peerId, currentStream);
+    socket.on("user-connected", (userId) => {
+      connectToNewUser(userId, currentStream);
+      currentRoom.addPeer(userId, peers[userId]);
       updateUsersList();
-      handleUserConnected();
+      handleUserConnected(); // Add this line
     });
 
-    socket.on("user-disconnected", (peerId, userId) => {
-      console.log("User disconnected:", userId);
-      if (peers[peerId]) peers[peerId].close();
+    socket.on("user-disconnected", (userId) => {
+      if (peers[userId]) peers[userId].close();
       removeRemoteVideo(userId);
       handleUserDisconnected(userId);
-    });
-
-    socket.on("remove-duplicate", (oldPeerId) => {
-      console.log("Removing duplicate connection:", oldPeerId);
-      if (peers[oldPeerId]) {
-        peers[oldPeerId].close();
-        delete peers[oldPeerId];
-      }
-      removeRemoteVideo(oldPeerId);
     });
 
     socket.on("update-remote-videos", (updatedRemoteVideos) => {
@@ -401,7 +385,6 @@ async function updateUsersList() {
     });
 
     renderRemoteVideos();
-    window.addEventListener("beforeunload", leaveRoom);
   } catch (err) {
     console.error("Error getting user media:", err);
   }
@@ -455,4 +438,4 @@ document.querySelector(".share-screen").addEventListener("click", async (e) => {
 // 事件監聽器：切換視訊
 document.querySelector(".video").addEventListener("click", toggleVideo);
 
-export { socket, updateUsersList, updateRemoteVideos, removeRemoteVideo };
+export { socket, updateUsersList };

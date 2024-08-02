@@ -5,9 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
         crossOrigin="anonymous" />
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/createGroups.css">
 </head>
 
 <body>
@@ -137,6 +138,17 @@
             <!-- 這裡可以動態生成用戶列表 -->
         </div>
     </div>
+    <div class="breakout-room-panel">
+        <div id="controls">
+            <input type="number" id="groupCount" placeholder="Enter number of groups">
+            <button id="createGroups">Create Groups</button>
+            <input type="number" id="timerInput" placeholder="Enter timer in seconds">
+            <button id="startTimer">Start Timer</button>
+            <button id="finishGrouping">Finish Grouping</button>
+        </div>
+        <div id="roomsContainer"></div>
+        <div id="timerDisplay">Time left: <span id="timeLeft"></span> seconds</div>
+    </div>
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <script type="module" src="/static/js/shareScreen.js"></script>
@@ -146,6 +158,8 @@
     <script type="module" src="/static/js/chatPanel.js"></script>
     <script type="module" src="/static/js/whiteboard.js"></script>
     <script type="module" src="/static/js/videoLayout.js"></script>
+    <script type="module" src="/static/js/createGroups.js"></script>
+    <script type="module" src="/static/js/groupHandler.js"></script>
     <script>
         window.onerror = function (message, source, lineno, colno, error) {
             console.error('An error occurred:', message, 'at', source, lineno, colno, error);

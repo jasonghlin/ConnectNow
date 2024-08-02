@@ -57,10 +57,6 @@ footer {
     transition: all 0.3s;
 }
 
-/* .choose-icon:hover {
-    transform: translateY(-0.1rem);
-} */
-
 .mic-icon {
     width: 8rem;
     height: 4.8rem;
@@ -230,7 +226,6 @@ body.panel-open footer {
     position: relative;
 }
 
-
 #message-input {
     width: 100%;
     padding: 1rem;
@@ -239,9 +234,7 @@ body.panel-open footer {
     position: relative;
     bottom: -3.8rem;
     color: white;
-    
 }
-
 
 #send-button {
     position: relative;
@@ -252,6 +245,7 @@ body.panel-open footer {
     border-width: .1rem;
 }
 
+/* panels */
 .activities-panel, .users-panel, .chat-panel {
     position: fixed;
     top: 0;
@@ -389,7 +383,6 @@ body.panel-open footer {
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
 }
-
 
 .hidden {
     display: none;
