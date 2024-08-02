@@ -39,8 +39,8 @@ const peers = {};
 export function getPeer() {
   if (!peerInstance) {
     peerInstance = new Peer(undefined, {
-      host: "peer-server.connectnow.website",
-      port: 443,
+      host: "localhost",
+      port: 9001,
       path: "/myapp",
     });
   }
