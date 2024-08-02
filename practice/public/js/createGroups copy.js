@@ -1,3 +1,5 @@
+import { handleFinishGrouping } from "./groupHandler.js";
+
 document.getElementById("createGroups").addEventListener("click", createGroups);
 document
   .getElementById("finishGrouping")
@@ -124,15 +126,29 @@ function finishGrouping() {
     groups.push(group);
   });
 
+  const timerDuration = parseInt(
+    document.getElementById("timerInput").value,
+    10
+  );
+
+  // Call the new function from groupHandler.js with timer duration
+  handleFinishGrouping(groups, timerDuration);
+
   // Send the groups data to the backend
   fetch("/api/save-groups", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("session")}`,
     },
     body: JSON.stringify(groups),
   })
-    .then((response) => response.json())
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
     .then((data) => {
       console.log("Success:", data);
     })

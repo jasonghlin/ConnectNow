@@ -20,10 +20,6 @@ export function saveMainRoomName() {
 export function handleFinishGrouping(groupsData) {
   saveMainRoomName();
   groups = groupsData;
-  for (let peerId in currentPeers) {
-    removeRemoteVideo(peerId);
-    currentPeers[peerId].close();
-  }
   reconnectPeers();
 }
 
@@ -41,7 +37,6 @@ async function reconnectPeers() {
   currentPeers = {};
 
   // Find the group that the current user belongs to
-  // const currentUserName = localStorage.getItem("username"); // Ensure this is set when user logs in
   const currentUserName = localStorage.getItem("username"); // Ensure this is set when user logs in
   let currentUserGroup = null;
   for (let group of groups) {
@@ -54,16 +49,6 @@ async function reconnectPeers() {
   if (!currentUserGroup) {
     console.error("Current user not found in any group");
     return;
-  }
-
-  // 移除不在同一組的用戶視頻
-  const currentGroupMembers = currentUserGroup.members;
-  for (let peerId in currentPeers) {
-    if (!currentGroupMembers.includes(peerId)) {
-      removeRemoteVideo(peerId);
-      currentPeers[peerId].close();
-      delete currentPeers[peerId];
-    }
   }
 
   // Connect to all peers in the same group
