@@ -33,7 +33,7 @@ document.getElementById("currentRoomId").textContent = roomId;
 // 建立 Socket.io 連接
 let peerInstance = null;
 // const socket = io("http://localhost:8080");
-const socket = io("https://www.connectnow.website:8080");
+const socket = io("https://www.connectnow.website");
 const videoStreamDiv = document.querySelector(".video-stream");
 const peers = {};
 
