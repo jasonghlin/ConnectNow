@@ -18,36 +18,25 @@ app.use(
 );
 
 let peerServer;
+let port;
+
 if (ENV === "production") {
-  const server = app.listen(443, () => {
-    console.log("Listening on port 443");
-  });
-
-  peerServer = PeerServer({
-    port: 443,
-    path: "/myapp",
-    proxied: true,
-    secure: true, // 由于使用ALB进行SSL终端，因此这里为true
-  });
-
-  app.use("/peerjs", peerServer);
-  app.get("/", (req, res) => {
-    res.send("PeerJS server is running");
-  });
+  port = 443;
 } else {
-  const server = app.listen(9001, () => {
-    console.log("Listening on port 9001");
-  });
-
-  peerServer = PeerServer({
-    port: 9001,
-    path: "/myapp",
-    proxied: true,
-    secure: false,
-  });
-
-  app.use("/peerjs", peerServer);
-  app.get("/", (req, res) => {
-    res.send("PeerJS server is running");
-  });
+  port = 9001;
 }
+
+const server = app.listen(port, () => {
+  console.log(`Listening on port ${port}`);
+});
+
+peerServer = PeerServer({
+  path: "/myapp",
+  proxied: true,
+  secure: ENV === "production", // 根据环境设置secure属性
+});
+
+app.use("/peerjs", peerServer);
+app.get("/", (req, res) => {
+  res.send("PeerJS server is running");
+});
