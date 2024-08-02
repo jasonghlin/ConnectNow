@@ -352,7 +352,7 @@ process.on("SIGINT", shutdownServer);
 const port = ENV === "production" ? 8080 : 8080;
 
 // Start the server
-server.listen(port, () => {
+server.listen(port, "0.0.0.0", () => {
   console.log(`Server is running on port ${port}`);
   if (ENV === "production") {
     http
