@@ -21,7 +21,7 @@ let peerServer;
 let port;
 
 if (ENV === "production") {
-  port = 443;
+  port = 9001;
 } else {
   port = 9001;
 }
