@@ -72,17 +72,17 @@ const io = new Server(server, {
   },
 });
 
-let peerServer;
-if (ENV === "production") {
-  peerServer = ExpressPeerServer(server, {
-    debug: true,
-    path: "/myapp",
-  });
-} else {
-  peerServer = ExpressPeerServer(server, {
-    debug: true,
-  });
-}
+// let peerServer;
+// if (ENV === "production") {
+//   peerServer = ExpressPeerServer(server, {
+//     debug: true,
+//     path: "/myapp",
+//   });
+// } else {
+//   peerServer = ExpressPeerServer(server, {
+//     debug: true,
+//   });
+// }
 
 app.use(bodyParser.json());
 
