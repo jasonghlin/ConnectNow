@@ -115,6 +115,7 @@ app.get("/roomIdServer/:roomId", async (req, res) => {
 
 const roomWhiteboardStates = {};
 const roomUsers = new Map();
+const roomGroups = new Map();
 
 io.on("connection", (socket) => {
   socket.on("join-room", async (roomId, peerId, userId) => {
@@ -137,16 +138,6 @@ io.on("connection", (socket) => {
     if (!roomWhiteboardStates[roomId]) {
       roomWhiteboardStates[roomId] = [];
     }
-
-    socket.on("group-arrangement", (data) => {
-      const { mainRoomName, groups } = data;
-      // Here you can implement logic to handle the new group arrangement
-      // For example, you might want to store this information in a database
-      console.log(`New group arrangement for room ${mainRoomName}:`, groups);
-
-      // Broadcast the new arrangement to all clients in the main room
-      socket.to(mainRoomName).emit("group-arrangement-updated", groups);
-    });
 
     socket.emit("current-whiteboard-state", roomWhiteboardStates[roomId]);
 
@@ -262,7 +253,7 @@ app.put("/api/user/auth", async (req, res) => {
                 user[0].name,
                 user[0].email
               );
-              res.status(200).json({ token });
+              res.status(200).json({ token, username: user[0].name });
             } catch (tokenError) {
               console.error("Error creating token:", tokenError);
               res.status(500).json({
@@ -304,8 +295,6 @@ app.post("/api/joinMainRoom", authenticateJWT, async (req, res) => {
   res.status(200).json({ ok: true });
 });
 
-// 分房間
-
 app.get("/api/allUsers", authenticateJWT, async (req, res) => {
   const url = req.headers.referer.split("/");
   const roomId = url[url.length - 1];
@@ -325,26 +314,6 @@ const shutdownServer = () => {
     process.exit(1);
   }, 10000);
 };
-
-app.post("/api/save-groups", authenticateJWT, async (req, res) => {
-  try {
-    const groups = req.body;
-    const roomId = req.headers.referer.split("/").pop();
-
-    // Here you would typically save the groups to your database
-    // For this example, we'll just log them and send a success response
-    console.log(`Saving groups for room ${roomId}:`, groups);
-
-    // TODO: Add your database save logic here
-
-    res.status(200).json({ message: "Groups saved successfully" });
-  } catch (error) {
-    console.error("Error saving groups:", error);
-    res
-      .status(500)
-      .json({ error: "Internal Server Error", details: error.message });
-  }
-});
 
 process.on("SIGTERM", shutdownServer);
 process.on("SIGINT", shutdownServer);

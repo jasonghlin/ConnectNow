@@ -33,8 +33,20 @@ document.getElementById("currentRoomId").textContent = roomId;
 // 建立 Socket.io 連接
 let peerInstance = null;
 const socket = io("http://localhost:8080");
+// const socket = io("https://www.connectnow.website");
 const videoStreamDiv = document.querySelector(".video-stream");
 const peers = {};
+
+// export function getPeer() {
+//   if (!peerInstance) {
+//     peerInstance = new Peer(undefined, {
+//       host: "peer-server.connectnow.website",
+//       port: 443,
+//       path: "/myapp",
+//     });
+//   }
+//   return peerInstance;
+// }
 
 export function getPeer() {
   if (!peerInstance) {
@@ -337,6 +349,7 @@ async function updateUsersList() {
     const connectToNewUser = (userId, stream) => {
       const call = peer.call(userId, stream);
       call.on("stream", (userVideoStream) => {
+        console.log("Remote stream received:", userVideoStream.getTracks());
         updateRemoteVideos(userId, userVideoStream);
       });
       call.on("close", () => {

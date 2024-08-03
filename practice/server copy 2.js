@@ -72,17 +72,17 @@ const io = new Server(server, {
   },
 });
 
-let peerServer;
-if (ENV === "production") {
-  peerServer = ExpressPeerServer(server, {
-    debug: true,
-    path: "/myapp",
-  });
-} else {
-  peerServer = ExpressPeerServer(server, {
-    debug: true,
-  });
-}
+// let peerServer;
+// if (ENV === "production") {
+//   peerServer = ExpressPeerServer(server, {
+//     debug: true,
+//     path: "/myapp",
+//   });
+// } else {
+//   peerServer = ExpressPeerServer(server, {
+//     debug: true,
+//   });
+// }
 
 app.use(bodyParser.json());
 
@@ -115,6 +115,7 @@ app.get("/roomIdServer/:roomId", async (req, res) => {
 
 const roomWhiteboardStates = {};
 const roomUsers = new Map();
+const roomGroups = new Map();
 
 io.on("connection", (socket) => {
   socket.on("join-room", async (roomId, peerId, userId) => {
@@ -168,6 +169,12 @@ io.on("connection", (socket) => {
       usersInRoom.delete(userId);
       socket.to(roomId).emit("user-disconnected", peerId, userId);
     });
+  });
+
+  socket.on("leave-room", (roomId) => {
+    socket.leave(roomId);
+    usersInRoom.delete(username);
+    socket.to(roomId).emit("user-disconnected", peerId, username);
   });
 
   socket.on("request-whiteboard-state", (roomId) => {
@@ -262,7 +269,7 @@ app.put("/api/user/auth", async (req, res) => {
                 user[0].name,
                 user[0].email
               );
-              res.status(200).json({ token });
+              res.status(200).json({ token, username: user[0].name });
             } catch (tokenError) {
               console.error("Error creating token:", tokenError);
               res.status(500).json({
@@ -304,8 +311,6 @@ app.post("/api/joinMainRoom", authenticateJWT, async (req, res) => {
   res.status(200).json({ ok: true });
 });
 
-// 分房間
-
 app.get("/api/allUsers", authenticateJWT, async (req, res) => {
   const url = req.headers.referer.split("/");
   const roomId = url[url.length - 1];
@@ -330,13 +335,8 @@ app.post("/api/save-groups", authenticateJWT, async (req, res) => {
   try {
     const groups = req.body;
     const roomId = req.headers.referer.split("/").pop();
-
-    // Here you would typically save the groups to your database
-    // For this example, we'll just log them and send a success response
+    roomGroups.set(roomId, groups);
     console.log(`Saving groups for room ${roomId}:`, groups);
-
-    // TODO: Add your database save logic here
-
     res.status(200).json({ message: "Groups saved successfully" });
   } catch (error) {
     console.error("Error saving groups:", error);
@@ -352,7 +352,7 @@ process.on("SIGINT", shutdownServer);
 const port = ENV === "production" ? 8080 : 8080;
 
 // Start the server
-server.listen(port, () => {
+server.listen(port, "0.0.0.0", () => {
   console.log(`Server is running on port ${port}`);
   if (ENV === "production") {
     http

@@ -32,32 +32,32 @@ document.getElementById("currentRoomId").textContent = roomId;
 
 // 建立 Socket.io 連接
 let peerInstance = null;
-// const socket = io("http://localhost:8080");
-const socket = io("https://www.connectnow.website");
+const socket = io("http://localhost:8080");
+// const socket = io("https://www.connectnow.website");
 const videoStreamDiv = document.querySelector(".video-stream");
 const peers = {};
-
-export function getPeer() {
-  if (!peerInstance) {
-    peerInstance = new Peer(undefined, {
-      host: "peer-server.connectnow.website",
-      port: 443,
-      path: "/myapp",
-    });
-  }
-  return peerInstance;
-}
 
 // export function getPeer() {
 //   if (!peerInstance) {
 //     peerInstance = new Peer(undefined, {
-//       host: "localhost",
-//       port: 9001,
+//       host: "peer-server.connectnow.website",
+//       port: 443,
 //       path: "/myapp",
 //     });
 //   }
 //   return peerInstance;
 // }
+
+export function getPeer() {
+  if (!peerInstance) {
+    peerInstance = new Peer(undefined, {
+      host: "localhost",
+      port: 9001,
+      path: "/myapp",
+    });
+  }
+  return peerInstance;
+}
 
 // 主房間類
 class MainRoom {

@@ -152,3 +152,32 @@ document.addEventListener("DOMContentLoaded", async () => {
   const userId = data.payload.userId; // 替換為實際的用戶 ID 獲取邏輯
   joinRoom(roomId, userId);
 });
+
+const whiteBoardBtn = document.querySelector(".white-board");
+whiteBoardBtn.addEventListener("click", (e) => {
+  const videoStream = document.querySelector(".video-stream");
+  const videos = Array.from(videoStream.querySelectorAll("video"));
+  const whiteBoardCanvas = document.querySelector(".whiteboard-content");
+  let smallVideosContainer = videoStream.querySelector(
+    ".small-videos-container"
+  );
+
+  if (!smallVideosContainer) {
+    smallVideosContainer = document.createElement("div");
+    smallVideosContainer.className = "small-videos-container";
+    videoStream.insertBefore(smallVideosContainer, videoStream.firstChild);
+  }
+
+  videos.forEach((video, index) => {
+    video.classList.remove("main-video");
+    video.classList.add("small-video");
+    video.style.maxWidth = `300px`;
+    smallVideosContainer.appendChild(video);
+  });
+
+  // const smallVideosCount = videos.length - 1;
+  // const rows = Math.ceil(smallVideosCount / 3);
+  smallVideosContainer.style.maxHeight = `300px`;
+
+  whiteBoardCanvas.classList.remove("hidden");
+});

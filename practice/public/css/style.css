@@ -357,10 +357,12 @@ body.panel-open footer {
 
 .video-stream video {
     width: 40%;
-    height: 45vh;
+    height: 50%;
     object-fit: cover;
     margin: 5px;
 }
+
+
 
 .video-stream.many-participants .small-videos-container video {
     width: 200px;

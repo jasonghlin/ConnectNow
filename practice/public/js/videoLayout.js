@@ -31,7 +31,7 @@ function updateVideoLayout() {
     });
 
     const smallVideosCount = videos.length - 1;
-    const rows = Math.ceil(smallVideosCount / 3);
+    const rows = Math.ceil(smallVideosCount / 3) + 1;
     smallVideosContainer.style.maxHeight = `${rows * 160}px`;
   } else {
     videoStream.classList.remove("many-participants");

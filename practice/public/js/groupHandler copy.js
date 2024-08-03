@@ -29,54 +29,53 @@ export function setLocalStream(stream) {
 
 async function reconnectPeers() {
   const peer = getPeer();
+  socket = initializeSocket();
 
   // Close all existing peer connections
   for (let peerId in currentPeers) {
     currentPeers[peerId].close();
+    removeRemoteVideo(peerId);
   }
   currentPeers = {};
 
-  // Find the group that the current user belongs to
-  const currentUserName = localStorage.getItem("username"); // Ensure this is set when user logs in
-  let currentUserGroup = null;
-  for (let group of groups) {
-    if (group.members.includes(currentUserName)) {
-      currentUserGroup = group;
-      break;
-    }
-  }
+  const currentUserName = localStorage.getItem("username");
+  const currentUserGroup = groups.find((group) =>
+    group.members.includes(currentUserName)
+  );
 
   if (!currentUserGroup) {
     console.error("Current user not found in any group");
     return;
   }
 
-  // Connect to all peers in the same group
-  for (let member of currentUserGroup.members) {
-    if (member !== currentUserName) {
+  const connectionPromises = currentUserGroup.members
+    .filter((member) => member !== currentUserName)
+    .map(async (member) => {
       try {
         const call = peer.call(member, localStream);
-        call.on("stream", (userVideoStream) => {
-          updateRemoteVideos(member, userVideoStream);
-        });
-        call.on("close", () => {
-          removeRemoteVideo(member);
+        await new Promise((resolve, reject) => {
+          call.on("stream", (userVideoStream) => {
+            updateRemoteVideos(member, userVideoStream);
+            resolve();
+          });
+          call.on("error", reject);
         });
         currentPeers[member] = call;
       } catch (error) {
         console.error(`Error connecting to peer ${member}:`, error);
       }
-    }
+    });
+
+  try {
+    await Promise.all(connectionPromises);
+    console.log("All connections established");
+
+    // Update server and UI
+    socket.emit("group-arrangement", { mainRoomName, groups });
+    updateUsersList();
+  } catch (error) {
+    console.error("Error during peer reconnection:", error);
   }
-
-  // Notify the server about the new group arrangement
-  socket.emit("group-arrangement", {
-    mainRoomName: mainRoomName,
-    groups: groups,
-  });
-
-  // Update the user list in the UI
-  updateUsersList();
 }
 
 // Handle incoming calls
@@ -97,4 +96,5 @@ export function leaveRoom() {
   if (localStream) {
     localStream.getTracks().forEach((track) => track.stop());
   }
+  socket.emit("leave-room", mainRoomName);
 }

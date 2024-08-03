@@ -51,6 +51,7 @@ function loginUser() {
       alert(token.details);
     }
     localStorage.setItem("session", token.token);
+    localStorage.setItem("username", token.username);
   });
 }
 

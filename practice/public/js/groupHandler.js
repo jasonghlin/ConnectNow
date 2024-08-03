@@ -20,10 +20,6 @@ export function saveMainRoomName() {
 export function handleFinishGrouping(groupsData) {
   saveMainRoomName();
   groups = groupsData;
-  for (let peerId in currentPeers) {
-    removeRemoteVideo(peerId);
-    currentPeers[peerId].close();
-  }
   reconnectPeers();
 }
 
@@ -31,67 +27,57 @@ export function setLocalStream(stream) {
   localStream = stream;
 }
 
-async function reconnectPeers() {
+async function reconnectPeers(groups) {
+  console.log("Reconnecting peers with groups:", groups); // 添加日志输出
   const peer = getPeer();
 
   // Close all existing peer connections
   for (let peerId in currentPeers) {
     currentPeers[peerId].close();
+    removeRemoteVideo(peerId);
   }
   currentPeers = {};
 
-  // Find the group that the current user belongs to
-  // const currentUserName = localStorage.getItem("username"); // Ensure this is set when user logs in
-  const currentUserName = localStorage.getItem("username"); // Ensure this is set when user logs in
-  let currentUserGroup = null;
-  for (let group of groups) {
-    if (group.members.includes(currentUserName)) {
-      currentUserGroup = group;
-      break;
-    }
-  }
+  const currentUserName = localStorage.getItem("username");
+  const currentUserGroup = groups.find((group) =>
+    group.members.includes(currentUserName)
+  );
+
+  console.log("Current user group:", currentUserGroup); // 添加日志输出
 
   if (!currentUserGroup) {
     console.error("Current user not found in any group");
     return;
   }
 
-  // 移除不在同一組的用戶視頻
-  const currentGroupMembers = currentUserGroup.members;
-  for (let peerId in currentPeers) {
-    if (!currentGroupMembers.includes(peerId)) {
-      removeRemoteVideo(peerId);
-      currentPeers[peerId].close();
-      delete currentPeers[peerId];
-    }
-  }
-
-  // Connect to all peers in the same group
-  for (let member of currentUserGroup.members) {
-    if (member !== currentUserName) {
+  const connectionPromises = currentUserGroup.members
+    .filter((member) => member !== currentUserName)
+    .map(async (member) => {
       try {
         const call = peer.call(member, localStream);
-        call.on("stream", (userVideoStream) => {
-          updateRemoteVideos(member, userVideoStream);
-        });
-        call.on("close", () => {
-          removeRemoteVideo(member);
+        await new Promise((resolve, reject) => {
+          call.on("stream", (userVideoStream) => {
+            updateRemoteVideos(member, userVideoStream);
+            resolve();
+          });
+          call.on("error", reject);
         });
         currentPeers[member] = call;
       } catch (error) {
         console.error(`Error connecting to peer ${member}:`, error);
       }
-    }
+    });
+
+  try {
+    await Promise.all(connectionPromises);
+    console.log("All connections established");
+
+    // Update server and UI
+    socket.emit("group-arrangement", { mainRoomName, groups });
+    updateUsersList();
+  } catch (error) {
+    console.error("Error during peer reconnection:", error);
   }
-
-  // Notify the server about the new group arrangement
-  socket.emit("group-arrangement", {
-    mainRoomName: mainRoomName,
-    groups: groups,
-  });
-
-  // Update the user list in the UI
-  updateUsersList();
 }
 
 // Handle incoming calls
@@ -112,4 +98,5 @@ export function leaveRoom() {
   if (localStream) {
     localStream.getTracks().forEach((track) => track.stop());
   }
+  socket.emit("leave-room", mainRoomName);
 }
