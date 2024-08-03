@@ -1,102 +1,145 @@
 import {
-  getPeer,
-  socket,
   updateUsersList,
   updateRemoteVideos,
   removeRemoteVideo,
 } from "./script.js";
 
-let mainRoomName = "";
-let groups = [];
-let currentPeers = {};
-let localStream = null;
-
-export function saveMainRoomName() {
-  const pathSegments = window.location.pathname.split("/");
-  mainRoomName = pathSegments[pathSegments.length - 1];
-  localStorage.setItem("mainRoomName", mainRoomName);
-}
-
-export function handleFinishGrouping(groupsData) {
-  saveMainRoomName();
-  groups = groupsData;
-  reconnectPeers();
-}
+let localStream;
+let peers = {};
+let currentRoom = "mainRoom";
+let socket;
+let peerInstance;
 
 export function setLocalStream(stream) {
   localStream = stream;
 }
 
-async function reconnectPeers(groups) {
-  console.log("Reconnecting peers with groups:", groups); // 添加日志输出
-  const peer = getPeer();
+export function initializeSocketListeners(socketInstance, peerObj) {
+  socket = socketInstance;
+  peerInstance = peerObj;
 
-  // Close all existing peer connections
-  for (let peerId in currentPeers) {
-    currentPeers[peerId].close();
-    removeRemoteVideo(peerId);
-  }
-  currentPeers = {};
-
-  const currentUserName = localStorage.getItem("username");
-  const currentUserGroup = groups.find((group) =>
-    group.members.includes(currentUserName)
-  );
-
-  console.log("Current user group:", currentUserGroup); // 添加日志输出
-
-  if (!currentUserGroup) {
-    console.error("Current user not found in any group");
-    return;
-  }
-
-  const connectionPromises = currentUserGroup.members
-    .filter((member) => member !== currentUserName)
-    .map(async (member) => {
-      try {
-        const call = peer.call(member, localStream);
-        await new Promise((resolve, reject) => {
-          call.on("stream", (userVideoStream) => {
-            updateRemoteVideos(member, userVideoStream);
-            resolve();
-          });
-          call.on("error", reject);
-        });
-        currentPeers[member] = call;
-      } catch (error) {
-        console.error(`Error connecting to peer ${member}:`, error);
-      }
+  socket.on("user-connected", (userId, userName) => {
+    console.log("New user connected to room:", userId, userName);
+    const call = peerInstance.call(userId, localStream);
+    call.on("stream", (userVideoStream) => {
+      updateRemoteVideos(userId, userVideoStream);
     });
+    peers[userId] = call;
+  });
 
-  try {
-    await Promise.all(connectionPromises);
-    console.log("All connections established");
+  socket.on("user-disconnected", (userId) => {
+    console.log("User disconnected from room:", userId);
+    if (peers[userId]) {
+      peers[userId].close();
+      delete peers[userId];
+    }
+    removeRemoteVideo(userId);
+  });
 
-    // Update server and UI
-    socket.emit("group-arrangement", { mainRoomName, groups });
-    updateUsersList();
-  } catch (error) {
-    console.error("Error during peer reconnection:", error);
-  }
+  socket.on("group-created", (group) => {
+    console.log("New group created:", group);
+    // Update UI to reflect new grouping
+    console.log(group);
+  });
+
+  socket.on("user-left-group", (userId) => {
+    console.log("User left group:", userId);
+    // Update UI to reflect user leaving
+  });
+
+  socket.on("user-joined-main-room", (userId) => {
+    console.log("User returned to main room:", userId);
+    // Update UI to reflect user returning to main room
+  });
 }
 
-// Handle incoming calls
 export function handleIncomingCall(call) {
   call.answer(localStream);
+  const userId = call.peer;
   call.on("stream", (userVideoStream) => {
-    updateRemoteVideos(call.peer, userVideoStream);
+    updateRemoteVideos(userId, userVideoStream);
   });
-  currentPeers[call.peer] = call;
+  peers[userId] = call;
 }
 
-// Clean up connections when leaving the room
-export function leaveRoom() {
-  for (let peerId in currentPeers) {
-    currentPeers[peerId].close();
+export async function handleFinishGrouping(groups) {
+  const currentUrl = window.location.href;
+  const mainRoomName = currentUrl.substring(currentUrl.lastIndexOf("/") + 1);
+  localStorage.setItem("mainRoom", mainRoomName);
+
+  // Disconnect from all current peers
+  Object.values(peers).forEach((call) => call.close());
+  peers = {};
+
+  // Clear all remote videos
+  document
+    .querySelectorAll("video:not(.local-stream)")
+    .forEach((video) => video.remove());
+
+  // Join new room based on group
+  const userGroup = groups.find((group) =>
+    group.members.includes(localStorage.getItem("username"))
+  );
+  if (userGroup) {
+    currentRoom = userGroup.name;
+    socket.emit("join-room", currentRoom, socket.id);
   }
-  currentPeers = {};
+
+  // Start countdown timer
+  const timerInput = document.getElementById("timerInput").value;
+  startCountdown(parseInt(timerInput));
+}
+
+function startCountdown(seconds) {
+  const timerDisplay = document.getElementById("timerDisplay");
+  timerDisplay.style.display = "block";
+
+  const countdownInterval = setInterval(() => {
+    timerDisplay.textContent = `Time left: ${seconds} seconds`;
+    seconds--;
+
+    if (seconds < 0) {
+      clearInterval(countdownInterval);
+      timerDisplay.style.display = "none";
+      returnToMainRoom();
+    }
+  }, 1000);
+}
+
+async function returnToMainRoom() {
+  // Disconnect from all current peers
+  Object.values(peers).forEach((call) => call.close());
+  peers = {};
+
+  // Clear all remote videos
+  document
+    .querySelectorAll("video:not(.local-stream)")
+    .forEach((video) => video.remove());
+
+  // Rejoin the main room
+  const mainRoom = localStorage.getItem("mainRoom");
+  currentRoom = mainRoom;
+  socket.emit("join-room", currentRoom, socket.id);
+
+  // Update the URL to reflect the main room
+  history.pushState(null, "", `/roomId/${mainRoom}`);
+
+  // Update the users list
+  await updateUsersList();
+}
+
+export function leaveRoom() {
+  Object.values(peers).forEach((call) => call.close());
   if (localStream) {
     localStream.getTracks().forEach((track) => track.stop());
   }
-  socket.emit("leave-room", mainRoomName);
+  socket.emit("leave-room", currentRoom);
+}
+
+export function createGroup(groupName, members) {
+  socket.emit("create-group", groupName, members);
+}
+
+export function leaveGroup(userId, groupId) {
+  socket.emit("leave-group", userId, groupId);
 }

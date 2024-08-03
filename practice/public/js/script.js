@@ -15,6 +15,7 @@ import {
   handleIncomingCall,
   setLocalStream,
   leaveRoom,
+  initializeSocketListeners,
 } from "./groupHandler.js";
 
 // 全局變量
@@ -34,6 +35,7 @@ document.getElementById("currentRoomId").textContent = roomId;
 let peerInstance = null;
 const socket = io("http://localhost:8080");
 // const socket = io("https://www.connectnow.website");
+
 const videoStreamDiv = document.querySelector(".video-stream");
 const peers = {};
 
@@ -324,6 +326,7 @@ async function updateUsersList() {
     // });
 
     const peer = getPeer();
+    initializeSocketListeners(socket, peer);
 
     peer.on("open", (id) => {
       console.log("My peer ID is: " + id);

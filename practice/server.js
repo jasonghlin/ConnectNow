@@ -22,6 +22,7 @@ import {
 } from "./models/createAndJoinMainRoom.js";
 import { getAllUsers } from "./models/getAllUsers.js";
 import fs from "fs";
+import { v4 as uuidv4 } from "uuid";
 
 dotenv.config();
 const { JWT_SECRET_KEY, ENV } = process.env;
@@ -114,24 +115,18 @@ app.get("/roomIdServer/:roomId", async (req, res) => {
 });
 
 const roomWhiteboardStates = {};
-const roomUsers = new Map();
-const roomGroups = new Map();
+const rooms = new Map();
+const userRooms = new Map();
 
 io.on("connection", (socket) => {
   socket.on("join-room", async (roomId, peerId, userId) => {
     socket.join(roomId);
 
-    if (!roomUsers.has(roomId)) {
-      roomUsers.set(roomId, new Map());
+    if (!rooms.has(roomId)) {
+      rooms.set(roomId, new Set());
     }
-    const usersInRoom = roomUsers.get(roomId);
-
-    if (usersInRoom.has(userId)) {
-      const oldPeerId = usersInRoom.get(userId);
-      socket.to(roomId).emit("remove-duplicate", oldPeerId);
-    }
-
-    usersInRoom.set(userId, peerId);
+    rooms.get(roomId).add(userId);
+    userRooms.set(userId, roomId);
 
     socket.to(roomId).emit("user-connected", peerId, userId);
 
@@ -156,9 +151,65 @@ io.on("connection", (socket) => {
     });
 
     socket.on("disconnect", () => {
-      usersInRoom.delete(userId);
+      if (userRooms.has(userId)) {
+        const roomId = userRooms.get(userId);
+        if (rooms.has(roomId)) {
+          rooms.get(roomId).delete(userId);
+          if (rooms.get(roomId).size === 0) {
+            rooms.delete(roomId);
+          }
+        }
+        userRooms.delete(userId);
+      }
       socket.to(roomId).emit("user-disconnected", peerId, userId);
     });
+  });
+
+  // Add new event handlers for group functionality
+  socket.on("create-group", (groupName, members) => {
+    const groupId = uuidv4();
+    const group = { id: groupId, name: groupName, members };
+    rooms.set(groupId, new Set(members));
+    members.forEach((memberId) => {
+      const memberSocket = io.sockets.sockets.get(memberId);
+      if (memberSocket) {
+        memberSocket.join(groupId);
+        userRooms.set(memberId, groupId);
+      }
+    });
+    io.to(groupId).emit("group-created", group);
+  });
+
+  socket.on("leave-group", (userId, groupId) => {
+    if (rooms.has(groupId)) {
+      rooms.get(groupId).delete(userId);
+      if (rooms.get(groupId).size === 0) {
+        rooms.delete(groupId);
+      }
+    }
+    userRooms.delete(userId);
+    socket.leave(groupId);
+    io.to(groupId).emit("user-left-group", userId);
+  });
+
+  socket.on("return-to-main-room", (userId, mainRoomId) => {
+    const currentRoomId = userRooms.get(userId);
+    if (currentRoomId && currentRoomId !== mainRoomId) {
+      socket.leave(currentRoomId);
+      if (rooms.has(currentRoomId)) {
+        rooms.get(currentRoomId).delete(userId);
+        if (rooms.get(currentRoomId).size === 0) {
+          rooms.delete(currentRoomId);
+        }
+      }
+    }
+    socket.join(mainRoomId);
+    userRooms.set(userId, mainRoomId);
+    if (!rooms.has(mainRoomId)) {
+      rooms.set(mainRoomId, new Set());
+    }
+    rooms.get(mainRoomId).add(userId);
+    io.to(mainRoomId).emit("user-joined-main-room", userId);
   });
 
   socket.on("request-whiteboard-state", (roomId) => {
@@ -300,6 +351,15 @@ app.get("/api/allUsers", authenticateJWT, async (req, res) => {
   const roomId = url[url.length - 1];
   const users = await getAllUsers(roomId);
   res.status(200).json(users);
+});
+
+// Add a new API endpoint to save groups
+app.post("/api/save-groups", authenticateJWT, (req, res) => {
+  const groups = req.body;
+  // Here you would typically save the groups to a database
+  // For this example, we'll just log them and send a success response
+  console.log("Saved groups:", groups);
+  res.status(200).json({ message: "Groups saved successfully" });
 });
 
 // Ensure proper shutdown of the server
