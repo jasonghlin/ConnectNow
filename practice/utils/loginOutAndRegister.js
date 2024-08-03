@@ -25,6 +25,7 @@ function registerUser() {
         alert(message);
       }
     }
+    window.location.href = "/";
   });
 }
 

@@ -17,7 +17,7 @@ async function getAllUsers(url_param) {
     // Step 1: Get the id from main_room where name is url_param
     const mainRoomIdQuery = "SELECT id FROM main_room WHERE name = ?";
     const mainRoomIdValues = [url_param];
-
+    console.log("mainRoomIdValues:", mainRoomIdValues);
     const mainRoomIdResult = await new Promise((resolve, reject) => {
       pool.getConnection((err, connection) => {
         if (err) {

@@ -16,6 +16,7 @@ import {
   setLocalStream,
   leaveRoom,
   initializeSocketListeners,
+  setPeers,
 } from "./groupHandler.js";
 
 // 全局變量
@@ -282,6 +283,19 @@ async function updateUsersList() {
   }
 }
 
+export function connectToNewUser(userId, stream) {
+  const call = peerInstance.call(userId, stream);
+  call.on("stream", (userVideoStream) => {
+    console.log("Remote stream received:", userVideoStream.getTracks());
+    updateRemoteVideos(userId, userVideoStream);
+  });
+  call.on("close", () => {
+    removeRemoteVideo(userId);
+  });
+
+  peers[userId] = call;
+}
+
 // 主函數
 (async function () {
   try {
@@ -326,15 +340,29 @@ async function updateUsersList() {
     // });
 
     const peer = getPeer();
+    peerInstance = peer;
+
+    // Initialize socket listeners with both socket and peer
     initializeSocketListeners(socket, peer);
 
     peer.on("open", (id) => {
       console.log("My peer ID is: " + id);
-      socket.emit("join-room", roomId, id);
+      const userId = payload.payload.userId;
+      console.log(
+        "Joining room with userId:",
+        userId,
+        "peerId:",
+        id,
+        "roomId:",
+        roomId
+      );
+      socket.emit("join-room", roomId, id, userId);
       mainRoom.addPeer(id, peer);
     });
 
     peer.on("call", handleIncomingCall);
+
+    setPeers(peers);
 
     // peer.on("call", (call) => {
     //   call.answer(currentStream);
@@ -348,19 +376,6 @@ async function updateUsersList() {
     //   });
     //   currentRoom.addPeer(call.peer, call);
     // });
-
-    const connectToNewUser = (userId, stream) => {
-      const call = peer.call(userId, stream);
-      call.on("stream", (userVideoStream) => {
-        console.log("Remote stream received:", userVideoStream.getTracks());
-        updateRemoteVideos(userId, userVideoStream);
-      });
-      call.on("close", () => {
-        removeRemoteVideo(userId);
-      });
-
-      peers[userId] = call;
-    };
 
     socket.on("user-connected", (peerId, userId) => {
       console.log("New user connected:", userId);
@@ -414,6 +429,11 @@ async function updateUsersList() {
             console.error("Error getting new stream for update:", err);
           });
       }
+    });
+
+    socket.on("join-error", (errorMessage) => {
+      console.error("Failed to join room:", errorMessage);
+      // 在這裡添加適當的錯誤處理邏輯，比如顯示錯誤消息給用戶
     });
 
     renderRemoteVideos();

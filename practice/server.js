@@ -120,14 +120,55 @@ const userRooms = new Map();
 
 io.on("connection", (socket) => {
   socket.on("join-room", async (roomId, peerId, userId) => {
+    console.log(
+      `Attempt to join: User ${userId} joining room ${roomId} with peer ${peerId}`
+    );
+
+    // 檢查 roomId、userId 和 peerId 是否有效
+    if (!roomId || roomId === "null" || roomId === "undefined") {
+      console.error("Invalid roomId:", roomId);
+      socket.emit("join-error", "Invalid room ID");
+      return;
+    }
+    if (!userId || userId === "null" || userId === "undefined") {
+      console.error("Invalid userId:", userId);
+      socket.emit("join-error", "Invalid user ID");
+      return;
+    }
+    if (!peerId || peerId === "null" || peerId === "undefined") {
+      console.error("Invalid peerId:", peerId);
+      socket.emit("join-error", "Invalid peer ID");
+      return;
+    }
+
     socket.join(roomId);
 
+    // 確保 rooms Map 中存在該房間，並添加或更新用戶
     if (!rooms.has(roomId)) {
-      rooms.set(roomId, new Set());
+      rooms.set(roomId, new Map());
     }
-    rooms.get(roomId).add(userId);
+    const roomUsers = rooms.get(roomId);
+
+    // 如果用戶已存在，更新其 peerId
+    if (roomUsers.has(userId)) {
+      const existingUser = roomUsers.get(userId);
+      existingUser.peerId = peerId;
+      roomUsers.set(userId, existingUser);
+      console.log(`Updated peerId for User ${userId} in room ${roomId}`);
+    } else {
+      // 否則添加新的用戶信息
+      roomUsers.set(userId, { userId, peerId });
+      console.log(`User ${userId} successfully joined room ${roomId}`);
+    }
+
     userRooms.set(userId, roomId);
 
+    console.log(
+      `1Room ${roomId} users:`,
+      [...roomUsers.values()].map((u) => `${u.userId} (${u.peerId})`)
+    );
+
+    // 通知房間其他用戶有新用戶加入
     socket.to(roomId).emit("user-connected", peerId, userId);
 
     if (!roomWhiteboardStates[roomId]) {
@@ -151,11 +192,13 @@ io.on("connection", (socket) => {
     });
 
     socket.on("disconnect", () => {
+      console.log("User disconnected:", userId);
       if (userRooms.has(userId)) {
         const roomId = userRooms.get(userId);
         if (rooms.has(roomId)) {
-          rooms.get(roomId).delete(userId);
-          if (rooms.get(roomId).size === 0) {
+          const roomUsers = rooms.get(roomId);
+          roomUsers.delete(userId);
+          if (roomUsers.size === 0) {
             rooms.delete(roomId);
           }
         }
@@ -163,6 +206,18 @@ io.on("connection", (socket) => {
       }
       socket.to(roomId).emit("user-disconnected", peerId, userId);
     });
+
+    // 打印房間信息，用於調試
+    console.log(
+      `2Room ${roomId} users:`,
+      [...roomUsers.values()].map((u) => u.userId)
+    );
+  });
+
+  socket.on("timer-ended", () => {
+    const roomId = [...socket.rooms][1]; // 獲取房間 ID
+    console.log("Timer ended for room:", roomId);
+    io.to(roomId).emit("reconnect-all");
   });
 
   // Add new event handlers for group functionality
@@ -192,25 +247,26 @@ io.on("connection", (socket) => {
     io.to(groupId).emit("user-left-group", userId);
   });
 
-  socket.on("return-to-main-room", (userId, mainRoomId) => {
-    const currentRoomId = userRooms.get(userId);
-    if (currentRoomId && currentRoomId !== mainRoomId) {
-      socket.leave(currentRoomId);
-      if (rooms.has(currentRoomId)) {
-        rooms.get(currentRoomId).delete(userId);
-        if (rooms.get(currentRoomId).size === 0) {
-          rooms.delete(currentRoomId);
-        }
-      }
-    }
-    socket.join(mainRoomId);
-    userRooms.set(userId, mainRoomId);
-    if (!rooms.has(mainRoomId)) {
-      rooms.set(mainRoomId, new Set());
-    }
-    rooms.get(mainRoomId).add(userId);
-    io.to(mainRoomId).emit("user-joined-main-room", userId);
-  });
+  // socket.on("return-to-main-room", (userId, mainRoomId) => {
+  //   console.log("return to main room");
+  //   const currentRoomId = userRooms.get(userId);
+  //   if (currentRoomId && currentRoomId !== mainRoomId) {
+  //     socket.leave(currentRoomId);
+  //     if (rooms.has(currentRoomId)) {
+  //       rooms.get(currentRoomId).delete(userId);
+  //       if (rooms.get(currentRoomId).size === 0) {
+  //         rooms.delete(currentRoomId);
+  //       }
+  //     }
+  //   }
+  //   socket.join(mainRoomId);
+  //   userRooms.set(userId, mainRoomId);
+  //   if (!rooms.has(mainRoomId)) {
+  //     rooms.set(mainRoomId, new Set());
+  //   }
+  //   rooms.get(mainRoomId).add(userId);
+  //   io.to(mainRoomId).emit("user-joined-main-room", userId);
+  // });
 
   socket.on("request-whiteboard-state", (roomId) => {
     if (roomWhiteboardStates[roomId]) {
@@ -347,10 +403,31 @@ app.post("/api/joinMainRoom", authenticateJWT, async (req, res) => {
 });
 
 app.get("/api/allUsers", authenticateJWT, async (req, res) => {
-  const url = req.headers.referer.split("/");
-  const roomId = url[url.length - 1];
-  const users = await getAllUsers(roomId);
-  res.status(200).json(users);
+  try {
+    const url = req.headers.referer;
+    if (!url) {
+      console.error("Referer header is missing");
+      return res.status(400).json({ error: "Unable to determine room ID" });
+    }
+    const urlParts = url.split("/");
+    const roomId = urlParts[urlParts.length - 1];
+
+    if (!roomId) {
+      console.error("Unable to extract room ID from URL");
+      return res.status(400).json({ error: "Unable to determine room ID" });
+    }
+
+    console.log("Fetching users for room:", roomId);
+    const users = await getAllUsers(roomId);
+    res.status(200).json(users);
+  } catch (error) {
+    console.error("Error fetching all users:", error);
+    if (error.message.includes("No main room found")) {
+      res.status(404).json({ error: "Room not found" });
+    } else {
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
 });
 
 // Add a new API endpoint to save groups

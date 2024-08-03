@@ -2,6 +2,7 @@ import {
   updateUsersList,
   updateRemoteVideos,
   removeRemoteVideo,
+  connectToNewUser,
 } from "./script.js";
 
 let localStream;
@@ -14,17 +15,17 @@ export function setLocalStream(stream) {
   localStream = stream;
 }
 
+export function setPeers(peersObj) {
+  peers = peersObj;
+}
+
 export function initializeSocketListeners(socketInstance, peerObj) {
   socket = socketInstance;
   peerInstance = peerObj;
 
   socket.on("user-connected", (userId, userName) => {
     console.log("New user connected to room:", userId, userName);
-    const call = peerInstance.call(userId, localStream);
-    call.on("stream", (userVideoStream) => {
-      updateRemoteVideos(userId, userVideoStream);
-    });
-    peers[userId] = call;
+    connectToNewUser(userId, localStream);
   });
 
   socket.on("user-disconnected", (userId) => {
@@ -39,7 +40,6 @@ export function initializeSocketListeners(socketInstance, peerObj) {
   socket.on("group-created", (group) => {
     console.log("New group created:", group);
     // Update UI to reflect new grouping
-    console.log(group);
   });
 
   socket.on("user-left-group", (userId) => {
@@ -49,7 +49,12 @@ export function initializeSocketListeners(socketInstance, peerObj) {
 
   socket.on("user-joined-main-room", (userId) => {
     console.log("User returned to main room:", userId);
-    // Update UI to reflect user returning to main room
+    connectToNewUser(userId, localStream);
+  });
+
+  socket.on("reconnect-all", () => {
+    console.log("Reconnecting all users to main room");
+    returnToMainRoom();
   });
 }
 
@@ -81,8 +86,22 @@ export async function handleFinishGrouping(groups) {
     group.members.includes(localStorage.getItem("username"))
   );
   if (userGroup) {
+    const response = await fetch("/api/user/auth", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("session")}`,
+      },
+    });
+    const payload = await response.json();
     currentRoom = userGroup.name;
-    socket.emit("join-room", currentRoom, socket.id);
+    console.log(`peerId: ${peerInstance.id}`);
+    socket.emit(
+      "join-room",
+      currentRoom,
+      peerInstance.id,
+      payload.payload.userId
+    );
   }
 
   // Start countdown timer
@@ -101,7 +120,7 @@ function startCountdown(seconds) {
     if (seconds < 0) {
       clearInterval(countdownInterval);
       timerDisplay.style.display = "none";
-      returnToMainRoom();
+      socket.emit("timer-ended");
     }
   }, 1000);
 }
@@ -118,8 +137,21 @@ async function returnToMainRoom() {
 
   // Rejoin the main room
   const mainRoom = localStorage.getItem("mainRoom");
+  const response = await fetch("/api/user/auth", {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("session")}`,
+    },
+  });
+  const payload = await response.json();
   currentRoom = mainRoom;
-  socket.emit("join-room", currentRoom, socket.id);
+  socket.emit(
+    "join-room",
+    currentRoom,
+    peerInstance.id,
+    payload.payload.userId
+  );
 
   // Update the URL to reflect the main room
   history.pushState(null, "", `/roomId/${mainRoom}`);
