@@ -9,14 +9,25 @@ async function createUser(name, email, hash_password) {
       "INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)";
     const values = [name, email, hash_password];
 
-    pool.getConnection((err, connection) => {
-      if (err) throw err;
+    const connection = await new Promise((resolve, reject) => {
+      pool.getConnection((err, connection) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(connection);
+        }
+      });
+    });
+
+    await new Promise((resolve, reject) => {
       connection.query(query, values, (error, results, fields) => {
         connection.release();
         if (error) {
-          throw error;
+          reject(error);
+        } else {
+          console.log("User inserted with ID:", results.insertId);
+          resolve(results);
         }
-        console.log("User inserted with ID:", results.insertId);
       });
     });
   } catch (err) {
