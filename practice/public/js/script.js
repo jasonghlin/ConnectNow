@@ -160,9 +160,26 @@ const switchStream = (newStream, isScreenShare = false) => {
 };
 
 // 切換視訊開關
-const toggleVideo = () => {
+// 切換視訊開關
+const toggleVideo = async () => {
   videoEnabled = !videoEnabled;
-  localStream.getVideoTracks()[0].enabled = videoEnabled;
+
+  if (videoEnabled) {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      localStream = stream;
+      currentStream = stream;
+      switchStream(localStream);
+    } catch (error) {
+      console.error("Error accessing camera: ", error);
+    }
+  } else {
+    // 关闭视频流
+    localStream.getVideoTracks().forEach((track) => track.stop());
+    const blackStream = localStream.clone();
+    blackStream.getVideoTracks().forEach((track) => (track.enabled = false));
+    switchStream(blackStream);
+  }
 
   // 通知其他用戶視訊狀態變化
   for (let userId in peers) {
@@ -173,16 +190,10 @@ const toggleVideo = () => {
       sender.track.enabled = videoEnabled;
     }
   }
-
-  // 如果視頻被禁用，停止當前視頻流
-  if (!videoEnabled) {
-    const blackStream = localStream.clone();
-    blackStream.getVideoTracks()[0].enabled = false;
-    switchStream(blackStream);
-  } else {
-    switchStream(localStream);
-  }
 };
+
+// 添加事件監聽器：切換視訊
+document.querySelector(".video").addEventListener("click", toggleVideo);
 
 // 渲染遠程視訊
 const renderRemoteVideos = () => {
