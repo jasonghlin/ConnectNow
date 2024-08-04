@@ -25,6 +25,17 @@ body.panel-open footer {
     transform: translateX(-40rem);
 }
 
+#close-breakout-room {
+    position:absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.6rem;
+    cursor: pointer;
+}
+
 #controls {
     margin: 20px;
     display: flex;

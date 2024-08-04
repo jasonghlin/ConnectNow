@@ -117,8 +117,12 @@ app.get("/roomIdServer/:roomId", async (req, res) => {
 const roomWhiteboardStates = {};
 const rooms = new Map();
 const userRooms = new Map();
+// 新增投票邏輯
+const polls = {};
 
 io.on("connection", (socket) => {
+  console.log("New connection:", socket.id);
+
   socket.on("join-room", async (roomId, peerId, userId) => {
     console.log(
       `Attempt to join: User ${userId} joining room ${roomId} with peer ${peerId}`
@@ -253,6 +257,41 @@ io.on("connection", (socket) => {
     io.to(groupId).emit("user-left-group", userId);
   });
 
+  // 投票系統
+  socket.on("start-poll", ({ question, options }) => {
+    const roomId = [...socket.rooms][1]; // Get room ID
+    console.log(`start-poll: ${roomId}`, { question, options });
+    if (!roomId) return;
+
+    polls[roomId] = { question, options, votes: {} };
+    io.to(roomId).emit("show-poll", { question, options });
+  });
+
+  socket.on("end-poll", () => {
+    const roomId = [...socket.rooms][1]; // Get room ID
+    console.log(`end-poll: ${roomId}`);
+    if (!roomId) return;
+
+    const poll = polls[roomId];
+    if (poll) {
+      const results = calculateResults(poll);
+      io.to(roomId).emit("show-results", results);
+      delete polls[roomId];
+    }
+  });
+
+  socket.on("vote", (option) => {
+    const roomId = [...socket.rooms][1]; // Get room ID
+    console.log(`vote-poll: ${roomId}`, option);
+    if (!roomId) return;
+
+    const poll = polls[roomId];
+    if (poll) {
+      poll.votes[socket.id] = option;
+      const results = calculateResults(poll);
+      io.to(roomId).emit("update-results", results);
+    }
+  });
   // socket.on("return-to-main-room", (userId, mainRoomId) => {
   //   console.log("return to main room");
   //   const currentRoomId = userRooms.get(userId);
@@ -280,6 +319,19 @@ io.on("connection", (socket) => {
     }
   });
 });
+
+function calculateResults(poll) {
+  const totalVotes = Object.values(poll.votes).length;
+  return poll.options.map((option) => {
+    const voteCount = Object.values(poll.votes).filter(
+      (vote) => vote === option
+    ).length;
+    const percentage = totalVotes
+      ? Math.round((voteCount / totalVotes) * 100)
+      : 0;
+    return { option, percentage };
+  });
+}
 
 function generateRoomId() {
   const part1 = Math.random().toString(36).substring(2, 8);

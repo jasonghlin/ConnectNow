@@ -4,7 +4,7 @@ document.getElementById("createGroups").addEventListener("click", createGroups);
 document
   .getElementById("finishGrouping")
   .addEventListener("click", finishGrouping);
-document.getElementById("startTimer").addEventListener("click", startTimer);
+// document.getElementById("startTimer").addEventListener("click", startTimer);
 
 let timerInterval;
 
@@ -172,11 +172,20 @@ function startTimer() {
 
 function createGroupsPanelShow() {
   const breakoutRoomBtn = document.querySelector(".breakout-room");
-
   const breakouRoomPanel = document.querySelector(".breakout-room-panel");
+  const closeBreakoutRoomButton = document.getElementById(
+    "close-breakout-room"
+  );
+  const body = document.body;
+
   breakoutRoomBtn.addEventListener("click", () => {
     breakouRoomPanel.classList.add("show");
     document.body.classList.add("panel-open");
+  });
+
+  closeBreakoutRoomButton.addEventListener("click", () => {
+    breakouRoomPanel.classList.remove("show");
+    body.classList.remove("panel-open");
   });
 }
 createGroupsPanelShow();

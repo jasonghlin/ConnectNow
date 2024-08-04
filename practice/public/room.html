@@ -9,6 +9,7 @@
         crossOrigin="anonymous" />
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="/static/css/createGroups.css">
+    <link rel="stylesheet" href="/static/css/poll.css">
 </head>
 
 <body>
@@ -27,8 +28,8 @@
     <footer>
         <div class="left-corner">
             <div class="time-container">
-                <span class="morning-afternoon">上午</span>
-                <span class="hour">01</span>:<span class="minute">10</span>
+                <span class="morning-afternoon">下午</span>
+                <span class="hour">09</span>:<span class="minute">10</span>
             </div>
             <p class="time-separater">|</p>
             <p class="meet-id">Meet-id: <span id="currentRoomId"></span></p>
@@ -121,7 +122,7 @@
                     <div class="icon-wrapper">
                         <i></i>
                     </div>
-                    <div class="fas fa-record-vinyl">
+                    <div class="fas fa-check-to-slot">
                         <p>意見調查</p>
                         <p>收集並分析參與者的想法與意見</p>
                     </div>
@@ -138,17 +139,49 @@
             <!-- 這裡可以動態生成用戶列表 -->
         </div>
     </div>
+
     <div class="breakout-room-panel">
+        <div>
+            <button id="close-breakout-room">X</button>
+        </div>
         <div id="controls">
             <input type="number" id="groupCount" placeholder="Enter number of groups">
             <button id="createGroups">Create Groups</button>
             <input type="number" id="timerInput" placeholder="Enter timer in seconds">
-            <button id="startTimer">Start Timer</button>
             <button id="finishGrouping">Finish Grouping</button>
         </div>
         <div id="roomsContainer"></div>
         <div id="timerDisplay">Time left: <span id="timeLeft"></span> seconds</div>
     </div>
+
+    <div class="poll-panel">
+        <div>
+            <button id="close-poll">X</button>
+        </div>
+        <div class="poll-content">
+            <h2>意見調查</h2>
+            <form id="poll-form">
+                <label for="poll-question">問題：</label>
+                <input type="text" id="poll-question" name="poll-question" required>
+                <div id="poll-options">
+                    <label for="option-1">選項 1：</label>
+                    <input type="text" id="option-1" name="options" required>
+                    <label for="option-2">選項 2：</label>
+                    <input type="text" id="option-2" name="options" required>
+                </div>
+                <button type="button" id="add-option">添加選項</button>
+                <button type="submit">提交投票</button>
+            </form>
+            <div id="poll-question-display"></div>
+            <div id="poll-options-display"></div>
+            <div id="poll-results" class="hidden">
+                <h2>投票結果</h2>
+                <div id="results-container"></div>
+            </div>
+        </div>
+    </div>
+
+
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <script type="module" src="/static/js/shareScreen.js"></script>
@@ -160,6 +193,8 @@
     <script type="module" src="/static/js/videoLayout.js"></script>
     <script type="module" src="/static/js/createGroups.js"></script>
     <script type="module" src="/static/js/groupHandler.js"></script>
+    <script type="module" src="/static/js/pollPanel.js"></script>
+    <script type="module" src="/static/js/hangout.js"></script>
     <script>
         window.onerror = function (message, source, lineno, colno, error) {
             console.error('An error occurred:', message, 'at', source, lineno, colno, error);

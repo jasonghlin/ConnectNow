@@ -167,17 +167,18 @@ whiteBoardBtn.addEventListener("click", (e) => {
     smallVideosContainer.className = "small-videos-container";
     videoStream.insertBefore(smallVideosContainer, videoStream.firstChild);
   }
-
+  videoStream.style.flexDirection = "column";
   videos.forEach((video, index) => {
     video.classList.remove("main-video");
     video.classList.add("small-video");
-    video.style.maxWidth = `300px`;
+    video.style.maxWidth = `200px`;
+    video.style.height = "100%";
     smallVideosContainer.appendChild(video);
   });
 
   // const smallVideosCount = videos.length - 1;
   // const rows = Math.ceil(smallVideosCount / 3);
-  smallVideosContainer.style.maxHeight = `300px`;
+  smallVideosContainer.style.maxHeight = `200px`;
 
   whiteBoardCanvas.classList.remove("hidden");
 });

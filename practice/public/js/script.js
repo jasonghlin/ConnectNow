@@ -34,33 +34,41 @@ document.getElementById("currentRoomId").textContent = roomId;
 
 // 建立 Socket.io 連接
 let peerInstance = null;
-const socket = io("http://localhost:8080");
-// const socket = io("https://www.connectnow.website");
+// const socket = io("http://localhost:8080");
+const socket = io("https://www.connectnow.website");
+
+socket.on("connect", () => {
+  console.log("Connected to server");
+});
+
+socket.on("disconnect", () => {
+  console.log("Disconnected from server");
+});
 
 const videoStreamDiv = document.querySelector(".video-stream");
 const peers = {};
 
-// export function getPeer() {
-//   if (!peerInstance) {
-//     peerInstance = new Peer(undefined, {
-//       host: "peer-server.connectnow.website",
-//       port: 443,
-//       path: "/myapp",
-//     });
-//   }
-//   return peerInstance;
-// }
-
 export function getPeer() {
   if (!peerInstance) {
     peerInstance = new Peer(undefined, {
-      host: "localhost",
-      port: 9001,
+      host: "peer-server.connectnow.website",
+      port: 443,
       path: "/myapp",
     });
   }
   return peerInstance;
 }
+
+// export function getPeer() {
+//   if (!peerInstance) {
+//     peerInstance = new Peer(undefined, {
+//       host: "localhost",
+//       port: 9001,
+//       path: "/myapp",
+//     });
+//   }
+//   return peerInstance;
+// }
 
 // 主房間類
 class MainRoom {
@@ -300,9 +308,12 @@ export function connectToNewUser(userId, stream) {
 (async function () {
   try {
     const payload = await checkStatus();
+    console.log("Payload received:", payload);
+
     const path = window.location.pathname.split("/");
     const roomId = path[path.length - 1];
     const token = localStorage.getItem("session");
+
     const joinUserRoomResponse = await fetch("/api/joinMainRoom", {
       method: "POST",
       headers: {
@@ -311,7 +322,15 @@ export function connectToNewUser(userId, stream) {
       },
       body: JSON.stringify({ userInfo: payload.payload, roomId }),
     });
+
+    // 確保 joinUserRoomResponse 已成功
+    if (!joinUserRoomResponse.ok) {
+      throw new Error("Failed to join room");
+    }
+    console.log("Join room response:", joinUserRoomResponse);
+
     initializeMainRoom();
+
     const stream = await navigator.mediaDevices.getUserMedia({
       video: true,
       audio: true,
@@ -330,19 +349,9 @@ export function connectToNewUser(userId, stream) {
       addVideoStream(myVideo, stream, "local");
     }
 
-    // let peer;
-    // peer = new Peer(undefined, {
-    //   // host: "localhost",
-    //   host: "www.pharmengineer.cloudns.be",
-    //   port: 443,
-    //   secure: true,
-    //   path: "/myapp",
-    // });
-
     const peer = getPeer();
     peerInstance = peer;
 
-    // Initialize socket listeners with both socket and peer
     initializeSocketListeners(socket, peer);
 
     peer.on("open", (id) => {
@@ -356,90 +365,24 @@ export function connectToNewUser(userId, stream) {
         "roomId:",
         roomId
       );
-      socket.emit("join-room", roomId, id, userId);
-      mainRoom.addPeer(id, peer);
+
+      // 確保 userId 和 peerId 都已初始化
+      if (userId && id) {
+        socket.emit("join-room", roomId, id, userId);
+        mainRoom.addPeer(id, peer);
+      } else {
+        console.error("userId or peerId is undefined");
+      }
     });
 
     peer.on("call", handleIncomingCall);
 
     setPeers(peers);
 
-    peer.on("call", (call) => {
-      call.answer(currentStream);
-      const userVideo = document.createElement("video");
-      call.on("stream", (userVideoStream) => {
-        updateRemoteVideos(call.peer, userVideoStream);
-      });
-
-      call.on("close", () => {
-        removeRemoteVideo(call.peer);
-      });
-      currentRoom.addPeer(call.peer, call);
-    });
-
-    socket.on("user-connected", (peerId, userId) => {
-      console.log("New user connected:", userId);
-      connectToNewUser(peerId, currentStream);
-      updateUsersList();
-      handleUserConnected();
-    });
-
-    socket.on("user-disconnected", (peerId, userId) => {
-      console.log("User disconnected:", userId);
-      if (peers[peerId]) peers[peerId].close();
-      removeRemoteVideo(userId);
-      handleUserDisconnected(userId);
-    });
-
-    socket.on("remove-duplicate", (oldPeerId) => {
-      console.log("Removing duplicate connection:", oldPeerId);
-      if (peers[oldPeerId]) {
-        peers[oldPeerId].close();
-        delete peers[oldPeerId];
-      }
-      removeRemoteVideo(oldPeerId);
-    });
-
-    socket.on("update-remote-videos", (updatedRemoteVideos) => {
-      remoteVideos = updatedRemoteVideos.map(({ userId }) => ({
-        userId,
-        video: document.createElement("video"),
-      }));
-      renderRemoteVideos();
-    });
-
-    socket.on("update-stream", (userId, streamId, isScreenShare) => {
-      const peer = peers[userId];
-      if (peer) {
-        navigator.mediaDevices
-          .getUserMedia({ video: true, audio: true })
-          .then((newStream) => {
-            const videoTrack = newStream
-              .getVideoTracks()
-              .find((track) => track.id === streamId);
-            if (videoTrack) {
-              const stream = new MediaStream([
-                videoTrack,
-                ...newStream.getAudioTracks(),
-              ]);
-              updateRemoteVideos(userId, stream, isScreenShare);
-            }
-          })
-          .catch((err) => {
-            console.error("Error getting new stream for update:", err);
-          });
-      }
-    });
-
-    socket.on("join-error", (errorMessage) => {
-      console.error("Failed to join room:", errorMessage);
-      // 在這裡添加適當的錯誤處理邏輯，比如顯示錯誤消息給用戶
-    });
-
     renderRemoteVideos();
     window.addEventListener("beforeunload", leaveRoom);
   } catch (err) {
-    console.error("Error getting user media:", err);
+    console.error("Error initializing the room:", err);
   }
 })();
 
