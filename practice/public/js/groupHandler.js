@@ -120,7 +120,7 @@ function startCountdown(seconds) {
     if (seconds < 0) {
       clearInterval(countdownInterval);
       timerDisplay.style.display = "none";
-      socket.emit("timer-ended");
+      returnToMainRoom();
     }
   }, 1000);
 }
