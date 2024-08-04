@@ -175,6 +175,12 @@ io.on("connection", (socket) => {
       roomWhiteboardStates[roomId] = [];
     }
 
+    socket.on("send-message", ({ roomId, message, userName }) => {
+      if (message && message.trim() !== "") {
+        io.to(roomId).emit("receive-message", { message, userName });
+      }
+    });
+
     socket.emit("current-whiteboard-state", roomWhiteboardStates[roomId]);
 
     socket.on("draw", (data) => {

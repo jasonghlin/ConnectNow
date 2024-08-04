@@ -12,17 +12,19 @@ async function chatLogic() {
   const roomId = path[path.length - 1];
 
   sendButton.addEventListener("click", () => {
-    const message = messageInput.value;
-    const userName = userInfo.payload.userName;
-    socket.emit("send-message", roomId, message, userName);
-    if (messageInput.value) {
+    const message = messageInput.value.trim();
+    if (message) {
+      const userName = userInfo.payload.userName;
+      socket.emit("send-message", { roomId, message, userName });
       appendMessage(`You: ${message}`);
+      messageInput.value = "";
     }
-    messageInput.value = "";
   });
 
-  socket.on("receive-message", (message, userName) => {
-    appendMessage(`${userName}: ${message}`);
+  socket.on("receive-message", ({ message, userName }) => {
+    if (userName !== userInfo.payload.userName) {
+      appendMessage(`${userName}: ${message}`);
+    }
   });
 
   // Append message to the container
