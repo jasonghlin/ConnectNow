@@ -11,6 +11,7 @@ import bcrypt from "bcrypt";
 import { createUser } from "./models/createUser.js";
 import { EventEmitter } from "events";
 import { get_user } from "./models/registerAndLogin.js";
+import { saveGroups } from "./models/createUserGroups.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { authenticateJWT } from "./utils/util.js";
@@ -493,13 +494,21 @@ app.get("/api/allUsers", authenticateJWT, async (req, res) => {
 });
 
 // Add a new API endpoint to save groups
-app.post("/api/save-groups", authenticateJWT, (req, res) => {
-  const groups = req.body;
-  // Here you would typically save the groups to a database
-  // For this example, we'll just log them and send a success response
-  console.log("Saved groups:", groups);
-  console.log("members:", groups[0].members);
-  res.status(200).json({ message: "Groups saved successfully" });
+app.post("/api/save-groups", authenticateJWT, async (req, res) => {
+  try {
+    const groups = req.body;
+    const result = await saveGroups(groups);
+    console.log("Saved groups:", groups);
+
+    res
+      .status(200)
+      .json({ message: "Groups saved successfully", data: result });
+  } catch (error) {
+    console.error("Error saving groups:", error);
+    res
+      .status(500)
+      .json({ message: "Error saving groups", error: error.message });
+  }
 });
 
 // Ensure proper shutdown of the server

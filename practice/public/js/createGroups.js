@@ -109,7 +109,7 @@ function drop(event) {
 function finishGrouping() {
   const groups = [];
   const groupElements = document.getElementsByClassName("group");
-
+  const mainRoom = localStorage.getItem("mainRoom");
   Array.from(groupElements).forEach((groupElement) => {
     const group = {
       name: groupElement.querySelector(".groupLabel").innerText,
@@ -124,7 +124,7 @@ function finishGrouping() {
       });
     });
 
-    groups.push(group);
+    groups.push({ group, mainRoom });
   });
 
   // Call the new function from groupHandler.js
