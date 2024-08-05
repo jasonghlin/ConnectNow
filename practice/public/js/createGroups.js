@@ -9,7 +9,7 @@ document
 let timerInterval;
 
 async function createGroups() {
-  const groupCount = document.getElementById("groupCount").value;
+  const groupCount = parseInt(document.getElementById("groupCount").value);
   const roomsContainer = document.getElementById("roomsContainer");
   roomsContainer.innerHTML = "";
   let totalMembers;
@@ -30,24 +30,24 @@ async function createGroups() {
     console.log(error);
   }
 
-  const members = [];
-  for (let i = 0; i < totalMembers; i++) {
-    members.push(users[i].name);
+  const members = users.map((user) => user.name);
+
+  // 打亂成員順序
+  for (let i = members.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [members[i], members[j]] = [members[j], members[i]];
   }
 
-  const groups = [];
-  for (let i = 0; i < groupCount; i++) {
-    groups.push([]);
-  }
+  // 建立空組
+  const groups = Array.from({ length: groupCount }, () => []);
 
-  let groupIndex = 0;
-  while (members.length > 0) {
-    const member = members.shift();
-    groups[groupIndex].push(member);
-    groupIndex = (groupIndex + 1) % groupCount;
-  }
+  // 平均分配成員到各組
+  members.forEach((member, index) => {
+    groups[index % groupCount].push(member);
+  });
 
-  for (let i = 0; i < groupCount; i++) {
+  // 顯示組別和成員
+  groups.forEach((group, i) => {
     const groupDiv = document.createElement("div");
     groupDiv.className = "group";
     groupDiv.id = `group-${i}`;
@@ -62,7 +62,7 @@ async function createGroups() {
     const memberContainer = document.createElement("div");
     memberContainer.className = "member-container";
 
-    groups[i].forEach((memberName, j) => {
+    group.forEach((memberName, j) => {
       const memberDiv = document.createElement("div");
       memberDiv.className = "member";
       memberDiv.draggable = true;
@@ -75,7 +75,7 @@ async function createGroups() {
     groupDiv.appendChild(memberContainer);
     roomsContainer.appendChild(groupDiv);
     updateGroupHeight(groupDiv);
-  }
+  });
 }
 
 function updateGroupHeight(groupDiv) {
@@ -145,29 +145,6 @@ function finishGrouping() {
     .catch((error) => {
       console.error("Error:", error);
     });
-}
-
-function startTimer() {
-  const timerInput = document.getElementById("timerInput").value;
-  const timeLeftDisplay = document.getElementById("timeLeft");
-  let timeLeft = parseInt(timerInput);
-
-  if (timerInterval) {
-    clearInterval(timerInterval);
-  }
-
-  timerInterval = setInterval(() => {
-    if (timeLeft <= 0) {
-      clearInterval(timerInterval);
-      alert("Time is up! Returning to the main room.");
-      // Add any logic here for what should happen when the timer ends
-    } else {
-      timeLeft--;
-      timeLeftDisplay.innerText = timeLeft;
-    }
-  }, 1000);
-
-  timeLeftDisplay.innerText = timeLeft;
 }
 
 function createGroupsPanelShow() {
