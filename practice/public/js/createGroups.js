@@ -4,7 +4,6 @@ document.getElementById("createGroups").addEventListener("click", createGroups);
 document
   .getElementById("finishGrouping")
   .addEventListener("click", finishGrouping);
-// document.getElementById("startTimer").addEventListener("click", startTimer);
 
 let timerInterval;
 
@@ -106,7 +105,7 @@ function drop(event) {
   }
 }
 
-function finishGrouping() {
+async function finishGrouping() {
   const groups = [];
   const groupElements = document.getElementsByClassName("group");
   const mainRoom = localStorage.getItem("mainRoom");
@@ -127,9 +126,6 @@ function finishGrouping() {
     groups.push({ group, mainRoom });
   });
 
-  // Call the new function from groupHandler.js
-  handleFinishGrouping(groups);
-
   // Send the groups data to the backend
   fetch("/api/save-groups", {
     method: "POST",
@@ -142,6 +138,9 @@ function finishGrouping() {
     .then((response) => response.json())
     .then((data) => {
       console.log("Success:", data);
+
+      // Call the new function from groupHandler.js
+      handleFinishGrouping(data.data);
     })
     .catch((error) => {
       console.error("Error:", error);

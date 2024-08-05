@@ -67,46 +67,56 @@ export function handleIncomingCall(call) {
   peers[userId] = call;
 }
 
-export async function handleFinishGrouping(groups) {
+export async function handleFinishGrouping(groupsData) {
   const currentUrl = window.location.href;
   const mainRoomName = currentUrl.substring(currentUrl.lastIndexOf("/") + 1);
   localStorage.setItem("mainRoom", mainRoomName);
 
-  // Disconnect from all current peers
-  Object.values(peers).forEach((call) => call.close());
-  peers = {};
+  // 獲取用戶認證信息
+  const response = await fetch("/api/user/auth", {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("session")}`,
+    },
+  });
+  const payload = await response.json();
+  const currentUserId = payload.payload.userId;
 
-  // Clear all remote videos
-  document
-    .querySelectorAll("video:not(.local-stream)")
-    .forEach((video) => video.remove());
+  // 將 groupName 保存到 localStorage
+  groupsData.forEach((group) => {
+    localStorage.setItem(`breakoutRoom`, group.groupName);
+  });
 
-  // Join new room based on group
-  const userGroup = groups.find((group) =>
-    group.members.includes(localStorage.getItem("username"))
-  );
+  // 查找當前用戶所在的組
+  const userGroup = groupsData.find((group) => group.userId == currentUserId);
+
   if (userGroup) {
-    const response = await fetch("/api/user/auth", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("session")}`,
-      },
-    });
-    const payload = await response.json();
-    currentRoom = userGroup.name;
-    console.log(`peerId: ${peerInstance.id}`);
-    socket.emit(
-      "join-room",
-      currentRoom,
-      peerInstance.id,
-      payload.payload.userId
-    );
-  }
+    const groupName = localStorage.getItem(`breakoutRoom`);
+    currentRoom = groupName;
 
-  // Start countdown timer
-  const timerInput = document.getElementById("timerInput").value;
-  startCountdown(parseInt(timerInput));
+    // 更新 URL 並重定向
+    const newUrl = currentUrl.replace(mainRoomName, groupName);
+    history.pushState(null, "", newUrl);
+
+    // 斷開所有當前的 peer 連接
+    Object.values(peers).forEach((call) => call.close());
+    peers = {};
+
+    // 清除所有遠端視訊
+    document
+      .querySelectorAll("video:not(.local-stream)")
+      .forEach((video) => video.remove());
+
+    // 加入新的組
+    socket.emit("join-room", currentRoom, peerInstance.id, currentUserId);
+
+    // 開始倒數計時
+    const timerInput = document.getElementById("timerInput").value;
+    startCountdown(parseInt(timerInput));
+  } else {
+    console.error("User is not part of any group.");
+  }
 }
 
 function startCountdown(seconds) {
@@ -126,16 +136,16 @@ function startCountdown(seconds) {
 }
 
 async function returnToMainRoom() {
-  // Disconnect from all current peers
+  // 斷開所有當前的 peer 連接
   Object.values(peers).forEach((call) => call.close());
   peers = {};
 
-  // Clear all remote videos
+  // 清除所有遠端視訊
   document
     .querySelectorAll("video:not(.local-stream)")
     .forEach((video) => video.remove());
 
-  // Rejoin the main room
+  // 重新加入主房間
   const mainRoom = localStorage.getItem("mainRoom");
   const response = await fetch("/api/user/auth", {
     method: "GET",
@@ -153,10 +163,10 @@ async function returnToMainRoom() {
     payload.payload.userId
   );
 
-  // Update the URL to reflect the main room
+  // 更新 URL 以反映主房間
   history.pushState(null, "", `/roomId/${mainRoom}`);
 
-  // Update the users list
+  // 更新用戶列表
   await updateUsersList();
 }
 
