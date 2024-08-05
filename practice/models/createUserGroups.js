@@ -75,7 +75,7 @@ export async function saveGroups(groups) {
         // 插入 user_groups 表
         await new Promise((resolve, reject) => {
           const query =
-            "INSERT INTO user_groups (user_id, group_id) VALUES (?, ?)";
+            "INSERT INTO user_groups (user_id, breakout_room_id) VALUES (?, ?)";
           const values = [member.id, breakoutRoomId];
           connection.query(query, values, (error, results) => {
             if (error) {
