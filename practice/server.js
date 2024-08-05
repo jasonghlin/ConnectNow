@@ -498,6 +498,7 @@ app.post("/api/save-groups", authenticateJWT, (req, res) => {
   // Here you would typically save the groups to a database
   // For this example, we'll just log them and send a success response
   console.log("Saved groups:", groups);
+  console.log("members:", groups[0].members);
   res.status(200).json({ message: "Groups saved successfully" });
 });
 
