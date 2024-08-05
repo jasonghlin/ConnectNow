@@ -1,10 +1,4 @@
-// 導入必要的模組
 import { handleMicList } from "./userInputOutput.js";
-import {
-  shareScreen,
-  shareMediaStream,
-  resetShareMediaStream,
-} from "./shareScreen.js";
 import { checkStatus } from "../../utils/loginOutAndRegister.js";
 import {
   updateVideoLayout,
@@ -18,6 +12,7 @@ import {
   initializeSocketListeners,
   setPeers,
 } from "./groupHandler.js";
+import { toggleMic } from "./micHandler.js"; // 新增這一行
 
 // 全局變量
 let localStream = null; // 本地視訊流
@@ -27,15 +22,13 @@ let remoteVideos = new Map(); // 遠程視訊列表
 let isScreenSharing = false; // 螢幕分享狀態
 
 // 獲取房間 ID
-
 const pathSegments = window.location.pathname.split("/");
 const roomId = pathSegments[pathSegments.length - 1];
 document.getElementById("currentRoomId").textContent = roomId;
 
 // 建立 Socket.io 連接
 let peerInstance = null;
-// const socket = io("http://localhost:8080");
-const socket = io("https://www.connectnow.website");
+const socket = io("http://localhost:8080");
 
 socket.on("connect", () => {
   console.log("Connected to server");
@@ -45,30 +38,42 @@ socket.on("disconnect", () => {
   console.log("Disconnected from server");
 });
 
+socket.on("update-stream", (userId, streamId, isScreenShare) => {
+  if (remoteVideos.has(userId)) {
+    const video = remoteVideos.get(userId);
+    video.srcObject = document.getElementById(streamId).srcObject;
+    if (isScreenShare) {
+      video.style.position = "absolute";
+      video.style.top = "0";
+      video.style.left = "0";
+      video.style.width = "100%";
+      video.style.height = "100%";
+      video.style.zIndex = "9999";
+    } else {
+      video.style.position = "";
+      video.style.top = "";
+      video.style.left = "";
+      video.style.width = "";
+      video.style.height = "";
+      video.style.zIndex = "";
+    }
+    updateVideoLayout();
+  }
+});
+
 const videoStreamDiv = document.querySelector(".video-stream");
 const peers = {};
 
 export function getPeer() {
   if (!peerInstance) {
     peerInstance = new Peer(undefined, {
-      host: "peer-server.connectnow.website",
-      port: 443,
+      host: "localhost",
+      port: 9001,
       path: "/myapp",
     });
   }
   return peerInstance;
 }
-
-// export function getPeer() {
-//   if (!peerInstance) {
-//     peerInstance = new Peer(undefined, {
-//       host: "localhost",
-//       port: 9001,
-//       path: "/myapp",
-//     });
-//   }
-//   return peerInstance;
-// }
 
 // 主房間類
 class MainRoom {
@@ -78,68 +83,68 @@ class MainRoom {
     this.breakoutRooms = new Map();
   }
 
-  // 添加對等連接
   addPeer(peerId, peer) {
     this.peers.set(peerId, peer);
   }
 
-  // 移除對等連接
   removePeer(peerId) {
     this.peers.delete(peerId);
-  }
-
-  // 創建分組房間
-  createBreakoutRoom(breakoutRoomId) {
-    const breakoutRoom = new BreakoutRoom(breakoutRoomId, this);
-    this.breakoutRooms.set(breakoutRoomId, breakoutRoom);
-    return breakoutRoom;
-  }
-
-  // 結束所有分組房間
-  endBreakoutRooms() {
-    this.breakoutRooms.forEach((room) => room.end());
-    this.breakoutRooms.clear();
   }
 }
 
 let mainRoom;
 let currentRoom;
 
-// 初始化主房間
 function initializeMainRoom() {
   mainRoom = new MainRoom(roomId);
   currentRoom = mainRoom;
 }
 
-// // 添加視訊流到 DOM
-const addVideoStream = (video, stream, userId) => {
+const addVideoStream = (video, stream, userId, isScreenShare = false) => {
   video.srcObject = stream;
   video.addEventListener("loadedmetadata", () => {
     video.play();
   });
   video.setAttribute("data-user-id", userId);
+  if (isScreenShare) {
+    video.style.position = "absolute";
+    video.style.top = "0";
+    video.style.left = "0";
+    video.style.width = "100%";
+    video.style.height = "100%";
+    video.style.zIndex = "9999";
+  }
   if (!videoStreamDiv.contains(video)) {
     videoStreamDiv.append(video);
-    updateVideoLayout(); // Add this line
+    updateVideoLayout();
   }
 };
 
-// 切換視訊流
-const switchStream = (newStream, isScreenShare = false) => {
+export const switchStream = (newStream, isScreenShare = false) => {
   currentStream = newStream;
 
-  // 更新本地视频
   const myVideo = document.querySelector(".local-stream");
   if (myVideo) {
     myVideo.srcObject = newStream;
     if (isScreenShare) {
       myVideo.classList.remove("invert-screen");
+      myVideo.style.position = "absolute";
+      myVideo.style.top = "0";
+      myVideo.style.left = "0";
+      myVideo.style.width = "100%";
+      myVideo.style.height = "100%";
+      myVideo.style.zIndex = "9999";
     } else {
       myVideo.classList.add("invert-screen");
+      myVideo.style.position = "";
+      myVideo.style.top = "";
+      myVideo.style.left = "";
+      myVideo.style.width = "";
+      myVideo.style.height = "";
+      myVideo.style.zIndex = "";
     }
   }
 
-  // 更新所有連接用户的视频流
   for (let userId in peers) {
     const sender = peers[userId].peerConnection
       .getSenders()
@@ -149,7 +154,6 @@ const switchStream = (newStream, isScreenShare = false) => {
         .replaceTrack(newStream.getVideoTracks()[0])
         .then(() => {
           console.log("Stream replaced successfully");
-          // 通知其他用户切换流
           socket.emit("update-stream", userId, newStream.id, isScreenShare);
         })
         .catch((error) => {
@@ -159,8 +163,6 @@ const switchStream = (newStream, isScreenShare = false) => {
   }
 };
 
-// 切換視訊開關
-// 切換視訊開關
 const toggleVideo = async () => {
   videoEnabled = !videoEnabled;
 
@@ -174,14 +176,12 @@ const toggleVideo = async () => {
       console.error("Error accessing camera: ", error);
     }
   } else {
-    // 关闭视频流
     localStream.getVideoTracks().forEach((track) => track.stop());
     const blackStream = localStream.clone();
     blackStream.getVideoTracks().forEach((track) => (track.enabled = false));
     switchStream(blackStream);
   }
 
-  // 通知其他用戶視訊狀態變化
   for (let userId in peers) {
     const sender = peers[userId].peerConnection
       .getSenders()
@@ -192,10 +192,13 @@ const toggleVideo = async () => {
   }
 };
 
-// 添加事件監聽器：切換視訊
 document.querySelector(".video").addEventListener("click", toggleVideo);
 
-// 渲染遠程視訊
+// 新增事件監聽器：切換麥克風
+document
+  .querySelector(".mic-icon")
+  .addEventListener("click", () => toggleMic(localStream));
+
 const renderRemoteVideos = () => {
   remoteVideos.forEach((video, userId) => {
     if (!videoStreamDiv.contains(video)) {
@@ -205,34 +208,44 @@ const renderRemoteVideos = () => {
   updateVideoLayout();
 };
 
-// 更新遠程視訊
 const updateRemoteVideos = (userId, stream, isScreenShare = false) => {
   if (remoteVideos.has(userId)) {
-    // 更新現有視頻
     const existingVideo = remoteVideos.get(userId);
     existingVideo.srcObject = stream;
     if (isScreenShare) {
-      existingVideo.classList.remove("invert-screen");
+      existingVideo.style.position = "absolute";
+      existingVideo.style.top = "0";
+      existingVideo.style.left = "0";
+      existingVideo.style.width = "100%";
+      existingVideo.style.height = "100%";
+      existingVideo.style.zIndex = "9999";
     } else {
-      existingVideo.classList.add("invert-screen");
+      existingVideo.style.position = "";
+      existingVideo.style.top = "";
+      existingVideo.style.left = "";
+      existingVideo.style.width = "";
+      existingVideo.style.height = "";
+      existingVideo.style.zIndex = "";
     }
   } else {
-    // 添加新視頻
     const userVideo = document.createElement("video");
     userVideo.autoplay = true;
     userVideo.playsInline = true;
-    if (!isScreenShare) {
-      userVideo.classList.add("invert-screen");
+    if (isScreenShare) {
+      userVideo.style.position = "absolute";
+      userVideo.style.top = "0";
+      userVideo.style.left = "0";
+      userVideo.style.width = "100%";
+      userVideo.style.height = "100%";
+      userVideo.style.zIndex = "9999";
     }
     userVideo.setAttribute("data-user-id", userId);
-    addVideoStream(userVideo, stream, userId);
+    addVideoStream(userVideo, stream, userId, isScreenShare);
     remoteVideos.set(userId, userVideo);
   }
   renderRemoteVideos();
 };
 
-// 移除遠程視訊
-// 断开连接时移除远程视频
 const removeRemoteVideo = (userId) => {
   console.log(`Removing video for user: ${userId}`);
   const videoElement = remoteVideos.get(userId);
@@ -262,7 +275,6 @@ window.addEventListener("beforeunload", () => {
   }
 });
 
-// 初始化用户面板事件监听器
 const usersButton = document.querySelector(".participants");
 const usersPanel = document.getElementById("users-panel");
 const closeUsersButton = document.getElementById("close-users");
@@ -278,7 +290,6 @@ closeUsersButton.addEventListener("click", () => {
   body.classList.remove("panel-open");
 });
 
-// 新增一個函數來更新用戶列表
 async function updateUsersList() {
   const participantsList = document.querySelector(".users-content");
   participantsList.innerHTML = "";
@@ -315,7 +326,6 @@ export function connectToNewUser(userId, stream) {
   peers[userId] = call;
 }
 
-// 主函數
 (async function () {
   try {
     const payload = await checkStatus();
@@ -334,7 +344,6 @@ export function connectToNewUser(userId, stream) {
       body: JSON.stringify({ userInfo: payload.payload, roomId }),
     });
 
-    // 確保 joinUserRoomResponse 已成功
     if (!joinUserRoomResponse.ok) {
       throw new Error("Failed to join room");
     }
@@ -377,7 +386,6 @@ export function connectToNewUser(userId, stream) {
         roomId
       );
 
-      // 確保 userId 和 peerId 都已初始化
       if (userId && id) {
         socket.emit("join-room", roomId, id, userId);
         mainRoom.addPeer(id, peer);
@@ -397,52 +405,10 @@ export function connectToNewUser(userId, stream) {
   }
 })();
 
-// 事件監聽器：創建分組房間
-// document
-//   .querySelector(".create-breakout-rooms")
-//   .addEventListener("click", () => {
-//     const numberOfRooms = parseInt(
-//       prompt("Enter the number of breakout rooms:")
-//     );
-//     if (numberOfRooms > 0) {
-//       createBreakoutRooms(numberOfRooms);
-//     }
-//   });
-
-// 事件監聽器：結束分組討論
-// document.querySelector(".end-breakout-rooms").addEventListener("click", () => {
-//   mainRoom.endBreakoutRooms();
-// });
-
-// 事件監聽器：分享螢幕
-document.querySelector(".share-screen").addEventListener("click", async (e) => {
-  try {
-    const screenStream = await shareScreen();
-    switchStream(screenStream, true);
-
-    // 當分享結束時恢復本地視訊流
-    screenStream.getVideoTracks()[0].addEventListener("ended", () => {
-      switchStream(localStream);
-      resetShareMediaStream();
-
-      // 恢复所有视频的 .invert-screen 样式
-      const allVideos = document.querySelectorAll("video");
-      allVideos.forEach((video) => {
-        if (video.classList.contains("local-stream")) {
-          video.classList.add("invert-screen");
-        } else {
-          video.classList.remove("invert-screen");
-        }
-      });
-    });
-  } catch (err) {
-    console.error("Error sharing screen or user cancelled:", err);
-    // 如果分享取消，恢復原本的視訊流
-    switchStream(localStream);
-  }
-});
-
-// 事件監聽器：切換視訊
-document.querySelector(".video").addEventListener("click", toggleVideo);
-
-export { socket, updateUsersList, updateRemoteVideos, removeRemoteVideo };
+export {
+  socket,
+  updateUsersList,
+  updateRemoteVideos,
+  removeRemoteVideo,
+  localStream,
+};

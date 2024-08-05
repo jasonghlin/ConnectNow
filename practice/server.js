@@ -172,6 +172,10 @@ io.on("connection", (socket) => {
       [...roomUsers.values()].map((u) => `${u.userId} (${u.peerId})`)
     );
 
+    socket.on("update-stream", (userId, streamId, isScreenShare) => {
+      io.to(roomId).emit("update-stream", userId, streamId, isScreenShare);
+    });
+
     // 通知房間其他用戶有新用戶加入
     socket.to(roomId).emit("user-connected", peerId, userId);
 
