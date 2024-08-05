@@ -74,7 +74,7 @@ async function getAllUsers(url_param) {
     const userIds = userIdsResult.map((row) => row.user_id);
 
     // Step 3: Get names from users where id is in the found user ids
-    const usersQuery = `SELECT name FROM users WHERE id IN (?)`;
+    const usersQuery = `SELECT id, name FROM users WHERE id IN (?)`;
     const usersValues = [userIds];
 
     const usersResult = await new Promise((resolve, reject) => {

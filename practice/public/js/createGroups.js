@@ -30,7 +30,7 @@ async function createGroups() {
     console.log(error);
   }
 
-  const members = users.map((user) => user.name);
+  const members = users.map((user) => ({ id: user.id, name: user.name }));
 
   // 打亂成員順序
   for (let i = members.length - 1; i > 0; i--) {
@@ -62,13 +62,14 @@ async function createGroups() {
     const memberContainer = document.createElement("div");
     memberContainer.className = "member-container";
 
-    group.forEach((memberName, j) => {
+    group.forEach((member, j) => {
       const memberDiv = document.createElement("div");
       memberDiv.className = "member";
       memberDiv.draggable = true;
       memberDiv.ondragstart = drag;
       memberDiv.id = `member-${i}-${j}`;
-      memberDiv.innerText = memberName;
+      memberDiv.dataset.userId = member.id;
+      memberDiv.innerText = member.name;
       memberContainer.appendChild(memberDiv);
     });
 
@@ -96,15 +97,12 @@ function drop(event) {
   event.preventDefault();
   const data = event.dataTransfer.getData("text");
   const member = document.getElementById(data);
-  if (
-    event.target.classList.contains("group") ||
-    event.target.classList.contains("member-container")
-  ) {
-    event.target.querySelector(".member-container").appendChild(member);
-    updateGroupHeight(event.target);
-  } else if (event.target.classList.contains("member")) {
-    event.target.parentElement.appendChild(member);
-    updateGroupHeight(event.target.parentElement.parentElement);
+  const targetGroup = event.target.closest(".group");
+
+  if (targetGroup) {
+    const memberContainer = targetGroup.querySelector(".member-container");
+    memberContainer.appendChild(member);
+    updateGroupHeight(targetGroup);
   }
 }
 
@@ -120,7 +118,10 @@ function finishGrouping() {
     const memberElements = groupElement.getElementsByClassName("member");
 
     Array.from(memberElements).forEach((memberElement) => {
-      group.members.push(memberElement.innerText);
+      group.members.push({
+        id: memberElement.dataset.userId,
+        name: memberElement.innerText,
+      });
     });
 
     groups.push(group);
