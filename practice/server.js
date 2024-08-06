@@ -500,6 +500,9 @@ app.post("/api/save-groups", authenticateJWT, async (req, res) => {
     const result = await saveGroups(groups);
     console.log("Saved groups:", groups);
 
+    // 通知所有客戶端
+    io.emit("groups-finished", result);
+
     res
       .status(200)
       .json({ message: "Groups saved successfully", data: result });

@@ -106,6 +106,12 @@ function drop(event) {
 }
 
 async function finishGrouping() {
+  // set mainRoom localStorage
+  const currentUrl = window.location.href;
+  const mainRoomName = currentUrl.substring(currentUrl.lastIndexOf("/") + 1);
+  console.log("mainRoomName:", mainRoomName);
+  localStorage.setItem("mainRoom", mainRoomName);
+
   const groups = [];
   const groupElements = document.getElementsByClassName("group");
   const mainRoom = localStorage.getItem("mainRoom");

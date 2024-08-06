@@ -14,6 +14,8 @@ import {
 } from "./groupHandler.js";
 import { toggleMic } from "./micHandler.js"; // 新增這一行
 
+import { handleFinishGrouping } from "./groupHandler.js";
+
 // 全局變量
 let localStream = null; // 本地視訊流
 let currentStream = null; // 當前的流（視訊或螢幕）
@@ -28,8 +30,8 @@ document.getElementById("currentRoomId").textContent = roomId;
 
 // 建立 Socket.io 連接
 let peerInstance = null;
-// const socket = io("http://localhost:8080");
-const socket = io("https://www.connectnow.website");
+const socket = io("http://localhost:8080");
+// const socket = io("https://www.connectnow.website");
 
 socket.on("connect", () => {
   console.log("Connected to server");
@@ -65,27 +67,27 @@ socket.on("update-stream", (userId, streamId, isScreenShare) => {
 const videoStreamDiv = document.querySelector(".video-stream");
 const peers = {};
 
-export function getPeer() {
-  if (!peerInstance) {
-    peerInstance = new Peer(undefined, {
-      host: "peer-server.connectnow.website",
-      port: 443,
-      path: "/myapp",
-    });
-  }
-  return peerInstance;
-}
-
 // export function getPeer() {
 //   if (!peerInstance) {
 //     peerInstance = new Peer(undefined, {
-//       host: "localhost",
-//       port: 9001,
+//       host: "peer-server.connectnow.website",
+//       port: 443,
 //       path: "/myapp",
 //     });
 //   }
 //   return peerInstance;
 // }
+
+export function getPeer() {
+  if (!peerInstance) {
+    peerInstance = new Peer(undefined, {
+      host: "localhost",
+      port: 9001,
+      path: "/myapp",
+    });
+  }
+  return peerInstance;
+}
 
 // 主房間類
 class MainRoom {
@@ -412,6 +414,12 @@ export function connectToNewUser(userId, stream) {
 
     renderRemoteVideos();
     window.addEventListener("beforeunload", leaveRoom);
+
+    // 監聽 groups-finished 事件
+    socket.on("groups-finished", (data) => {
+      console.log("Groups finished:", data);
+      handleFinishGrouping(data);
+    });
   } catch (err) {
     console.error("Error initializing the room:", err);
   }

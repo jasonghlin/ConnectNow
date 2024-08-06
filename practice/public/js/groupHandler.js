@@ -69,9 +69,7 @@ export function handleIncomingCall(call) {
 
 export async function handleFinishGrouping(groupsData) {
   const currentUrl = window.location.href;
-  const mainRoomName = currentUrl.substring(currentUrl.lastIndexOf("/") + 1);
-  localStorage.setItem("mainRoom", mainRoomName);
-
+  const mainRoomName = localStorage.getItem("mainRoom");
   // 獲取用戶認證信息
   const response = await fetch("/api/user/auth", {
     method: "GET",
@@ -85,7 +83,9 @@ export async function handleFinishGrouping(groupsData) {
 
   // 將 groupName 保存到 localStorage
   groupsData.forEach((group) => {
-    localStorage.setItem(`breakoutRoom`, group.groupName);
+    if (group.userId == currentUserId) {
+      localStorage.setItem(`breakoutRoom`, group.groupName);
+    }
   });
 
   // 查找當前用戶所在的組
