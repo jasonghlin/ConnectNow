@@ -1,0 +1,48 @@
+.background-panel {
+    position: fixed;
+    top: 0;
+    right: 0rem;
+    /* right: -40rem; */
+    width: 30rem;
+    height: 95vh;
+    background-color: #202124;
+    transition: right 0.3s ease-in-out;
+    z-index: 1000;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
+    border: .1rem solid white
+}
+
+.background-panel.show {
+    right: 0;
+}
+
+.non-bg-container {
+    display: flex;
+    justify-content: space-around;
+    margin: 1rem
+}
+
+.none-blur-bg, .blur {
+    width: 8rem;
+    cursor: pointer;
+}
+
+.none-blur-bg > img, .blur > img{
+    width: 100%;
+}
+
+.bg-container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.bg-img {
+    width: 14rem;
+    margin: .5rem;
+    cursor: pointer;
+}
+
+.bg-img > img {
+    width: 100%
+}

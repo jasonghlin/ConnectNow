@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="/static/css/createGroups.css">
     <link rel="stylesheet" href="/static/css/poll.css">
+    <link rel="stylesheet" href="/static/css/videoBackground.css">
 </head>
 
 <body>
@@ -180,6 +181,37 @@
             </div>
         </div>
     </div>
+    <div class="background-panel">
+        <div class="non-bg-container">
+            <div class="none-blur-bg">
+                <img src="/static/images/bgs/stop.png" alt="none-blur-bg">
+            </div>
+            <div class="blur">
+                <img src="/static/images/bgs/blur.png" alt="blur">
+            </div>
+        </div>
+        <hr>
+        <div class="bg-container">
+            <div class="bg-img bg-1">
+                <img src="/static/images/bgs/bg-1.jpeg" alt="bg-1">
+            </div>
+            <div class="bg-img bg-2">
+                <img src="/static/images/bgs/bg-2.jpeg" alt="bg-2">
+            </div>
+            <div class="bg-img bg-2">
+                <img src="/static/images/bgs/bg-3.jpeg" alt="bg-3">
+            </div>
+            <div class="bg-img bg-2">
+                <img src="/static/images/bgs/bg-4.jpeg" alt="bg-4">
+            </div>
+
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+
 
 
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
@@ -196,6 +228,7 @@
     <script type="module" src="/static/js/pollPanel.js"></script>
     <script type="module" src="/static/js/hangout.js"></script>
     <script type="module" src="/static/js/shareScreenDisplay.js"></script>
+    <script type="module" src="/static/js/videoBackground.js"></script>
     <script>
         window.onerror = function (message, source, lineno, colno, error) {
             console.error('An error occurred:', message, 'at', source, lineno, colno, error);

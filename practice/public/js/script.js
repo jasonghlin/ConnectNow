@@ -12,7 +12,7 @@ import {
   initializeSocketListeners,
   setPeers,
 } from "./groupHandler.js";
-import { toggleMic } from "./micHandler.js"; // 新增這一行
+import { toggleMic } from "./micHandler.js";
 
 import { handleFinishGrouping } from "./groupHandler.js";
 
