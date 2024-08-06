@@ -106,6 +106,8 @@ function drop(event) {
 }
 
 async function finishGrouping() {
+  const timerInputValue = parseInt(document.getElementById("timerInput").value);
+
   // set mainRoom localStorage
   const currentUrl = window.location.href;
   const mainRoomName = currentUrl.substring(currentUrl.lastIndexOf("/") + 1);
@@ -146,7 +148,7 @@ async function finishGrouping() {
       console.log("Success:", data);
 
       // Call the new function from groupHandler.js
-      handleFinishGrouping(data.data);
+      handleFinishGrouping(data.data, timerInputValue);
     })
     .catch((error) => {
       console.error("Error:", error);

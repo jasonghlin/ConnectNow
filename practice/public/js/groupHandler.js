@@ -56,6 +56,11 @@ export function initializeSocketListeners(socketInstance, peerObj) {
     console.log("Reconnecting all users to main room");
     returnToMainRoom();
   });
+
+  // 监听倒计时开始事件
+  socket.on("start-countdown", (timerInputValue) => {
+    startCountdown(parseInt(timerInputValue));
+  });
 }
 
 export function handleIncomingCall(call) {
@@ -67,7 +72,7 @@ export function handleIncomingCall(call) {
   peers[userId] = call;
 }
 
-export async function handleFinishGrouping(groupsData) {
+export async function handleFinishGrouping(groupsData, timerInputValue) {
   const currentUrl = window.location.href;
   const mainRoomName = localStorage.getItem("mainRoom");
   // 獲取用戶認證信息
@@ -111,15 +116,15 @@ export async function handleFinishGrouping(groupsData) {
     // 加入新的組
     socket.emit("join-room", currentRoom, peerInstance.id, currentUserId);
 
-    // 開始倒數計時
-    const timerInput = document.getElementById("timerInput").value;
-    startCountdown(parseInt(timerInput));
+    // 發送倒計時開始事件
+    socket.emit("start-countdown", timerInputValue);
   } else {
     console.error("User is not part of any group.");
   }
 }
 
 function startCountdown(seconds) {
+  if (isNaN(seconds)) return;
   const timerDisplay = document.getElementById("timerDisplay");
   timerDisplay.style.display = "block";
 

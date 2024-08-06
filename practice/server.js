@@ -184,6 +184,15 @@ io.on("connection", (socket) => {
       roomWhiteboardStates[roomId] = [];
     }
 
+    // timer
+    socket.on("start-countdown", (timerInputValue) => {
+      const roomId = [...socket.rooms][1]; // 获取房间 ID
+      console.log(
+        `Starting countdown for room ${roomId} with ${timerInputValue} seconds`
+      );
+      io.to(roomId).emit("start-countdown", timerInputValue);
+    });
+
     socket.on("send-message", ({ roomId, message, userName }) => {
       if (message && message.trim() !== "") {
         io.to(roomId).emit("receive-message", { message, userName });
