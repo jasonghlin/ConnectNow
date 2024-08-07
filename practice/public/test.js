@@ -1,4 +1,3 @@
-以下程式碼要如何進一步將顏色顯示正常並且將背景替換成某張照片：
 import {
   ImageSegmenter,
   FilesetResolver,
@@ -17,6 +16,9 @@ const resultWidthHeigth = 256;
 
 let imageSegmenter;
 let labels;
+
+let backgroundImage = new Image();
+backgroundImage.src = "./images/bgs/bg-1.jpeg";
 
 const legendColors = [
   [255, 197, 0, 255], // Vivid Yellow
@@ -132,25 +134,54 @@ function callbackForVideo(result) {
     0,
     video.videoWidth,
     video.videoHeight
-  ).data;
+  );
+  let pixels = imageData.data;
   const mask = result.categoryMask.getAsFloat32Array();
-  let j = 0;
-  for (let i = 0; i < mask.length; ++i) {
-    const maskVal = Math.round(mask[i] * 255.0);
-    const legendColor = legendColors[maskVal % legendColors.length];
-    imageData[j] = (legendColor[0] + imageData[j]) / 2;
-    imageData[j + 1] = (legendColor[1] + imageData[j + 1]) / 2;
-    imageData[j + 2] = (legendColor[2] + imageData[j + 2]) / 2;
-    imageData[j + 3] = (legendColor[3] + imageData[j + 3]) / 2;
-    j += 4;
-  }
-  const uint8Array = new Uint8ClampedArray(imageData.buffer);
-  const dataNew = new ImageData(
-    uint8Array,
+
+  // 創建一個臨時畫布來繪製背景圖片
+  let tempCanvas = document.createElement("canvas");
+  tempCanvas.width = video.videoWidth;
+  tempCanvas.height = video.videoHeight;
+  let tempCtx = tempCanvas.getContext("2d");
+  tempCtx.drawImage(backgroundImage, 0, 0, video.videoWidth, video.videoHeight);
+  let bgImageData = tempCtx.getImageData(
+    0,
+    0,
     video.videoWidth,
     video.videoHeight
-  );
-  canvasCtx.putImageData(dataNew, 0, 0);
+  ).data;
+
+  for (let i = 0; i < mask.length; i++) {
+    let pixelIndex = i * 4;
+    if (mask[i] > 0.01) {
+      // 調整這個閾值以獲得更好的分割效果
+      // 保持原始顏色不變（這是前景/人物）
+      // 不需要做任何改變，因為 pixels 已經包含了原始圖像數據
+    } else {
+      // 用背景圖片的相應像素替換（這是背景）
+      pixels[pixelIndex] = bgImageData[pixelIndex];
+      pixels[pixelIndex + 1] = bgImageData[pixelIndex + 1];
+      pixels[pixelIndex + 2] = bgImageData[pixelIndex + 2];
+      pixels[pixelIndex + 3] = bgImageData[pixelIndex + 3];
+    }
+  }
+
+  // 可選：增加邊緣平滑處理
+  for (let y = 1; y < video.videoHeight - 1; y++) {
+    for (let x = 1; x < video.videoWidth - 1; x++) {
+      let i = y * video.videoWidth + x;
+      if (Math.abs(mask[i] - 0.2) < 0.1) {
+        // 在邊緣區域進行混合
+        let pixelIndex = i * 4;
+        for (let c = 0; c < 3; c++) {
+          pixels[pixelIndex + c] =
+            0.5 * pixels[pixelIndex + c] + 0.5 * bgImageData[pixelIndex + c];
+        }
+      }
+    }
+  }
+
+  canvasCtx.putImageData(imageData, 0, 0);
   if (webcamRunning === true) {
     window.requestAnimationFrame(predictWebcam);
   }
