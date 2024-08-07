@@ -8,11 +8,12 @@ let imageSegmenter;
 let labels;
 let webcamRunning = false;
 let runningMode = "VIDEO";
-let applyBackgroundReplacement = false;
+
 let lastStreamUpdate = 0;
 const canvasElement = document.createElement("canvas");
 const canvasCtx = canvasElement.getContext("2d");
 let applyForegroundReplacement = false;
+let applyForegroundBlur = false;
 
 let foregroundImage = new Image();
 foregroundImage.src = "/static/images/bgs/bg-1.jpeg";
@@ -152,6 +153,15 @@ function callbackForVideo(result) {
     }
   }
 
+  if (applyForegroundBlur) {
+    applyBlurEffect(
+      pixels,
+      mask,
+      localVideo.videoWidth,
+      localVideo.videoHeight
+    );
+  }
+
   canvasCtx.putImageData(imageData, 0, 0);
   if (webcamRunning === true) {
     window.requestAnimationFrame(predictWebcam);
@@ -169,6 +179,26 @@ export async function startBackgroundEffects() {
   // 新增: 更新 stream 並通知 peers
   myStream = await convertCanvasToStream(canvasElement);
   updateStreamForPeers(myStream);
+}
+
+function applyBlurEffect(pixels, mask, width, height) {
+  let blurRadius = 10;
+  let tempCanvas = document.createElement("canvas");
+  tempCanvas.width = width;
+  tempCanvas.height = height;
+  let tempCtx = tempCanvas.getContext("2d");
+  tempCtx.filter = `blur(${blurRadius}px)`;
+  tempCtx.drawImage(canvasElement, 0, 0);
+  let blurredImageData = tempCtx.getImageData(0, 0, width, height).data;
+
+  for (let i = 0; i < mask.length; i++) {
+    let pixelIndex = i * 4;
+    if (mask[i] > 0.1) {
+      pixels[pixelIndex] = blurredImageData[pixelIndex];
+      pixels[pixelIndex + 1] = blurredImageData[pixelIndex + 1];
+      pixels[pixelIndex + 2] = blurredImageData[pixelIndex + 2];
+    }
+  }
 }
 
 async function convertCanvasToStream(canvas) {
@@ -190,12 +220,22 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-document.querySelector(".bg-1").addEventListener("click", () => {
-  applyForegroundReplacement = true;
-});
-
 document.querySelector(".none-blur-bg").addEventListener("click", () => {
   applyForegroundReplacement = false;
+  applyForegroundBlur = false;
+});
+
+document.querySelector(".blur").addEventListener("click", () => {
+  applyForegroundReplacement = false;
+  applyForegroundBlur = true;
+});
+
+document.querySelectorAll(".bg-img").forEach((el, index) => {
+  el.addEventListener("click", () => {
+    applyForegroundReplacement = true;
+    applyForegroundBlur = false;
+    foregroundImage.src = `/static/images/bgs/bg-${index + 1}.jpeg`;
+  });
 });
 
 // 2. 添加 updateStreamForPeers 函數
