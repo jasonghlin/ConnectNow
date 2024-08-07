@@ -63,15 +63,6 @@ export function initializeSocketListeners(socketInstance, peerObj) {
   });
 }
 
-export function handleIncomingCall(call) {
-  call.answer(localStream);
-  const userId = call.peer;
-  call.on("stream", (userVideoStream) => {
-    updateRemoteVideos(userId, userVideoStream);
-  });
-  peers[userId] = call;
-}
-
 export async function handleFinishGrouping(groupsData, timerInputValue) {
   const currentUrl = window.location.href;
   const mainRoomName = localStorage.getItem("mainRoom");

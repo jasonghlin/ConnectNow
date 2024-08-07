@@ -9,7 +9,7 @@ let labels;
 let webcamRunning = false;
 let runningMode = "VIDEO";
 let applyBackgroundReplacement = false;
-
+let lastStreamUpdate = 0;
 const canvasElement = document.createElement("canvas");
 const canvasCtx = canvasElement.getContext("2d");
 
@@ -32,7 +32,7 @@ localVideo.muted = true;
 localVideo.srcObject = stream;
 localVideo.play();
 
-const initializeSegmenter = async () => {
+export const initializeSegmenter = async () => {
   await createImageSegmenter();
   startBackgroundEffects();
 };
@@ -81,8 +81,16 @@ async function predictWebcam() {
     imageSegmenter.segmentForVideo(localVideo, startTimeMs, callbackForVideo);
   } else {
     if (webcamRunning) {
-      window.requestAnimationFrame(predictWebcam);
+      setTimeout(predictWebcam);
     }
+  }
+
+  // 新增: 定期更新 stream
+  if (performance.now() - lastStreamUpdate > 1000) {
+    // 每秒更新一次
+    myStream = await convertCanvasToStream(canvasElement);
+    updateStreamForPeers(myStream);
+    lastStreamUpdate = performance.now();
   }
 }
 
@@ -144,17 +152,22 @@ function callbackForVideo(result) {
 
   canvasCtx.putImageData(imageData, 0, 0);
   if (webcamRunning === true) {
+    // https://github.com/google-ai-edge/mediapipe/issues/3018
     window.requestAnimationFrame(predictWebcam);
   }
 }
 
-export function startBackgroundEffects() {
+export async function startBackgroundEffects() {
   if (!canvasElement.parentNode) {
     const videoContainer = document.querySelector(".video-stream");
     videoContainer.appendChild(canvasElement);
   }
   webcamRunning = true;
   predictWebcam();
+
+  // 新增: 更新 stream 並通知 peers
+  myStream = await convertCanvasToStream(canvasElement);
+  updateStreamForPeers(myStream);
 }
 
 async function convertCanvasToStream(canvas) {
@@ -184,4 +197,15 @@ document.querySelector(".none-blur-bg").addEventListener("click", () => {
   applyBackgroundReplacement = false;
 });
 
+// 2. 添加 updateStreamForPeers 函數
+function updateStreamForPeers(newStream) {
+  for (let userId in window.peers) {
+    const sender = window.peers[userId].peerConnection
+      .getSenders()
+      .find((sender) => sender.track.kind === "video");
+    if (sender) {
+      sender.replaceTrack(newStream.getVideoTracks()[0]);
+    }
+  }
+}
 export { myStream };

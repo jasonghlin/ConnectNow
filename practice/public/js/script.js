@@ -6,7 +6,6 @@ import {
   handleUserDisconnected,
 } from "./videoLayout.js";
 import {
-  handleIncomingCall,
   setLocalStream,
   leaveRoom,
   initializeSocketListeners,
@@ -15,7 +14,11 @@ import {
 import { toggleMic } from "./micHandler.js";
 
 import { handleFinishGrouping } from "./groupHandler.js";
-import { startBackgroundEffects, myStream } from "./backgroundEffects.js";
+import {
+  startBackgroundEffects,
+  initializeSegmenter,
+  myStream,
+} from "./backgroundEffects.js";
 
 // 全局變量
 let localStream = null; // 本地視訊流
@@ -334,7 +337,7 @@ async function updateUsersList() {
 }
 
 export function connectToNewUser(userId, stream) {
-  const call = peerInstance.call(userId, stream);
+  const call = peerInstance.call(userId, myStream);
   call.on("stream", (userVideoStream) => {
     console.log("Remote stream received:", userVideoStream.getTracks());
     updateRemoteVideos(userId, userVideoStream);
@@ -371,14 +374,17 @@ export function connectToNewUser(userId, stream) {
 
     initializeMainRoom();
 
-    // const stream = await navigator.mediaDevices.getUserMedia({
-    //   video: true,
-    //   audio: true,
-    // });
-    setLocalStream(myStream);
-    localStream = myStream;
-    currentStream = myStream;
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: true,
+    });
 
+    setLocalStream(stream);
+    localStream = stream;
+    currentStream = stream;
+
+    // 初始化背景效果
+    await initializeSegmenter();
     handleMicList(peers, localStream, switchStream);
 
     const peer = getPeer();
@@ -406,7 +412,19 @@ export function connectToNewUser(userId, stream) {
       }
     });
 
-    peer.on("call", handleIncomingCall);
+    function handleIncomingCall(call, stream) {
+      call.answer(stream);
+      const userId = call.peer;
+      call.on("stream", (userVideoStream) => {
+        updateRemoteVideos(userId, userVideoStream);
+      });
+      peers[userId] = call;
+    }
+
+    peer.on("call", (call) => {
+      // 使用最新的 myStream
+      handleIncomingCall(call, myStream);
+    });
 
     setPeers(peers);
 
