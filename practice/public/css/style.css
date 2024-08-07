@@ -180,8 +180,8 @@ footer {
 }
 
 .local-stream {
-    width: 640px; /* 設定寬度 */
-    height: 360px; /* 設定高度 */
+    width: 52rem; /* 設定寬度 */
+    height: 39rem; /* 設定高度 */
     /* object-fit: cover; 設定適應模式，防止變形 */
 }
 
@@ -198,6 +198,13 @@ footer {
 video {
     width: 64rem; /* 設定寬度 */
     height: 36rem; /* 設定高度 */
+    /* object-fit: cover; 設定適應模式，防止變形 */
+    transform: none;
+}
+
+canvas {
+    width: 52rem; /* 設定寬度 */
+    height: 39rem; /* 設定高度 */
     /* object-fit: cover; 設定適應模式，防止變形 */
     transform: none;
 }
@@ -399,3 +406,10 @@ body.panel-open footer {
     display: none;
 }
 
+.video-canvas {
+    display: block;
+  }
+
+  .hidden-video {
+    display: none;
+  }

@@ -7,3 +7,11 @@ userid 計時的時間 以及 groups 傳給後端，後端再依照groups當中�
 1. 以下是我的 db schema，要如何擴寫與改寫 createUserGroups.js，先從 mainRoom 找到 mainRoom id，接著再將產生的 groupName 當作 breakout_room table 的 name與此 mainRoom id insert 到 breakout_room table，並將得到的 breakout_room id 同時 insert 到 users_rooms_relation 當中有著同樣 mainRoom id 以及 user_id (在 createUserGroups.js 是 member.id) 的欄位，最後將 users_rooms_relation 的 id 連同user_id insert 到user_groups table：
 
     - 我希望最後createUserGroups回傳的是{ userId, groupName }
+  
+2. 要如何將程式碼要如何依照以下的 test.js 的模式將script.js 的檔案做改寫，讓stream 可以將背景做變更，test.html 的格式如下，請用一個新的檔案backgroundEffects.js 來完成：
+
+
+<div class="webcam">
+        <video id="webcam" autoplay style="display: none;"></video>
+        <canvas id="canvas" width="1280px" height="720px"></canvas>
+</div>

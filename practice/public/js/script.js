@@ -15,6 +15,7 @@ import {
 import { toggleMic } from "./micHandler.js";
 
 import { handleFinishGrouping } from "./groupHandler.js";
+import { startBackgroundEffects } from "./backgroundEffects.js";
 
 // 全局變量
 let localStream = null; // 本地視訊流
@@ -51,7 +52,7 @@ socket.on("update-stream", (userId, streamId, isScreenShare) => {
       video.style.left = "0";
       video.style.width = "100%";
       video.style.height = "100%";
-      video.style.zIndex = "9999";
+      video.style.zIndex = "99";
     } else {
       video.style.position = "";
       video.style.top = "";
@@ -126,7 +127,7 @@ const addVideoStream = (video, stream, userId, isScreenShare = false) => {
     video.style.left = "0";
     video.style.width = "100%";
     video.style.height = "100%";
-    video.style.zIndex = "9999";
+    video.style.zIndex = "99";
   }
   if (!videoStreamDiv.contains(video)) {
     videoStreamDiv.append(video);
@@ -414,6 +415,10 @@ export function connectToNewUser(userId, stream) {
 
     renderRemoteVideos();
     window.addEventListener("beforeunload", leaveRoom);
+
+    document.querySelector(".bg-1").addEventListener("click", (e) => {
+      startBackgroundEffects(switchStream);
+    });
 
     // 監聽 groups-finished 事件
     socket.on("groups-finished", (data) => {

@@ -20,30 +20,6 @@ let labels;
 let backgroundImage = new Image();
 backgroundImage.src = "./images/bgs/bg-1.jpeg";
 
-const legendColors = [
-  [255, 197, 0, 255], // Vivid Yellow
-  [128, 62, 117, 255], // Strong Purple
-  [255, 104, 0, 255], // Vivid Orange
-  [166, 189, 215, 255], // Very Light Blue
-  [193, 0, 32, 255], // Vivid Red
-  [206, 162, 98, 255], // Grayish Yellow
-  [129, 112, 102, 255], // Medium Gray
-  [0, 125, 52, 255], // Vivid Green
-  [246, 118, 142, 255], // Strong Purplish Pink
-  [0, 83, 138, 255], // Strong Blue
-  [255, 112, 92, 255], // Strong Yellowish Pink
-  [83, 55, 112, 255], // Strong Violet
-  [255, 142, 0, 255], // Vivid Orange Yellow
-  [179, 40, 81, 255], // Strong Purplish Red
-  [244, 200, 0, 255], // Vivid Greenish Yellow
-  [127, 24, 13, 255], // Strong Reddish Brown
-  [147, 170, 0, 255], // Vivid Yellowish Green
-  [89, 51, 21, 255], // Deep Yellowish Brown
-  [241, 58, 19, 255], // Vivid Reddish Orange
-  [35, 44, 22, 255], // Dark Olive Green
-  [0, 161, 194, 255], // Vivid Blue
-];
-
 const createImageSegmenter = async () => {
   const audio = await FilesetResolver.forVisionTasks(
     "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.2/wasm"
@@ -64,9 +40,9 @@ const createImageSegmenter = async () => {
 createImageSegmenter();
 
 // Check if webcam access is supported.
-function hasGetUserMedia() {
-  return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
-}
+// function hasGetUserMedia() {
+//   return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+// }
 
 // Get segmentation from the webcam
 let lastWebcamTime = -1;
@@ -121,12 +97,12 @@ async function enableCam(event) {
 }
 
 // If webcam supported, add event listener to button.
-if (hasGetUserMedia()) {
-  enableWebcamButton = document.getElementById("webcamButton");
-  enableWebcamButton.addEventListener("click", enableCam);
-} else {
-  console.warn("getUserMedia() is not supported by your browser");
-}
+// if (hasGetUserMedia()) {
+//   enableWebcamButton = document.getElementById("webcamButton");
+enableWebcamButton.addEventListener("click", enableCam);
+// } else {
+//   console.warn("getUserMedia() is not supported by your browser");
+// }
 
 function callbackForVideo(result) {
   let imageData = canvasCtx.getImageData(
@@ -153,7 +129,7 @@ function callbackForVideo(result) {
 
   for (let i = 0; i < mask.length; i++) {
     let pixelIndex = i * 4;
-    if (mask[i] > 0.01) {
+    if (mask[i] > 0.001) {
       // 調整這個閾值以獲得更好的分割效果
       // 保持原始顏色不變（這是前景/人物）
       // 不需要做任何改變，因為 pixels 已經包含了原始圖像數據
