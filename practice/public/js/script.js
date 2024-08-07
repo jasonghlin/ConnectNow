@@ -15,7 +15,7 @@ import {
 import { toggleMic } from "./micHandler.js";
 
 import { handleFinishGrouping } from "./groupHandler.js";
-import { startBackgroundEffects } from "./backgroundEffects.js";
+import { startBackgroundEffects, myStream } from "./backgroundEffects.js";
 
 // 全局變量
 let localStream = null; // 本地視訊流
@@ -115,7 +115,12 @@ function initializeMainRoom() {
   currentRoom = mainRoom;
 }
 
-const addVideoStream = (video, stream, userId, isScreenShare = false) => {
+export const addVideoStream = (
+  video,
+  stream,
+  userId,
+  isScreenShare = false
+) => {
   video.srcObject = stream;
   video.addEventListener("loadedmetadata", () => {
     video.play();
@@ -366,23 +371,15 @@ export function connectToNewUser(userId, stream) {
 
     initializeMainRoom();
 
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: true,
-      audio: true,
-    });
-    setLocalStream(stream);
-    localStream = stream;
-    currentStream = stream;
+    // const stream = await navigator.mediaDevices.getUserMedia({
+    //   video: true,
+    //   audio: true,
+    // });
+    setLocalStream(myStream);
+    localStream = myStream;
+    currentStream = myStream;
 
     handleMicList(peers, localStream, switchStream);
-
-    const myVideo = document.createElement("video");
-    myVideo.classList.add("local-stream");
-    myVideo.classList.add("invert-screen");
-    myVideo.muted = true;
-    if (!document.querySelector(".local-stream")) {
-      addVideoStream(myVideo, stream, "local");
-    }
 
     const peer = getPeer();
     peerInstance = peer;
@@ -417,7 +414,7 @@ export function connectToNewUser(userId, stream) {
     window.addEventListener("beforeunload", leaveRoom);
 
     document.querySelector(".bg-1").addEventListener("click", (e) => {
-      startBackgroundEffects(switchStream);
+      startBackgroundEffects();
     });
 
     // 監聽 groups-finished 事件
