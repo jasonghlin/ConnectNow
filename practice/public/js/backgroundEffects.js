@@ -12,9 +12,10 @@ let applyBackgroundReplacement = false;
 let lastStreamUpdate = 0;
 const canvasElement = document.createElement("canvas");
 const canvasCtx = canvasElement.getContext("2d");
+let applyForegroundReplacement = false;
 
-let backgroundImage = new Image();
-backgroundImage.src = "/static/images/bgs/bg-1.jpeg";
+let foregroundImage = new Image();
+foregroundImage.src = "/static/images/bgs/bg-1.jpeg";
 
 // Function to create image segmenter
 const stream = await navigator.mediaDevices.getUserMedia({
@@ -51,12 +52,12 @@ const createImageSegmenter = async () => {
   imageSegmenter = await ImageSegmenter.createFromOptions(audio, {
     baseOptions: {
       modelAssetPath:
-        "https://storage.googleapis.com/mediapipe-models/image_segmenter/deeplab_v3/float32/1/deeplab_v3.tflite",
+        "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter_landscape/float16/latest/selfie_segmenter_landscape.tflite",
       delegate: "GPU",
     },
     runningMode: runningMode,
     outputCategoryMask: true,
-    outputConfidenceMasks: false,
+    outputConfidenceMasks: true,
   });
   labels = imageSegmenter.getLabels();
 };
@@ -104,19 +105,19 @@ function callbackForVideo(result) {
   let pixels = imageData.data;
   const mask = result.categoryMask.getAsFloat32Array();
 
-  if (applyBackgroundReplacement) {
+  if (applyForegroundReplacement) {
     let tempCanvas = document.createElement("canvas");
     tempCanvas.width = localVideo.videoWidth;
     tempCanvas.height = localVideo.videoHeight;
     let tempCtx = tempCanvas.getContext("2d");
     tempCtx.drawImage(
-      backgroundImage,
+      foregroundImage,
       0,
       0,
       localVideo.videoWidth,
       localVideo.videoHeight
     );
-    let bgImageData = tempCtx.getImageData(
+    let fgImageData = tempCtx.getImageData(
       0,
       0,
       localVideo.videoWidth,
@@ -125,17 +126,18 @@ function callbackForVideo(result) {
 
     for (let i = 0; i < mask.length; i++) {
       let pixelIndex = i * 4;
-      if (mask[i] > 0.001) {
-        // 保持前景
+      if (mask[i] > 0.1) {
+        // 替換前景
+        pixels[pixelIndex] = fgImageData[pixelIndex];
+        pixels[pixelIndex + 1] = fgImageData[pixelIndex + 1];
+        pixels[pixelIndex + 2] = fgImageData[pixelIndex + 2];
+        pixels[pixelIndex + 3] = fgImageData[pixelIndex + 3];
       } else {
-        // 替換背景
-        pixels[pixelIndex] = bgImageData[pixelIndex];
-        pixels[pixelIndex + 1] = bgImageData[pixelIndex + 1];
-        pixels[pixelIndex + 2] = bgImageData[pixelIndex + 2];
-        pixels[pixelIndex + 3] = bgImageData[pixelIndex + 3];
+        // 保持背景
       }
     }
 
+    // 平滑邊緣
     for (let y = 1; y < localVideo.videoHeight - 1; y++) {
       for (let x = 1; x < localVideo.videoWidth - 1; x++) {
         let i = y * localVideo.videoWidth + x;
@@ -143,7 +145,7 @@ function callbackForVideo(result) {
           let pixelIndex = i * 4;
           for (let c = 0; c < 3; c++) {
             pixels[pixelIndex + c] =
-              0.5 * pixels[pixelIndex + c] + 0.5 * bgImageData[pixelIndex + c];
+              0.5 * pixels[pixelIndex + c] + 0.5 * fgImageData[pixelIndex + c];
           }
         }
       }
@@ -152,7 +154,6 @@ function callbackForVideo(result) {
 
   canvasCtx.putImageData(imageData, 0, 0);
   if (webcamRunning === true) {
-    // https://github.com/google-ai-edge/mediapipe/issues/3018
     window.requestAnimationFrame(predictWebcam);
   }
 }
@@ -190,11 +191,11 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 document.querySelector(".bg-1").addEventListener("click", () => {
-  applyBackgroundReplacement = true;
+  applyForegroundReplacement = true;
 });
 
 document.querySelector(".none-blur-bg").addEventListener("click", () => {
-  applyBackgroundReplacement = false;
+  applyForegroundReplacement = false;
 });
 
 // 2. 添加 updateStreamForPeers 函數
