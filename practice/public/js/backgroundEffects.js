@@ -172,6 +172,7 @@ export async function startBackgroundEffects() {
   if (!canvasElement.parentNode) {
     const videoContainer = document.querySelector(".video-stream");
     videoContainer.appendChild(canvasElement);
+    canvasElement.classList.add("local-stream");
   }
   webcamRunning = true;
   predictWebcam();
