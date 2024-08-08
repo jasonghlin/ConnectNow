@@ -18,7 +18,10 @@ import {
   startBackgroundEffects,
   initializeSegmenter,
   myStream,
+  updateStreamForPeers,
 } from "./backgroundEffects.js";
+
+import { toggleVideo } from "./videoToggleHandler.js";
 
 // 全局變量
 let localStream = null; // 本地視訊流
@@ -26,6 +29,7 @@ let currentStream = null; // 當前的流（視訊或螢幕）
 let videoEnabled = true; // 視訊狀態
 let remoteVideos = new Map(); // 遠程視訊列表
 let isScreenSharing = false; // 螢幕分享狀態
+let myPeerId;
 
 // 獲取房間 ID
 const pathSegments = window.location.pathname.split("/");
@@ -34,8 +38,8 @@ document.getElementById("currentRoomId").textContent = roomId;
 
 // 建立 Socket.io 連接
 let peerInstance = null;
-// const socket = io("http://localhost:8080");
-const socket = io("https://www.connectnow.website");
+const socket = io("http://localhost:8080");
+// const socket = io("https://www.connectnow.website");
 
 socket.on("connect", () => {
   console.log("Connected to server");
@@ -46,9 +50,19 @@ socket.on("disconnect", () => {
 });
 
 socket.on("update-stream", (userId, streamId, isScreenShare) => {
+  console.log(
+    "userId",
+    userId,
+    "remoteVideos.has(userId): ",
+    remoteVideos.has(userId),
+    "remoteVideos.get(userId):",
+    remoteVideos.get(userId)
+  );
   if (remoteVideos.has(userId)) {
     const video = remoteVideos.get(userId);
-    video.srcObject = document.getElementById(streamId).srcObject;
+    video.srcObject = document.querySelector(
+      `[data-user-id="${userId}"]`
+    ).srcObject;
     if (isScreenShare) {
       video.style.position = "absolute";
       video.style.top = "0";
@@ -71,27 +85,27 @@ socket.on("update-stream", (userId, streamId, isScreenShare) => {
 const videoStreamDiv = document.querySelector(".video-stream");
 const peers = {};
 
-export function getPeer() {
-  if (!peerInstance) {
-    peerInstance = new Peer(undefined, {
-      host: "peer-server.connectnow.website",
-      port: 443,
-      path: "/myapp",
-    });
-  }
-  return peerInstance;
-}
-
 // export function getPeer() {
 //   if (!peerInstance) {
 //     peerInstance = new Peer(undefined, {
-//       host: "localhost",
-//       port: 9001,
+//       host: "peer-server.connectnow.website",
+//       port: 443,
 //       path: "/myapp",
 //     });
 //   }
 //   return peerInstance;
 // }
+
+export function getPeer() {
+  if (!peerInstance) {
+    peerInstance = new Peer(undefined, {
+      host: "localhost",
+      port: 9001,
+      path: "/myapp",
+    });
+  }
+  return peerInstance;
+}
 
 // 主房間類
 class MainRoom {
@@ -158,7 +172,8 @@ export const switchStream = (newStream, isScreenShare = false) => {
       myVideo.style.height = "100%";
       myVideo.style.zIndex = "9999";
     } else {
-      myVideo.classList.add("invert-screen");
+      // 先暫時 remove 而非 add 看有何問題
+      myVideo.classList.remove("invert-screen");
       myVideo.style.position = "";
       myVideo.style.top = "";
       myVideo.style.left = "";
@@ -177,6 +192,7 @@ export const switchStream = (newStream, isScreenShare = false) => {
         .replaceTrack(newStream.getVideoTracks()[0])
         .then(() => {
           console.log("Stream replaced successfully");
+          console.log(newStream);
           socket.emit("update-stream", userId, newStream.id, isScreenShare);
         })
         .catch((error) => {
@@ -184,38 +200,21 @@ export const switchStream = (newStream, isScreenShare = false) => {
         });
     }
   }
+
+  // 更新背景效果的 stream
+  startBackgroundEffects();
 };
 
-const toggleVideo = async () => {
-  videoEnabled = !videoEnabled;
-
-  if (videoEnabled) {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      localStream = stream;
-      currentStream = stream;
-      switchStream(localStream);
-    } catch (error) {
-      console.error("Error accessing camera: ", error);
-    }
-  } else {
-    localStream.getVideoTracks().forEach((track) => track.stop());
-    const blackStream = localStream.clone();
-    blackStream.getVideoTracks().forEach((track) => (track.enabled = false));
-    switchStream(blackStream);
-  }
-
-  for (let userId in peers) {
-    const sender = peers[userId].peerConnection
-      .getSenders()
-      .find((sender) => sender.track.kind === "video");
-    if (sender) {
-      sender.track.enabled = videoEnabled;
-    }
-  }
-};
-
-document.querySelector(".video").addEventListener("click", toggleVideo);
+// 使用新建的 toggleVideo 函數
+document.querySelector(".video").addEventListener("click", () => {
+  toggleVideo(
+    localStream,
+    document.querySelector(".local-stream"),
+    peers,
+    socket,
+    myPeerId
+  );
+});
 
 // 新增事件監聽器：切換麥克風
 document
@@ -394,6 +393,7 @@ export function connectToNewUser(userId, stream) {
 
     peer.on("open", (id) => {
       console.log("My peer ID is: " + id);
+      myPeerId = id;
       const userId = payload.payload.userId;
       console.log(
         "Joining room with userId:",

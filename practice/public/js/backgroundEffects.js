@@ -250,4 +250,4 @@ function updateStreamForPeers(newStream) {
     }
   }
 }
-export { myStream };
+export { myStream, updateStreamForPeers };
