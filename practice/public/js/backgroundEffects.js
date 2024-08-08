@@ -250,4 +250,24 @@ function updateStreamForPeers(newStream) {
     }
   }
 }
+
+function backgroundPanelDisplay() {
+  const backgrounEffectsButton = document.querySelector(".background-effects");
+  const backgrounEffectsPanel = document.querySelector(".background-panel");
+  const closebacgroundEffectsButton = document.getElementById(
+    "close-bacground-panel"
+  );
+  const body = document.body;
+
+  backgrounEffectsButton.addEventListener("click", () => {
+    backgrounEffectsPanel.classList.add("show");
+    body.classList.add("panel-open");
+  });
+
+  closebacgroundEffectsButton.addEventListener("click", () => {
+    backgrounEffectsPanel.classList.remove("show");
+    body.classList.remove("panel-open");
+  });
+}
+backgroundPanelDisplay();
 export { myStream, updateStreamForPeers };
