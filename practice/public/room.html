@@ -6,19 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-        crossOrigin="anonymous" />
+        crossorigin="anonymous" />
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="/static/css/createGroups.css">
     <link rel="stylesheet" href="/static/css/poll.css">
     <link rel="stylesheet" href="/static/css/videoBackground.css">
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/vision_bundle.js"
-        crossorigin="anonymous"></script>
 </head>
 
 <body>
     <header></header>
     <div class="video-stream">
-        <!-- 動態生成 video -->
+        <!-- 动态生成 video -->
         <div class="whiteboard-content hidden">
             <canvas id="whiteboard-canvas" width="800" height="400"></canvas>
             <div class="whiteboard-controls">
@@ -148,7 +146,7 @@
             <button id="close-users">X</button>
         </div>
         <div class="users-content">
-            <!-- 這裡可以動態生成用戶列表 -->
+            <!-- 这里可以动态生成用户列表 -->
         </div>
     </div>
 
@@ -185,10 +183,11 @@
                 <button type="submit">提交投票</button>
             </form>
             <div id="poll-question-display"></div>
-            <div id="poll-options-display"></div>
+            <div id="poll-options-display" class="hidden"></div>
             <div id="poll-results" class="hidden">
                 <h2>投票結果</h2>
                 <div id="results-container"></div>
+
             </div>
         </div>
     </div>
@@ -221,13 +220,12 @@
 
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/vision_bundle.js"
+        crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
-
-
-
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <script type="module" src="/static/js/shareScreen.js"></script>
@@ -249,7 +247,6 @@
             console.error('An error occurred:', message, 'at', source, lineno, colno, error);
         }
     </script>
-
 </body>
 
 </html>

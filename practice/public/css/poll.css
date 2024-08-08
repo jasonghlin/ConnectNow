@@ -97,3 +97,17 @@
     line-height: 20px;
     color: white;
   }
+
+  #return-to-poll-creation {
+    margin-top: 20px;
+    padding: 10px 15px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  #return-to-poll-creation:hover {
+    background-color: #45a049;
+  }

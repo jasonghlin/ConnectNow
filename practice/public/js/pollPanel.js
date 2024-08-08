@@ -13,6 +13,13 @@ const pollOptionsDisplay = document.getElementById("poll-options-display");
 let optionCount = 2;
 let pollActive = false;
 
+// 添加返回按鈕
+const returnButton = document.createElement("button");
+returnButton.textContent = "返回創建投票";
+returnButton.id = "return-to-poll-creation";
+returnButton.style.display = "none";
+pollPanel.appendChild(returnButton);
+
 pollButton.addEventListener("click", () => {
   pollPanel.classList.add("show");
   body.classList.add("panel-open");
@@ -52,8 +59,8 @@ pollForm.addEventListener("submit", (event) => {
   console.log("Sending start-poll event", { question, options });
   socket.emit("start-poll", { question, options });
 
-  // Hide the poll creation form
   pollForm.style.display = "none";
+  console.log("Poll form hidden");
 
   setTimeout(() => {
     console.log("Sending end-poll event");
@@ -64,7 +71,7 @@ pollForm.addEventListener("submit", (event) => {
 socket.on("show-poll", ({ question, options }) => {
   console.log("Received show-poll event", { question, options });
   pollQuestionDisplay.textContent = question;
-  pollOptionsDisplay.innerHTML = ""; // Clear previous options
+  pollOptionsDisplay.innerHTML = "";
   options.forEach((option, index) => {
     const optionElement = document.createElement("div");
     optionElement.className = "poll-option";
@@ -75,15 +82,16 @@ socket.on("show-poll", ({ question, options }) => {
     pollOptionsDisplay.appendChild(optionElement);
   });
   pollPanel.classList.add("show");
-  pollForm.style.display = "none"; // Hide the poll creation form for all users
-  pollOptionsDisplay.style.display = "block"; // Show voting options
+  pollForm.style.display = "none";
+  pollOptionsDisplay.style.display = "block";
+  returnButton.style.display = "none";
+  console.log("Poll options displayed");
 });
 
 pollOptionsDisplay.addEventListener("change", (event) => {
   if (event.target.name === "poll") {
     console.log("Sending vote event", event.target.value);
     socket.emit("vote", event.target.value);
-    // Disable voting after user has voted
     const radioButtons = pollOptionsDisplay.querySelectorAll(
       'input[type="radio"]'
     );
@@ -96,7 +104,9 @@ socket.on("show-results", (results) => {
   updateResults(results);
   pollActive = false;
   pollResults.classList.remove("hidden");
-  pollOptionsDisplay.style.display = "none"; // Hide voting options
+  pollOptionsDisplay.style.display = "none";
+  returnButton.style.display = "block"; // 顯示返回按鈕
+  console.log("Poll results displayed, return button shown");
 });
 
 socket.on("update-results", (results) => {
@@ -120,3 +130,14 @@ function updateResults(results) {
     resultsContainer.appendChild(resultOption);
   });
 }
+
+// 返回按鈕點擊事件
+returnButton.addEventListener("click", () => {
+  console.log("返回創建投票按鈕被點擊");
+  pollForm.style.display = "block";
+  pollResults.classList.add("hidden");
+  pollOptionsDisplay.style.display = "none";
+  returnButton.style.display = "none";
+  pollActive = false;
+  console.log("Returned to poll creation, poll form shown");
+});

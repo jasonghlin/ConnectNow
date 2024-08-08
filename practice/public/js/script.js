@@ -166,14 +166,13 @@ export const switchStream = (newStream, isScreenShare = false) => {
     if (isScreenShare) {
       myVideo.classList.remove("invert-screen");
       myVideo.style.position = "absolute";
-      myVideo.style.top = "0";
-      myVideo.style.left = "0";
-      myVideo.style.width = "100%";
-      myVideo.style.height = "100%";
+      // myVideo.style.top = "0";
+      // myVideo.style.left = "0";
+      myVideo.style.width = "60%";
+      myVideo.style.height = "80%";
       myVideo.style.zIndex = "9999";
     } else {
-      // 先暫時 remove 而非 add 看有何問題
-      myVideo.classList.remove("invert-screen");
+      myVideo.classList.add("invert-screen");
       myVideo.style.position = "";
       myVideo.style.top = "";
       myVideo.style.left = "";
@@ -236,10 +235,10 @@ const updateRemoteVideos = (userId, stream, isScreenShare = false) => {
     existingVideo.srcObject = stream;
     if (isScreenShare) {
       existingVideo.style.position = "absolute";
-      existingVideo.style.top = "0";
-      existingVideo.style.left = "0";
-      existingVideo.style.width = "100%";
-      existingVideo.style.height = "100%";
+      // existingVideo.style.top = "0";
+      // existingVideo.style.left = "0";
+      existingVideo.style.width = "60%";
+      existingVideo.style.height = "80%";
       existingVideo.style.zIndex = "9999";
     } else {
       existingVideo.style.position = "";
@@ -255,10 +254,10 @@ const updateRemoteVideos = (userId, stream, isScreenShare = false) => {
     userVideo.playsInline = true;
     if (isScreenShare) {
       userVideo.style.position = "absolute";
-      userVideo.style.top = "0";
-      userVideo.style.left = "0";
-      userVideo.style.width = "100%";
-      userVideo.style.height = "100%";
+      // userVideo.style.top = "0";
+      // userVideo.style.left = "0";
+      userVideo.style.width = "60%";
+      userVideo.style.height = "80%";
       userVideo.style.zIndex = "9999";
     }
     userVideo.setAttribute("data-user-id", userId);

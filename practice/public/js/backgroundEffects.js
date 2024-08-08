@@ -173,6 +173,7 @@ export async function startBackgroundEffects() {
     const videoContainer = document.querySelector(".video-stream");
     videoContainer.appendChild(canvasElement);
     canvasElement.classList.add("local-stream");
+    canvasElement.classList.add("invert-screen");
   }
   webcamRunning = true;
   predictWebcam();
@@ -202,7 +203,7 @@ function applyBlurEffect(pixels, mask, width, height) {
   }
 }
 
-async function convertCanvasToStream(canvas) {
+export async function convertCanvasToStream(canvas) {
   const videoOutput = await canvas.captureStream();
   const mic = await navigator.mediaDevices.getUserMedia({
     audio: true,

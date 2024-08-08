@@ -306,6 +306,31 @@ io.on("connection", (socket) => {
       io.to(roomId).emit("update-results", results);
     }
   });
+
+  socket.on("request-results", () => {
+    const roomId = [...socket.rooms][1]; // Get room ID
+    console.log(`request-results: ${roomId}`);
+    if (!roomId) return;
+
+    const poll = polls[roomId];
+    if (poll) {
+      const results = calculateResults(poll);
+      socket.emit("show-results", results);
+    }
+  });
+
+  function calculateResults(poll) {
+    const totalVotes = Object.values(poll.votes).length;
+    return poll.options.map((option) => {
+      const voteCount = Object.values(poll.votes).filter(
+        (vote) => vote === option
+      ).length;
+      const percentage = totalVotes
+        ? Math.round((voteCount / totalVotes) * 100)
+        : 0;
+      return { option, percentage };
+    });
+  }
   // socket.on("return-to-main-room", (userId, mainRoomId) => {
   //   console.log("return to main room");
   //   const currentRoomId = userRooms.get(userId);
