@@ -1,5 +1,5 @@
 import { handleMicList } from "./userInputOutput.js";
-import { checkStatus } from "../../utils/loginOutAndRegister.js";
+import { checkStatus } from "../utils/loginOutAndRegister.js";
 import {
   updateVideoLayout,
   handleUserConnected,
@@ -351,18 +351,20 @@ export function connectToNewUser(userId, stream) {
   try {
     const payload = await checkStatus();
     console.log("Payload received:", payload);
-
+    if (!payload) {
+      window.location.href = "/";
+    }
     const path = window.location.pathname.split("/");
     const roomId = path[path.length - 1];
     const token = localStorage.getItem("session");
 
-    const joinUserRoomResponse = await fetch("/api/joinMainRoom", {
+    const joinUserRoomResponse = await fetch(`/api/mainRoom/${roomId}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ userInfo: payload.payload, roomId }),
+      body: JSON.stringify({ userInfo: payload.payload }),
     });
 
     if (!joinUserRoomResponse.ok) {

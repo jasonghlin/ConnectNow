@@ -12,6 +12,7 @@ if (ENV === "production") {
     host: MYSQL_HOST,
     user: MYSQL_USER,
     password: MYSQL_PASSWORD,
+    database: "ConnectNow",
   });
 } else {
   pool = mysql.createPool({
@@ -19,6 +20,7 @@ if (ENV === "production") {
     host: "localhost",
     user: "root",
     password: MYSQL_PASSWORD,
+    database: "ConnectNow",
   });
 }
 
@@ -169,6 +171,28 @@ function createUserGroupsTable() {
   });
 }
 
+function createUserImgTable() {
+  return new Promise((resolve, reject) => {
+    pool.getConnection((err, connection) => {
+      if (err) return reject(err);
+      const createTableQuery = `
+          CREATE TABLE IF NOT EXISTS user_img(
+                id INT PRIMARY KEY AUTO_INCREMENT,
+                user_id INT,
+                url TEXT,
+                Foreign Key(user_id) References users(id)
+          )
+        `;
+      connection.query(createTableQuery, (error, results) => {
+        connection.release();
+        if (error) return reject(error);
+        console.log("user image table created");
+        resolve();
+      });
+    });
+  });
+}
+
 export {
   pool,
   createDatabase,
@@ -178,4 +202,5 @@ export {
   createBreakoutRoomTable,
   createUserRoomsRelationTable,
   createUserGroupsTable,
+  createUserImgTable,
 };

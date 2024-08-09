@@ -1,4 +1,4 @@
-import { checkStatus } from "../../utils/loginOutAndRegister.js";
+import { checkStatus } from "../utils/loginOutAndRegister.js";
 import { socket } from "./script.js";
 
 // chat panel

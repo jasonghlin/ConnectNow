@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Page</title>
+    <link rel="stylesheet" href="/static/css/member.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+        crossorigin="anonymous">
+</head>
+
+<body>
+    <header>
+        <div class="header">
+            <div class="logo-container">
+                <div class="logo"><img src="/static/images/google meet.png" alt="google meet png"></div>
+                <div>Connect Now</div>
+            </div>
+            <div class="header-right-part">
+                <div class="date-contaienr">
+                    <div class="time-container">
+                        <div class="noon">上午</div>
+                        <div><span class="hour">5</span>:<span class="minutes">16</span></div>
+                    </div>
+                    <div class="time-dot"> • </div>
+                    <div>
+                        <span class="month">7</span>月<span class="date">29</span>日<span class="day">週一</span>
+                    </div>
+                </div>
+                <div class="logout">登出</div>
+            </div>
+            <div class="photo hidden">
+                <a href="/memberpage"><img src="/static/images/user.png" alt="user img"></a>
+            </div>
+        </div>
+
+    </header>
+
+
+    <main>
+        <div class="content-container">
+            <div class="photo" onclick="document.getElementById('fileInput').click()">
+                <input type="file" id="fileInput" hidden>
+                <img src="/static/images/user.png" alt="">
+            </div>
+            <div class="name-container">
+                <p>註冊姓名</p>
+                <div class="user-name-edit">
+                    <div class="name"></div>
+                    <img src="/static/images/edit.png" alt="">
+                </div>
+
+            </div>
+            <div class="email-container">
+                <p>電子郵件</p>
+                <div class="user-email-edit">
+                    <div class="email"></div>
+                    <img src="/static/images/edit.png" alt="">
+                </div>
+            </div>
+            <div class="password-container">
+                <div class="user-password-edit">
+                    <p>更新密碼</p>
+                    <img src="/static/images/edit.png" alt="">
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer></footer>
+    <script type="module" src="/static/js/member.js"></script>
+</body>
+
+</html>
