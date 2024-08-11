@@ -82,6 +82,12 @@ socket.on("update-stream", (userId, streamId, isScreenShare) => {
   }
 });
 
+socket.on("close-user-video", (peerId) => {
+  if (peers[peerId]) {
+    removeRemoteVideo(peerId); // 使用已經定義好的函數來關閉影像
+  }
+});
+
 const videoStreamDiv = document.querySelector(".video-stream");
 const peers = {};
 
@@ -452,4 +458,5 @@ export {
   updateRemoteVideos,
   removeRemoteVideo,
   localStream,
+  myPeerId,
 };

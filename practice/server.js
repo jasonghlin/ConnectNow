@@ -199,6 +199,14 @@ io.on("connection", (socket) => {
       roomWhiteboardStates[roomId] = [];
     }
 
+    socket.on("user-hangout", (peerId) => {
+      const roomId = [...socket.rooms][1]; // 獲取房間 ID
+      if (roomId) {
+        // 廣播給同房間的其他成員，關閉該使用者的影像
+        socket.to(roomId).emit("close-user-video", peerId);
+      }
+    });
+
     // timer
     socket.on("start-countdown", (timerInputValue) => {
       const roomId = [...socket.rooms][1]; // 获取房间 ID
