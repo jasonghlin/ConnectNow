@@ -211,7 +211,7 @@ export const switchStream = (newStream, isScreenShare = false) => {
 };
 
 // 使用新建的 toggleVideo 函數
-document.querySelector(".video").addEventListener("click", () => {
+document.querySelector(".video i").addEventListener("click", () => {
   toggleVideo(
     localStream,
     document.querySelector(".local-stream"),
@@ -223,7 +223,7 @@ document.querySelector(".video").addEventListener("click", () => {
 
 // 新增事件監聽器：切換麥克風
 document
-  .querySelector(".mic-icon")
+  .querySelector(".mic-icon i")
   .addEventListener("click", () => toggleMic(localStream));
 
 const renderRemoteVideos = () => {
