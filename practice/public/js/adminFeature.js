@@ -1,11 +1,14 @@
 import { socket } from "./script.js";
 // 確認是否為房長，是的話多了分組、錄製、意見調查功能
+const path = window.location.pathname.split("/");
+const roomId = path[path.length - 1];
 const isAdminResponse = await fetch("/api/admin", {
-  method: "GET",
+  method: "POST",
   headers: {
     "Content-Type": "application/json",
     Authorization: `Bearer ${localStorage.getItem("session")}`,
   },
+  body: JSON.stringify({ roomId }),
 });
 const isAdmin = await isAdminResponse.json();
 if (isAdmin.admin) {

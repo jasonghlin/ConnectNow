@@ -5,14 +5,14 @@ import {
   createMainRoomTable,
 } from "./mysql.js";
 
-export async function checkIsAdmin(userId) {
+export async function checkIsAdmin(roomId, userId) {
   try {
     await createDatabase();
     await useDatabase();
     await createMainRoomTable();
 
-    const query = "SELECT * FROM main_room WHERE admin = (?)";
-    const values = [userId];
+    const query = "SELECT * FROM main_room WHERE name = (?) AND admin = (?)";
+    const values = [roomId, userId];
     return new Promise((resolve, reject) => {
       pool.getConnection((err, connection) => {
         if (err) {

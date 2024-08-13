@@ -565,8 +565,8 @@ app.post("/api/mainRoom/:roomId", authenticateJWT, async (req, res) => {
 });
 
 // check if user is admin
-app.get("/api/admin", authenticateJWT, async (req, res) => {
-  const isAdmin = await checkIsAdmin(req.payload);
+app.post("/api/admin", authenticateJWT, async (req, res) => {
+  const isAdmin = await checkIsAdmin(req.body.roomId, req.payload.userId);
   if (isAdmin.length > 0) {
     res.status(200).json({ admin: true });
   } else {
