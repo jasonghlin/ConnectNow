@@ -49,10 +49,10 @@ async function main() {
     }
 
     const token = localStorage.getItem("session");
-    if (!token) {
-      alert("請先登入");
-      return;
-    }
+    // if (!token) {
+    //   alert("請先登入");
+    //   return;
+    // }
     try {
       const roomIdResponse = await fetch("/api/roomId");
       if (!roomIdResponse.ok) {

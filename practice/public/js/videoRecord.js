@@ -5,7 +5,7 @@ let recordedChunks = [];
 let movBlob;
 let isRecording = false;
 
-document.querySelector(".video-record").addEventListener("click", () => {
+document.querySelector(".video-record")?.addEventListener("click", () => {
   isRecording = !isRecording;
   if (isRecording) {
     document.querySelector(

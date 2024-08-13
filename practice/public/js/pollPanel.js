@@ -30,7 +30,7 @@ closePollButton.addEventListener("click", () => {
   body.classList.remove("panel-open");
 });
 
-addOptionButton.addEventListener("click", () => {
+addOptionButton?.addEventListener("click", () => {
   optionCount++;
   const newOption = document.createElement("div");
   newOption.innerHTML = `

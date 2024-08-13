@@ -24,8 +24,9 @@ function registerUser() {
       } else {
         alert(message);
       }
+    } else {
+      window.location.href = "/";
     }
-    window.location.href = "/";
   });
 }
 
@@ -58,6 +59,16 @@ function loginUser() {
 
 loginUser();
 
+function logOutUser() {
+  const logoutBtn = document.querySelector(".logout");
+  logoutBtn.addEventListener("click", (e) => {
+    localStorage.removeItem("session");
+    localStorage.removeItem("username");
+    localStorage.removeItem("proImg");
+    window.location.href = "/";
+  });
+}
+
 async function checkStatus() {
   const token = localStorage.getItem("session");
 
@@ -89,4 +100,4 @@ async function checkStatus() {
   }
 }
 
-export { checkStatus };
+export { checkStatus, logOutUser, registerUser, loginUser };

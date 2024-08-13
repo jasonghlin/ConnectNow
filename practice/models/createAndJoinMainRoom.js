@@ -7,9 +7,9 @@ import {
   createUserRoomsRelationTable,
 } from "./mysql.js";
 
-async function insertMainRoom(roomId) {
-  const query = "INSERT INTO main_room (name) VALUES (?)";
-  const values = [roomId];
+async function insertMainRoom(userInfo, roomId) {
+  const query = "INSERT INTO main_room (name, admin) VALUES (?, ?)";
+  const values = [roomId, userInfo.userId];
 
   return new Promise((resolve, reject) => {
     pool.getConnection((err, connection) => {
@@ -60,7 +60,7 @@ async function insertRoomInfo(userInfo, roomId) {
     await createBreakoutRoomTable();
     await createUserRoomsRelationTable();
 
-    const mainRoomId = await insertMainRoom(roomId);
+    const mainRoomId = await insertMainRoom(userInfo, roomId);
     await insertUsersRoomsRelation(userInfo, mainRoomId);
   } catch (err) {
     console.error("Error in Insert main_room:", err);

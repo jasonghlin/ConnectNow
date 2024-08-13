@@ -100,6 +100,16 @@
                     </div>
                 </div>
 
+                <div class="background-effects">
+                    <div class="icon-wrapper">
+                        <i class="fas fa-mountain-sun"></i>
+                    </div>
+                    <div>
+                        <p>虛擬背景</p>
+                        <p>更換成不同的背景</p>
+                    </div>
+                </div>
+
                 <div class="breakout-room">
                     <div class="icon-wrapper">
                         <i class="fas fa-people-group"></i>
@@ -107,16 +117,6 @@
                     <div>
                         <p>分組</p>
                         <p>一同集思廣益並構思點子</p>
-                    </div>
-                </div>
-
-                <div class="video-record">
-                    <div class="icon-wrapper">
-                        <i class="fas fa-record-vinyl"></i>
-                    </div>
-                    <div>
-                        <p>錄製</p>
-                        <p>錄下會議過程供日後隨選觀看</p>
                     </div>
                 </div>
 
@@ -129,15 +129,17 @@
                         <p>收集並分析參與者的想法與意見</p>
                     </div>
                 </div>
-                <div class="background-effects">
+
+                <!-- <div class="video-record">
                     <div class="icon-wrapper">
-                        <i class="fas fa-mountain-sun"></i>
+                        <i class="fas fa-record-vinyl"></i>
                     </div>
                     <div>
-                        <p>虛擬背景</p>
-                        <p>更換成不同的背景</p>
+                        <p>錄製</p>
+                        <p>錄下會議過程供日後隨選觀看</p>
                     </div>
-                </div>
+                </div> -->
+
             </div>
         </div>
     </div>
@@ -156,10 +158,10 @@
             <button id="close-breakout-room">X</button>
         </div>
         <div id="controls">
-            <input type="number" id="groupCount" placeholder="Enter number of groups">
+            <!-- <input type="number" id="groupCount" placeholder="Enter number of groups">
             <button id="createGroups">Create Groups</button>
             <input type="number" id="timerInput" placeholder="Enter timer in seconds">
-            <button id="finishGrouping">Finish Grouping</button>
+            <button id="finishGrouping">Finish Grouping</button> -->
         </div>
         <div id="roomsContainer"></div>
         <div id="timerDisplay">Time left: <span id="timeLeft"></span> seconds</div>
@@ -172,7 +174,7 @@
         <div class="poll-content">
             <h2>意見調查</h2>
             <form id="poll-form">
-                <label for="poll-question">問題：</label>
+                <!-- <label for="poll-question">問題：</label>
                 <input type="text" id="poll-question" name="poll-question" required>
                 <div id="poll-options">
                     <label for="option-1">選項 1：</label>
@@ -181,7 +183,7 @@
                     <input type="text" id="option-2" name="options" required>
                 </div>
                 <button type="button" id="add-option">添加選項</button>
-                <button type="submit">提交投票</button>
+                <button type="submit">提交投票</button> -->
             </form>
             <div id="poll-question-display"></div>
             <div id="poll-options-display" class="hidden"></div>
@@ -229,6 +231,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+    <script type="module" src="/static/js/adminFeature.js"></script>
     <script type="module" src="/static/js/shareScreen.js"></script>
     <script type="module" src="/static/js/script.js"></script>
     <script type="module" src="/static/js/activitiesPanel.js"></script>
@@ -244,6 +247,7 @@
     <script type="module" src="/static/js/backgroundEffects.js"></script>
     <script type="module" src="/static/js/videoToggleHandler.js"></script>
     <script type="module" src="/static/js/videoRecord.js"></script>
+
     <script>
         window.onerror = function (message, source, lineno, colno, error) {
             console.error('An error occurred:', message, 'at', source, lineno, colno, error);

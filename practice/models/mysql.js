@@ -86,7 +86,9 @@ function createMainRoomTable() {
           CREATE TABLE IF NOT EXISTS main_room (
             id INT AUTO_INCREMENT PRIMARY KEY,
             name NVARCHAR(255) UNIQUE NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            admin INT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (admin) REFERENCES users(id)
           )
         `;
       connection.query(createTableQuery, (error, results) => {

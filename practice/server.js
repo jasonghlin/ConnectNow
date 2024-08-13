@@ -36,6 +36,7 @@ import {
 } from "@aws-sdk/client-s3";
 import multer from "multer";
 import { convertToMovStream } from "./public/utils/converToMOV.js";
+import { checkIsAdmin } from "./models/checkIsAdmin.js";
 
 dotenv.config();
 const { JWT_SECRET_KEY, ENV, AWS_ACCESS_KEY, AWS_SECRET_KEY, BUCKET_NAME } =
@@ -561,6 +562,16 @@ app.post("/api/mainRoom/:roomId", authenticateJWT, async (req, res) => {
   const { roomId } = req.params;
   await joinRoomInfo(req.payload, roomId);
   res.status(200).json({ ok: true });
+});
+
+// check if user is admin
+app.get("/api/admin", authenticateJWT, async (req, res) => {
+  const isAdmin = await checkIsAdmin(req.payload);
+  if (isAdmin.length > 0) {
+    res.status(200).json({ admin: true });
+  } else {
+    res.status(403).json({ admin: false });
+  }
 });
 
 app.get("/api/allUsers", authenticateJWT, async (req, res) => {
