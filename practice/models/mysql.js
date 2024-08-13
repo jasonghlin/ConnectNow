@@ -106,10 +106,8 @@ function createBreakoutRoomTable() {
       const createTableQuery = `
             CREATE TABLE IF NOT EXISTS breakout_room (
               id INT AUTO_INCREMENT PRIMARY KEY,
-              main_room_id INT,
               name VARCHAR(255) UNIQUE NOT NULL,
-              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-              FOREIGN KEY (main_room_id) REFERENCES main_room(id)
+              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
           `;
       connection.query(createTableQuery, (error, results) => {

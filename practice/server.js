@@ -35,6 +35,7 @@ import {
   PutObjectCommand,
 } from "@aws-sdk/client-s3";
 import multer from "multer";
+import { convertToMovStream } from "./public/utils/converToMOV.js";
 
 dotenv.config();
 const { JWT_SECRET_KEY, ENV, AWS_ACCESS_KEY, AWS_SECRET_KEY, BUCKET_NAME } =
@@ -657,6 +658,31 @@ app.post(
     }
   }
 );
+
+const uploadVideo = multer({ storage: multer.memoryStorage() }); // Use memory storage to avoid saving to disk
+
+app.post("/video-record", uploadVideo.single("recording"), (req, res) => {
+  convertToMovStream(req.file.buffer, (err, movStream) => {
+    if (err) {
+      return res.status(500).send("Error converting file.");
+    }
+
+    res.setHeader("Content-Type", "video/quicktime");
+
+    movStream.on("end", () => {
+      console.log("MOV stream sent successfully.");
+    });
+
+    movStream.on("error", (error) => {
+      console.error("Stream error:", error);
+      if (!res.headersSent) {
+        res.status(500).send("Error streaming MOV file.");
+      }
+    });
+
+    movStream.pipe(res);
+  });
+});
 
 // Ensure proper shutdown of the server
 const shutdownServer = () => {

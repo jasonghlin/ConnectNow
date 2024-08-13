@@ -135,7 +135,7 @@ async function finishGrouping() {
   });
 
   // Send the groups data to the backend
-  fetch("/api/save-groups", {
+  fetch("/api/groups", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

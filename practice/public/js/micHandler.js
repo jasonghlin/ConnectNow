@@ -7,6 +7,9 @@ export const toggleMic = async (localStream) => {
 
   if (localStream && localStream.getAudioTracks().length > 0) {
     localStream.getAudioTracks()[0].enabled = micEnabled;
+    console.log(`Microphone ${micEnabled ? "enabled" : "disabled"}.`);
+  } else {
+    console.log("No audio track found.");
   }
 
   const micIcon = document.querySelector(".mic-icon i");

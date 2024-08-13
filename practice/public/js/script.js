@@ -38,7 +38,11 @@ document.getElementById("currentRoomId").textContent = roomId;
 
 // 建立 Socket.io 連接
 let peerInstance = null;
-const socket = io("http://localhost:8080");
+const socket =
+  window.location.protocol == "https:"
+    ? io("https://www.connectnow.website")
+    : io("http://localhost:8080");
+// const socket = io("http://localhost:8080");
 // const socket = io("https://www.connectnow.website");
 
 socket.on("connect", () => {
@@ -91,6 +95,29 @@ socket.on("close-user-video", (peerId) => {
 const videoStreamDiv = document.querySelector(".video-stream");
 const peers = {};
 
+export const getPeer =
+  window.location.protocol == "https:"
+    ? function () {
+        if (!peerInstance) {
+          peerInstance = new Peer(undefined, {
+            host: "peer-server.connectnow.website",
+            port: 443,
+            path: "/myapp",
+          });
+        }
+        return peerInstance;
+      }
+    : function () {
+        if (!peerInstance) {
+          peerInstance = new Peer(undefined, {
+            host: "localhost",
+            port: 9001,
+            path: "/myapp",
+          });
+        }
+        return peerInstance;
+      };
+
 // export function getPeer() {
 //   if (!peerInstance) {
 //     peerInstance = new Peer(undefined, {
@@ -102,16 +129,16 @@ const peers = {};
 //   return peerInstance;
 // }
 
-export function getPeer() {
-  if (!peerInstance) {
-    peerInstance = new Peer(undefined, {
-      host: "localhost",
-      port: 9001,
-      path: "/myapp",
-    });
-  }
-  return peerInstance;
-}
+// export function getPeer() {
+//   if (!peerInstance) {
+//     peerInstance = new Peer(undefined, {
+//       host: "localhost",
+//       port: 9001,
+//       path: "/myapp",
+//     });
+//   }
+//   return peerInstance;
+// }
 
 // 主房間類
 class MainRoom {
@@ -380,6 +407,10 @@ export function connectToNewUser(userId, stream) {
 
     initializeMainRoom();
 
+    const currentUrl = window.location.href;
+    const mainRoomName = currentUrl.substring(currentUrl.lastIndexOf("/") + 1);
+    localStorage.setItem("mainRoom", mainRoomName);
+
     const stream = await navigator.mediaDevices.getUserMedia({
       video: true,
       audio: true,
@@ -388,6 +419,15 @@ export function connectToNewUser(userId, stream) {
     setLocalStream(stream);
     localStream = stream;
     currentStream = stream;
+
+    // 检查音频轨道是否已启用
+    const audioTracks = localStream.getAudioTracks();
+    if (audioTracks.length > 0 && !audioTracks[0].enabled) {
+      console.log("Audio track is disabled, enabling it now.");
+      audioTracks[0].enabled = true;
+    } else {
+      console.log("Audio track is enabled.");
+    }
 
     // 初始化背景效果
     await initializeSegmenter();

@@ -45,9 +45,8 @@ export async function saveGroups(groups) {
 
       // 插入 breakout_room 表
       const breakoutRoomId = await new Promise((resolve, reject) => {
-        const query =
-          "INSERT INTO breakout_room (main_room_id, name) VALUES (?, ?)";
-        const values = [mainRoomId, groupId];
+        const query = "INSERT INTO breakout_room (name) VALUES (?)";
+        const values = [groupId];
         connection.query(query, values, (error, results) => {
           if (error) {
             reject(error);
