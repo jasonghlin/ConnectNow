@@ -230,8 +230,9 @@ io.on("connection", (socket) => {
 
     // 如果用戶已存在，更新其 peerId
     if (roomUsers.has(userId)) {
-      const existingUser = roomUsers.get(userId);
-      existingUser.peerId = peerId;
+      let existingUser = roomUsers.get(userId);
+      existingUser = { ...existingUser, peerId, userId }; // 確保 userId 屬性存在於 existingUser 中
+      console.log("roomUsers set:", userId, existingUser);
       roomUsers.set(userId, existingUser);
       console.log(`Updated peerId for User ${userId} in room ${roomId}`);
     } else {
