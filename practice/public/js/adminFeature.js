@@ -27,15 +27,15 @@ if (isAdmin.admin) {
                 </div>`;
   activitiesWrapper.insertAdjacentHTML("beforeend", activitiesWrapperHtml);
 
-  const breakoutRoomControlsHTML = `<input type="number" id="groupCount" placeholder="Enter number of groups">
-            <button id="createGroups">Create Groups</button>
-            <input type="number" id="timerInput" placeholder="Enter timer in seconds">
-            <button id="finishGrouping">Finish Grouping</button>`;
-  breakoutRoomControls.insertAdjacentHTML(
-    "beforeend",
-    breakoutRoomControlsHTML
-  );
-
+  // const breakoutRoomControlsHTML = `<input type="number" id="groupCount" placeholder="Enter number of groups">
+  //           <button id="createGroups">Create Groups</button>
+  //           <input type="number" id="timerInput" placeholder="Enter timer in seconds">
+  //           <button id="finishGrouping">Finish Grouping</button>`;
+  // breakoutRoomControls.insertAdjacentHTML(
+  //   "beforeend",
+  //   breakoutRoomControlsHTML
+  // );
+  document.querySelector("#controls").classList.remove("hidden");
   const pollFormHTML = `<label for="poll-question">問題：</label>
                 <input type="text" id="poll-question" name="poll-question" required>
                 <div id="poll-options">

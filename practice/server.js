@@ -169,6 +169,15 @@ io.on("connection", (socket) => {
         })?.[0];
 
         if (adminSocketId) {
+          const users = await getAllUsers(roomId);
+          console.log(users.some((user) => user.id === userId));
+          if (users.some((user) => user.id === userId)) {
+            socket.join(roomId);
+            socket.emit("join-approved", roomId);
+            io.to(roomId).emit("user-connected", peerId, userId);
+            return;
+          } else {
+          }
           io.to(adminSocketId).emit("user-join-request", {
             socketId: socket.id,
             userId,
@@ -192,32 +201,6 @@ io.on("connection", (socket) => {
         socket.join(roomId);
         io.to(roomId).emit("user-connected", peerId, userId);
       }
-    }
-  });
-
-  socket.on("admin-approve-user", ({ socketId }) => {
-    const pendingUser = pendingUsers.get(socketId);
-    if (pendingUser) {
-      const { userId, peerId, roomId } = pendingUser;
-      rooms.get(roomId).set(userId, { peerId }); // 将用户加入房间
-      const userSocket = io.sockets.sockets.get(socketId);
-      if (userSocket) {
-        userSocket.join(roomId);
-        io.to(userSocket.id).emit("join-approved", roomId);
-        io.to(roomId).emit("user-connected", peerId, userId);
-        pendingUsers.delete(socketId);
-      }
-    }
-  });
-
-  socket.on("admin-reject-user", ({ socketId }) => {
-    const userSocket = io.sockets.sockets.get(socketId);
-    if (userSocket) {
-      io.to(userSocket.id).emit("join-rejected");
-      // 关闭连接，防止后续代码引用 roomId 变量导致错误
-      userSocket.disconnect(true);
-      pendingUsers.delete(socketId);
-      return;
     }
 
     // 檢查 roomId、userId 和 peerId 是否有效
@@ -285,6 +268,7 @@ io.on("connection", (socket) => {
 
     // timer
     socket.on("start-countdown", (timerInputValue) => {
+      console.log("Starting countdown");
       const roomId = [...socket.rooms][1]; // 获取房间 ID
       console.log(
         `Starting countdown for room ${roomId} with ${timerInputValue} seconds`
@@ -335,6 +319,30 @@ io.on("connection", (socket) => {
       `2Room ${roomId} users:`,
       [...roomUsers.values()].map((u) => u.userId)
     );
+  });
+
+  socket.on("admin-approve-user", ({ socketId }) => {
+    const pendingUser = pendingUsers.get(socketId);
+    if (pendingUser) {
+      const { userId, peerId, roomId } = pendingUser;
+      rooms.get(roomId).set(userId, { peerId }); // 将用户加入房间
+      const userSocket = io.sockets.sockets.get(socketId);
+      if (userSocket) {
+        userSocket.join(roomId);
+        io.to(userSocket.id).emit("join-approved", roomId);
+        io.to(roomId).emit("user-connected", peerId, userId);
+        pendingUsers.delete(socketId); // 確保每個請求只處理一次
+      }
+    }
+  });
+
+  socket.on("admin-reject-user", ({ socketId }) => {
+    const userSocket = io.sockets.sockets.get(socketId);
+    if (userSocket) {
+      io.to(userSocket.id).emit("join-rejected");
+      userSocket.disconnect(true);
+      pendingUsers.delete(socketId); // 確保每個請求只處理一次
+    }
   });
 
   socket.on("timer-ended", () => {

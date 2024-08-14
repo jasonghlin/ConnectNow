@@ -90,3 +90,7 @@ body.panel-open footer {
     margin-top: 20px;
     font-size: 1.2em;
 }
+
+.hidden {
+    display: none !important;
+}

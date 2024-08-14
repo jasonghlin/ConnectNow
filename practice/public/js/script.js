@@ -481,9 +481,11 @@ export function connectToNewUser(userId, stream) {
     document.querySelector(".bg-1").addEventListener("click", (e) => {
       startBackgroundEffects();
     });
+    let hasJoinRequestListener = false; // 添加一個標誌來跟蹤是否已經綁定了監聽器
 
     socket.on("admin-status", (isAdmin) => {
-      if (isAdmin) {
+      if (isAdmin && !hasJoinRequestListener) {
+        hasJoinRequestListener = true; // 設置標誌為 true，表示已經綁定了監聽器
         socket.on("user-join-request", ({ socketId, userId, roomId }) => {
           const allowed = window.confirm(
             `User ${userId} requests to join the room. Allow?`
