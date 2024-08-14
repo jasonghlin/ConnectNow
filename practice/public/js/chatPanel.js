@@ -1,15 +1,26 @@
 import { checkStatus } from "../utils/loginOutAndRegister.js";
 import { socket } from "./script.js";
 
-// chat panel
 async function chatLogic() {
   const userInfo = await checkStatus();
   const messageContainer = document.querySelector(".message-container");
   const messageInput = document.getElementById("message-input");
   const sendButton = document.getElementById("send-button");
 
-  const path = window.location.pathname.split("/");
-  const roomId = path[path.length - 1];
+  let roomId = window.location.pathname.split("/").pop();
+
+  // Function to load chat messages from Redis
+  function loadChat(roomId) {
+    socket.emit("load-chat", roomId, (messages) => {
+      messageContainer.innerHTML = ""; // Clear current messages
+      messages.forEach((msg) =>
+        appendMessage(`${msg.userName}: ${msg.message}`)
+      );
+    });
+  }
+
+  // Load initial chat messages
+  loadChat(roomId);
 
   sendButton.addEventListener("click", () => {
     const message = messageInput.value.trim();
@@ -27,12 +38,17 @@ async function chatLogic() {
     }
   });
 
-  // Append message to the container
   function appendMessage(message) {
     const messageElement = document.createElement("div");
     messageElement.textContent = message;
     messageContainer.append(messageElement);
   }
+
+  // Handle room switch (e.g., moving to a breakout room)
+  socket.on("switch-room", (newRoomId) => {
+    roomId = newRoomId;
+    loadChat(roomId); // Load new room's chat
+  });
 }
 
 chatLogic();

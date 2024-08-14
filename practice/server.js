@@ -38,6 +38,13 @@ import multer from "multer";
 import { convertToMovStream } from "./public/utils/converToMOV.js";
 import { checkIsAdmin } from "./models/checkIsAdmin.js";
 
+import { createClient } from "redis";
+const redisClient = createClient();
+
+redisClient.on("error", (err) => console.log("Redis Client Error", err));
+
+await redisClient.connect();
+
 dotenv.config();
 const { JWT_SECRET_KEY, ENV, AWS_ACCESS_KEY, AWS_SECRET_KEY, BUCKET_NAME } =
   process.env;
@@ -143,6 +150,34 @@ const pendingUsers = new Map();
 
 io.on("connection", (socket) => {
   console.log("New connection:", socket.id);
+
+  socket.on("send-message", async ({ roomId, message, userName }) => {
+    if (message && message.trim() !== "") {
+      const chatMessage = { userName, message };
+
+      // Save the message in Redis
+      await redisClient.rPush(`chat:${roomId}`, JSON.stringify(chatMessage));
+
+      // Emit the message to all users in the room
+      io.to(roomId).emit("receive-message", chatMessage);
+    }
+  });
+
+  // Load messages for a specific room
+  socket.on("load-chat", async (roomId, callback) => {
+    const messages = await redisClient.lRange(`chat:${roomId}`, 0, -1);
+    const parsedMessages = messages.map((msg) => JSON.parse(msg));
+    callback(parsedMessages);
+  });
+
+  // Handle room switch (e.g., moving to a breakout room)
+  socket.on("join-room", async (roomId, peerId, userId) => {
+    // Switch room logic...
+    socket.join(roomId);
+
+    // Notify the user to load the new chat
+    socket.emit("switch-room", roomId);
+  });
 
   socket.on("join-room", async (roomId, peerId, userId) => {
     console.log(
@@ -275,12 +310,6 @@ io.on("connection", (socket) => {
         `Starting countdown for room ${roomId} with ${timerInputValue} seconds`
       );
       io.to(roomId).emit("start-countdown", timerInputValue);
-    });
-
-    socket.on("send-message", ({ roomId, message, userName }) => {
-      if (message && message.trim() !== "") {
-        io.to(roomId).emit("receive-message", { message, userName });
-      }
     });
 
     socket.emit("current-whiteboard-state", roomWhiteboardStates[roomId]);
