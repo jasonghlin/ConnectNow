@@ -80,7 +80,7 @@ export async function handleFinishGrouping(groupsData, timerInputValue) {
   // 將 groupName 保存到 localStorage
   groupsData.forEach((group) => {
     if (group.userId == currentUserId) {
-      localStorage.setItem(`breakoutRoom`, group.groupName);
+      localStorage.setItem(`breakoutRoom`, `breakout-${group.groupName}`);
     }
   });
 
