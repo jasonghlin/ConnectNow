@@ -391,19 +391,19 @@ export function connectToNewUser(userId, stream) {
     const roomId = path[path.length - 1];
     const token = localStorage.getItem("session");
 
-    const joinUserRoomResponse = await fetch(`/api/mainRoom/${roomId}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ userInfo: payload.payload }),
-    });
+    // const joinUserRoomResponse = await fetch(`/api/mainRoom/${roomId}`, {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //     Authorization: `Bearer ${token}`,
+    //   },
+    //   body: JSON.stringify({ userInfo: payload.payload }),
+    // });
 
-    if (!joinUserRoomResponse.ok) {
-      throw new Error("Failed to join room");
-    }
-    console.log("Join room response:", joinUserRoomResponse);
+    // if (!joinUserRoomResponse.ok) {
+    //   throw new Error("Failed to join room");
+    // }
+    // console.log("Join room response:", joinUserRoomResponse);
 
     initializeMainRoom();
 
@@ -497,9 +497,22 @@ export function connectToNewUser(userId, stream) {
       }
     });
 
-    socket.on("join-approved", (roomId) => {
+    socket.on("join-approved", async (roomId) => {
       console.log("You have been approved to join the room.");
       // 可以继续处理加入房间的逻辑
+      const joinUserRoomResponse = await fetch(`/api/mainRoom/${roomId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ userInfo: payload.payload }),
+      });
+
+      if (!joinUserRoomResponse.ok) {
+        throw new Error("Failed to join room");
+      }
+      console.log("Join room response:", joinUserRoomResponse);
     });
 
     socket.on("join-rejected", () => {

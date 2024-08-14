@@ -149,13 +149,13 @@ io.on("connection", (socket) => {
       `Attempt to join: User ${userId} joining room ${roomId} with peer ${peerId}`
     );
 
-    socket.userId = userId;
+    socket.userId = userId; // 将 userId 绑定到 socket 对象
 
     if (!rooms.has(roomId)) {
       rooms.set(roomId, new Map());
-      roomAdmins.set(roomId, userId);
+      roomAdmins.set(roomId, userId); // 设置第一个用户为管理员
       socket.emit("admin-status", true);
-      rooms.get(roomId).set(userId, { peerId }); // 修改为设置一个对象
+      rooms.get(roomId).set(userId, { peerId }); // 将管理员加入房间
       socket.join(roomId);
     } else {
       const isAdmin = roomAdmins.get(roomId) === userId;
@@ -175,6 +175,9 @@ io.on("connection", (socket) => {
             peerId,
             roomId,
           });
+        } else {
+          // 如果没有找到管理员的 socketId，则直接拒绝用户加入
+          socket.emit("join-rejected");
         }
       } else {
         const roomUsers = rooms.get(roomId);
@@ -189,6 +192,32 @@ io.on("connection", (socket) => {
         socket.join(roomId);
         io.to(roomId).emit("user-connected", peerId, userId);
       }
+    }
+  });
+
+  socket.on("admin-approve-user", ({ socketId }) => {
+    const pendingUser = pendingUsers.get(socketId);
+    if (pendingUser) {
+      const { userId, peerId, roomId } = pendingUser;
+      rooms.get(roomId).set(userId, { peerId }); // 将用户加入房间
+      const userSocket = io.sockets.sockets.get(socketId);
+      if (userSocket) {
+        userSocket.join(roomId);
+        io.to(userSocket.id).emit("join-approved", roomId);
+        io.to(roomId).emit("user-connected", peerId, userId);
+        pendingUsers.delete(socketId);
+      }
+    }
+  });
+
+  socket.on("admin-reject-user", ({ socketId }) => {
+    const userSocket = io.sockets.sockets.get(socketId);
+    if (userSocket) {
+      io.to(userSocket.id).emit("join-rejected");
+      // 关闭连接，防止后续代码引用 roomId 变量导致错误
+      userSocket.disconnect(true);
+      pendingUsers.delete(socketId);
+      return;
     }
 
     // 檢查 roomId、userId 和 peerId 是否有效
