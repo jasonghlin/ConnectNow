@@ -368,6 +368,10 @@ async function updateUsersList() {
 }
 
 export function connectToNewUser(userId, stream) {
+  if (userId === myPeerId) {
+    console.log("Skipping adding local stream to own video element");
+    return;
+  }
   const call = peerInstance.call(userId, myStream);
   call.on("stream", (userVideoStream) => {
     console.log("Remote stream received:", userVideoStream.getTracks());
