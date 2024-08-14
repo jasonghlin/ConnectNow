@@ -482,6 +482,31 @@ export function connectToNewUser(userId, stream) {
       startBackgroundEffects();
     });
 
+    socket.on("admin-status", (isAdmin) => {
+      if (isAdmin) {
+        socket.on("user-join-request", ({ socketId, userId, roomId }) => {
+          const allowed = window.confirm(
+            `User ${userId} requests to join the room. Allow?`
+          );
+          if (allowed) {
+            socket.emit("admin-approve-user", { socketId });
+          } else {
+            socket.emit("admin-reject-user", { socketId });
+          }
+        });
+      }
+    });
+
+    socket.on("join-approved", (roomId) => {
+      console.log("You have been approved to join the room.");
+      // 可以继续处理加入房间的逻辑
+    });
+
+    socket.on("join-rejected", () => {
+      alert("You were not allowed to join the room.");
+      window.location.href = "/";
+    });
+
     // 監聽 groups-finished 事件
     socket.on("groups-finished", (data) => {
       console.log("Groups finished:", data);

@@ -138,6 +138,9 @@ const userRooms = new Map();
 // 新增投票邏輯
 const polls = {};
 
+let roomAdmins = new Map();
+const pendingUsers = new Map();
+
 io.on("connection", (socket) => {
   console.log("New connection:", socket.id);
 
@@ -145,6 +148,48 @@ io.on("connection", (socket) => {
     console.log(
       `Attempt to join: User ${userId} joining room ${roomId} with peer ${peerId}`
     );
+
+    socket.userId = userId;
+
+    if (!rooms.has(roomId)) {
+      rooms.set(roomId, new Map());
+      roomAdmins.set(roomId, userId);
+      socket.emit("admin-status", true);
+      rooms.get(roomId).set(userId, { peerId }); // 修改为设置一个对象
+      socket.join(roomId);
+    } else {
+      const isAdmin = roomAdmins.get(roomId) === userId;
+      socket.emit("admin-status", isAdmin);
+
+      if (!isAdmin) {
+        pendingUsers.set(socket.id, { userId, peerId, roomId });
+
+        const adminSocketId = [...io.sockets.sockets].find(([id, sock]) => {
+          return sock.userId === roomAdmins.get(roomId);
+        })?.[0];
+
+        if (adminSocketId) {
+          io.to(adminSocketId).emit("user-join-request", {
+            socketId: socket.id,
+            userId,
+            peerId,
+            roomId,
+          });
+        }
+      } else {
+        const roomUsers = rooms.get(roomId);
+
+        if (roomUsers.has(userId)) {
+          const existingUser = roomUsers.get(userId);
+          existingUser.peerId = peerId; // 确保 existingUser 是一个对象
+        } else {
+          roomUsers.set(userId, { peerId });
+        }
+
+        socket.join(roomId);
+        io.to(roomId).emit("user-connected", peerId, userId);
+      }
+    }
 
     // 檢查 roomId、userId 和 peerId 是否有效
     if (!roomId || roomId === "null" || roomId === "undefined") {
