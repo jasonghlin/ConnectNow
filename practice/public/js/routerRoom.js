@@ -11,8 +11,17 @@ async function main() {
         Authorization: `Bearer ${localStorage.getItem("session")}`,
       },
     });
-    console.log(response);
-    userImgUrl = await response.json().url;
+    if (response.ok) {
+      // 確保請求成功
+      const data = await response.json();
+      console.log(data); // 檢查返回的數據格式
+      userImgUrl = data.url || "/static/images/user.png"; // 確保 url 存在
+    } else {
+      console.error("Failed to fetch user image");
+      userImgUrl = "/static/images/user.png"; // 默認圖片
+    }
+  } else if (!userImgUrl) {
+    userImgUrl = "/static/images/user.png"; // 默認圖片
   }
   if (payload) {
     document.querySelector(
@@ -23,9 +32,7 @@ async function main() {
                         <div class="welcome">歡迎使用 ConnectNow</div>
                     </div>
                     <div class="user-img">
-                        <img src="${
-                          userImgUrl ? userImgUrl : "/static/images/user.png"
-                        }" alt="user-img">
+                        <img src="${userImgUrl}" alt="user-img">
                     </div>
                 </div>`;
     document.querySelector(".login-register").addEventListener("click", (e) => {
