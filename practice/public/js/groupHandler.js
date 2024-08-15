@@ -23,6 +23,7 @@ export function initializeSocketListeners(socketInstance, peerObj) {
   socket = socketInstance;
   peerInstance = peerObj;
 
+  socket.off("user-connected");
   socket.on("user-connected", (userId, userName) => {
     console.log("New user connected to room:", userId, userName);
     connectToNewUser(userId, localStream);
@@ -152,6 +153,12 @@ async function returnToMainRoom() {
   });
   const payload = await response.json();
   currentRoom = mainRoom;
+  console.log(
+    "return to main room: ",
+    currentRoom,
+    peerInstance.id,
+    payload.payload.userId
+  );
   socket.emit(
     "join-room",
     currentRoom,

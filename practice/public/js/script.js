@@ -456,6 +456,7 @@ export function connectToNewUser(userId, stream) {
       );
 
       if (userId && id) {
+        console.log("Emitting join-room event");
         socket.emit("join-room", roomId, id, userId);
         mainRoom.addPeer(id, peer);
       } else {

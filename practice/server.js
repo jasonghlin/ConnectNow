@@ -30,6 +30,7 @@ import {
   getDbUserImg,
 } from "./models/updateUserInfo.js";
 import {
+  deleteUserInUserGroups,
   deleteUserInUsersRoomsRelation,
   deleteUserInMainRoom,
   deleteUser,
@@ -175,14 +176,14 @@ io.on("connection", (socket) => {
     callback(parsedMessages);
   });
 
-  // Handle room switch (e.g., moving to a breakout room)
-  socket.on("join-room", async (roomId, peerId, userId) => {
-    // Switch room logic...
-    socket.join(roomId);
+  // // Handle room switch (e.g., moving to a breakout room)
+  // socket.on("join-room", async (roomId, peerId, userId) => {
+  //   // Switch room logic...
+  //   socket.join(roomId);
 
-    // Notify the user to load the new chat
-    socket.emit("switch-room", roomId);
-  });
+  //   // Notify the user to load the new chat
+  //   socket.emit("switch-room", roomId);
+  // });
 
   socket.on("join-room", async (roomId, peerId, userId) => {
     console.log(
@@ -249,6 +250,8 @@ io.on("connection", (socket) => {
       roomUsers.set(userId, { peerId });
       socket.join(roomId);
       io.to(roomId).emit("user-connected", peerId, userId);
+      // Notify the user to load the new chat
+      socket.emit("switch-room", roomId);
     }
 
     // 檢查 roomId、userId 和 peerId 是否有效
@@ -346,6 +349,7 @@ io.on("connection", (socket) => {
         console.log("User disconnected:", userId);
         const isBreakoutRoom = roomId.startsWith("breakout-");
         if (!isBreakoutRoom) {
+          await deleteUserInUserGroups();
           await deleteUserInUsersRoomsRelation(userId);
           await deleteUserInMainRoom(userId);
           await deleteUser(userId);

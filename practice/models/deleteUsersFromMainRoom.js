@@ -1,5 +1,43 @@
 import { pool, createDatabase, useDatabase, createUserTable } from "./mysql.js";
 
+async function deleteUserInUserGroups(userId) {
+  try {
+    await createDatabase();
+    await useDatabase();
+    await createUserTable();
+
+    const query = "DELETE FROM user_groups WHERE user_id = ?";
+    const values = [userId];
+
+    const connection = await new Promise((resolve, reject) => {
+      pool.getConnection((err, connection) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(connection);
+        }
+      });
+    });
+
+    const results = await new Promise((resolve, reject) => {
+      connection.query(query, values, (error, results) => {
+        connection.release();
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results);
+        }
+      });
+    });
+
+    console.log("User deleted from user_groups with ID:", userId);
+    return results;
+  } catch (err) {
+    console.error("Error in deleteUser function:", err);
+    throw err;
+  }
+}
+
 async function deleteUserInUsersRoomsRelation(userId) {
   try {
     await createDatabase();
@@ -114,4 +152,9 @@ async function deleteUser(userId) {
   }
 }
 
-export { deleteUserInUsersRoomsRelation, deleteUserInMainRoom, deleteUser };
+export {
+  deleteUserInUserGroups,
+  deleteUserInUsersRoomsRelation,
+  deleteUserInMainRoom,
+  deleteUser,
+};
