@@ -75,6 +75,7 @@ async function startRecording() {
     mediaRecorder.start();
 
     console.log("Recording started");
+    alert("開始錄影");
   } catch (err) {
     console.error("Error: " + err);
   }
