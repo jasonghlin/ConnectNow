@@ -30,6 +30,11 @@ import {
   getDbUserImg,
 } from "./models/updateUserInfo.js";
 import {
+  deleteUserInUsersRoomsRelation,
+  deleteUserInMainRoom,
+  deleteUser,
+} from "./models/deleteUsersFromMainRoom.js";
+import {
   S3Client,
   HeadObjectCommand,
   PutObjectCommand,
@@ -336,20 +341,30 @@ io.on("connection", (socket) => {
       io.to(roomId).emit("update-stream", streamId, isScreenShare);
     });
 
-    socket.on("disconnect", () => {
-      console.log("User disconnected:", userId);
-      if (userRooms.has(userId)) {
-        const roomId = userRooms.get(userId);
-        if (rooms.has(roomId)) {
-          const roomUsers = rooms.get(roomId);
-          roomUsers.delete(userId);
-          if (roomUsers.size === 0) {
-            rooms.delete(roomId);
-          }
+    socket.on("disconnect", async () => {
+      try {
+        console.log("User disconnected:", userId);
+        const isBreakoutRoom = roomId.startsWith("breakout-");
+        if (!isBreakoutRoom) {
+          await deleteUserInUsersRoomsRelation(userId);
+          await deleteUserInMainRoom(userId);
+          await deleteUser(userId);
         }
-        userRooms.delete(userId);
+        if (userRooms.has(userId)) {
+          const roomId = userRooms.get(userId);
+          if (rooms.has(roomId)) {
+            const roomUsers = rooms.get(roomId);
+            roomUsers.delete(userId);
+            if (roomUsers.size === 0) {
+              rooms.delete(roomId);
+            }
+          }
+          userRooms.delete(userId);
+        }
+        socket.to(roomId).emit("user-disconnected", peerId, userId);
+      } catch (err) {
+        console.log(err);
       }
-      socket.to(roomId).emit("user-disconnected", peerId, userId);
     });
 
     // 打印房間信息，用於調試
