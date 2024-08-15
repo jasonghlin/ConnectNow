@@ -13,9 +13,13 @@ async function chatLogic() {
   function loadChat(roomId) {
     socket.emit("load-chat", roomId, (messages) => {
       messageContainer.innerHTML = ""; // Clear current messages
-      messages.forEach((msg) =>
-        appendMessage(`${msg.userName}: ${msg.message}`)
-      );
+      messages.forEach((msg) => {
+        if (msg.userName === userInfo.payload.userName) {
+          appendMessage("You", msg.message);
+        } else {
+          appendMessage(msg.userName, msg.message);
+        }
+      });
     });
   }
 
@@ -27,21 +31,55 @@ async function chatLogic() {
     if (message) {
       const userName = userInfo.payload.userName;
       socket.emit("send-message", { roomId, message, userName });
-      appendMessage(`You: ${message}`);
+      appendMessage("You", message);
       messageInput.value = "";
+    }
+  });
+
+  messageInput.addEventListener("keyup", (e) => {
+    if (e.key === "Enter") {
+      const message = messageInput.value.trim();
+      if (message) {
+        const userName = userInfo.payload.userName;
+        socket.emit("send-message", { roomId, message, userName });
+        appendMessage("You", message);
+        messageInput.value = "";
+      }
     }
   });
 
   socket.on("receive-message", ({ message, userName }) => {
     if (userName !== userInfo.payload.userName) {
-      appendMessage(`${userName}: ${message}`);
+      appendMessage(userName, message);
     }
   });
 
-  function appendMessage(message) {
-    const messageElement = document.createElement("div");
-    messageElement.textContent = message;
-    messageContainer.append(messageElement);
+  function appendMessage(userName, message) {
+    const html = `<div class="message-wrapper">
+        <div class="name-time">
+            <div class="message-name">${userName}</div>
+            <div class="message-time">${
+              new Date().getHours() >= 12
+                ? "下午"
+                : new Date().getHours() >= 18
+                ? "晚上"
+                : "早上"
+            } ${
+      new Date().getHours() < 12
+        ? new Date().getHours() < 10
+          ? `0${new Date().getHours()}`
+          : new Date().getHours()
+        : new Date().getHours() - 12
+    }:${
+      new Date().getMinutes() < 10
+        ? `0${new Date().getMinutes()}`
+        : new Date().getMinutes()
+    }</div>
+        </div>
+        <div class="message-info">${message}</div>
+    </div>`;
+
+    messageContainer.insertAdjacentHTML("beforeend", html);
   }
 
   // Handle room switch (e.g., moving to a breakout room)

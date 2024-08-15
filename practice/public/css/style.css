@@ -224,45 +224,10 @@ body.panel-open footer {
     transform: translateX(-40rem);
 }
 
-.chat-panel {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
 
-.message-container {
-    margin-top: 1rem;
-    margin-left: 1rem;
-    height: 100%;
-    overflow-y: scroll;
-    
-}
-
-.send-container {
-    position: relative;
-}
-
-#message-input {
-    width: 100%;
-    padding: 1rem;
-    background-color: transparent;
-    border: .1rem solid #3c4043;
-    position: relative;
-    bottom: -3.8rem;
-    color: white;
-}
-
-#send-button {
-    position: relative;
-    padding: 1rem;
-    left: 24.5rem;
-    background-color: transparent;
-    color: white;
-    border-width: .1rem;
-}
 
 /* panels */
-.activities-panel, .users-panel, .chat-panel {
+.activities-panel, .users-panel {
     position: fixed;
     top: 0;
     right: -40rem;
@@ -292,7 +257,7 @@ body.panel-open footer {
     font-size: 1.8rem;
 }
 
-#close-activities, #close-users, #close-chat {
+#close-activities, #close-users {
     background: none;
     border: none;
     color: #fff;
