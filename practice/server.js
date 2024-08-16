@@ -50,15 +50,14 @@ dotenv.config();
 const { JWT_SECRET_KEY, ENV, AWS_ACCESS_KEY, AWS_SECRET_KEY, BUCKET_NAME } =
   process.env;
 
-const redisClient = createClient();
-
 if (ENV === "production") {
   const redisClient = createClient({
     url: "redis://clustercfg.connectnow-elasticache.z2mtgi.usw2.cache.amazonaws.com:6379",
   });
 } else {
-  redisClient.on("error", (err) => console.log("Redis Client Error", err));
+  const redisClient = createClient();
 }
+redisClient.on("error", (err) => console.log("Redis Client Error", err));
 await redisClient.connect();
 
 const __filename = fileURLToPath(import.meta.url);
