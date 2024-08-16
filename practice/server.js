@@ -53,7 +53,7 @@ const { JWT_SECRET_KEY, ENV, AWS_ACCESS_KEY, AWS_SECRET_KEY, BUCKET_NAME } =
 let redisClient;
 if (ENV === "production") {
   redisClient = createClient({
-    url: "redis://clustercfg.connectnow-elasticache.z2mtgi.usw2.cache.amazonaws.com:6379",
+    url: "rediss://clustercfg.connectnow-elasticache.z2mtgi.usw2.cache.amazonaws.com:6379",
   });
 } else {
   redisClient = createClient();

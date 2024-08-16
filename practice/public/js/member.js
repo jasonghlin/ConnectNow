@@ -378,8 +378,8 @@ async function userImg() {
       },
     });
     let url = await response.json();
-    // 修改邏輯
-    if (url.detail !== "Token decode error") {
+    console.log(url);
+    if (url.message !== "File not found") {
       localStorage.setItem("proImg", url.url);
       document.querySelector(".photo > img").src = url.url;
     }
