@@ -45,15 +45,21 @@ import { convertToMovStream } from "./public/utils/converToMOV.js";
 import { checkIsAdmin } from "./models/checkIsAdmin.js";
 
 import { createClient } from "redis";
-const redisClient = createClient();
-
-redisClient.on("error", (err) => console.log("Redis Client Error", err));
-
-await redisClient.connect();
 
 dotenv.config();
 const { JWT_SECRET_KEY, ENV, AWS_ACCESS_KEY, AWS_SECRET_KEY, BUCKET_NAME } =
   process.env;
+
+const redisClient = createClient();
+
+if (ENV === "production") {
+  const redisClient = createClient({
+    url: "redis://clustercfg.connectnow-elasticache.z2mtgi.usw2.cache.amazonaws.com:6379",
+  });
+} else {
+  redisClient.on("error", (err) => console.log("Redis Client Error", err));
+}
+await redisClient.connect();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -247,28 +253,12 @@ io.on("connection", (socket) => {
       }
 
       const roomUsers = rooms.get(roomId);
+      console.log("breakout room userId", userId);
       roomUsers.set(userId, { peerId });
       socket.join(roomId);
       io.to(roomId).emit("user-connected", peerId, userId);
       // Notify the user to load the new chat
       socket.emit("switch-room", roomId);
-    }
-
-    // 檢查 roomId、userId 和 peerId 是否有效
-    if (!roomId || roomId === "null" || roomId === "undefined") {
-      console.error("Invalid roomId:", roomId);
-      socket.emit("join-error", "Invalid room ID");
-      return;
-    }
-    if (!userId || userId === "null" || userId === "undefined") {
-      console.error("Invalid userId:", userId);
-      socket.emit("join-error", "Invalid user ID");
-      return;
-    }
-    if (!peerId || peerId === "null" || peerId === "undefined") {
-      console.error("Invalid peerId:", peerId);
-      socket.emit("join-error", "Invalid peer ID");
-      return;
     }
 
     socket.join(roomId);
