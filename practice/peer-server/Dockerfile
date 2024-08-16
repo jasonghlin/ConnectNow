@@ -11,7 +11,7 @@ RUN npm install --no-audit
 
 # 複製其他文件，並排除 .env 和 node_modules
 COPY . .
-RUN rm -rf node_modules .env
+RUN rm -rf .env
 
 # 曝露應用的端口
 EXPOSE 9001
