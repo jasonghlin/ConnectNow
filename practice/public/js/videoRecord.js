@@ -5,8 +5,7 @@ let recordedChunks = [];
 let movBlob;
 let isRecording = false;
 
-document.querySelector(".video-record")?.addEventListener("click", () => {
-  isRecording = !isRecording;
+function handleVideoRecordClick() {
   if (isRecording) {
     document.querySelector(
       ".video-record"
@@ -21,9 +20,9 @@ document.querySelector(".video-record")?.addEventListener("click", () => {
     document.querySelector(
       ".video-record"
     ).innerHTML = `<div class="icon-wrapper">
-                        <i class="fas fa-record-vinyl></i>
+                        <i class="fas fa-record-vinyl"></i>
                     </div>
-                    <div">
+                    <div>
                         <p>錄製</p>
                         <p>錄下會議過程供日後隨選觀看</p>
                     </div>`;
@@ -32,11 +31,29 @@ document.querySelector(".video-record")?.addEventListener("click", () => {
     (!mediaRecorder || mediaRecorder.state === "inactive") &&
     confirm("是否要開始錄影")
   ) {
+    isRecording = !isRecording;
     startRecording();
   } else if (mediaRecorder.state === "recording") {
+    isRecording = !isRecording;
     stopRecording();
   }
+}
+
+// 使用 MutationObserver 監聽 DOM 變化
+const observer = new MutationObserver((mutations) => {
+  mutations.forEach((mutation) => {
+    mutation.addedNodes.forEach((node) => {
+      // 檢查是否是我們想要的按鈕
+      if (node.classList && node.classList.contains("video-record")) {
+        // 為新加的按鈕增加事件監聽器
+        node.addEventListener("click", handleVideoRecordClick);
+      }
+    });
+  });
 });
+
+// 啟動 observer 監聽 document body 上的變化
+observer.observe(document.body, { childList: true, subtree: true });
 
 async function startRecording() {
   try {
