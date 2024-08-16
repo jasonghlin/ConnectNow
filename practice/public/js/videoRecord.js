@@ -137,15 +137,16 @@ async function sendToFastAPI(movBlob) {
   formData.append("file", movBlob, "video.mov");
 
   try {
-    const response = await fetch("http://localhost:8000/videoSrt", {
-      method: "POST",
-      body: formData,
-    });
-
-    // const response = await fetch("http://srt-generate.connectnow.website/videoSrt", {
-    //     method: "POST",
-    //     body: formData,
-    //   });
+    const response =
+      window.location.protocol == "https:"
+        ? await fetch("http://localhost:8000/videoSrt", {
+            method: "POST",
+            body: formData,
+          })
+        : await fetch("http://srt-generate.connectnow.website/videoSrt", {
+            method: "POST",
+            body: formData,
+          });
 
     if (!response.ok) throw new Error("Failed to process subtitles.");
 

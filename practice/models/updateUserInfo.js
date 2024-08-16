@@ -159,7 +159,7 @@ async function getDbUserImg(user_id) {
         if (error) {
           reject(error);
         } else {
-          resolve(results[0]); // 因为 db.fetchone() 在 Python 中返回单个记录
+          resolve(results[0]);
         }
       });
     });

@@ -379,7 +379,7 @@ async function userImg() {
     });
     let url = await response.json();
     console.log(url);
-    if (url.message !== "File not found") {
+    if (url.message !== "File not found" && !url.url) {
       localStorage.setItem("proImg", url.url);
       document.querySelector(".photo > img").src = url.url;
     }
