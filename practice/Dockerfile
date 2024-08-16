@@ -4,7 +4,7 @@ FROM node:latest
 WORKDIR /usr/src/app
 
 # 複製 package.json 和 package-lock.json 來安裝依賴
-COPY package*.json ./
+COPY COPY package.json package-lock.json ./
 
 # 排除 node_modules 資料夾
 RUN npm install --no-audit
