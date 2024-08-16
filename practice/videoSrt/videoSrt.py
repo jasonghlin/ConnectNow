@@ -42,6 +42,10 @@ def create_srt(transcriptions, timestamps):
 
     return "\n".join(srt_content)
 
+@app.get("/health")
+async def health_check():
+    return {"status": "ok"}
+
 # processing video srt file
 @app.post("/videoSrt")
 async def process_video(file: UploadFile = File(...)):
