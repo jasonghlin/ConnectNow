@@ -222,13 +222,14 @@ io.on("connection", (socket) => {
               socket.emit("join-approved", roomId);
               io.to(roomId).emit("user-connected", peerId, userId);
               return;
+            } else {
+              io.to(adminSocketId).emit("user-join-request", {
+                socketId: socket.id,
+                userId,
+                peerId,
+                roomId,
+              });
             }
-            io.to(adminSocketId).emit("user-join-request", {
-              socketId: socket.id,
-              userId,
-              peerId,
-              roomId,
-            });
           } else {
             socket.emit("join-rejected");
           }
@@ -236,9 +237,11 @@ io.on("connection", (socket) => {
           const roomUsers = rooms.get(roomId);
 
           if (roomUsers.has(userId)) {
-            const existingUser = roomUsers.get(userId);
-            existingUser.peerId = peerId;
+            let existingUser = roomUsers.get(userId);
+            existingUser = { ...existingUser, peerId, userId }; // 確保 userId 屬性存在於 existingUser 中
+            roomUsers.set(userId, existingUser);
           } else {
+            console.log("room users no userId: ", userId);
             roomUsers.set(userId, { peerId });
           }
 

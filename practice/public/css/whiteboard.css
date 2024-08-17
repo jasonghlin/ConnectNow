@@ -3,6 +3,50 @@ body {
     padding: 0
 }
 
+/* whiteboard */
+.whiteboard-panel {
+    position: fixed;
+    top: 0;
+    right: -400px;
+    width: 400px;
+    height: 100%;
+    background-color: white;
+    transition: right 0.3s ease-in-out;
+    z-index: 1000;
+}
+
+.whiteboard-panel.show {
+    right: 0;
+}
+
+.whiteboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #f0f0f0;
+}
+
+.whiteboard-content {
+    padding: 10px;
+}
+
+#whiteboard-canvas {
+    border: 1px solid #ccc;
+    width: 100%;
+}
+
+.whiteboard-controls {
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.whiteboard-content {
+    width: 120rem
+}
+
 .menu-container {
     position: absolute;
     top:0;

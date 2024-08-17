@@ -3,7 +3,7 @@
 let mediaRecorder;
 let recordedChunks = [];
 let movBlob;
-let isRecording = false;
+let isRecording = true;
 
 function handleVideoRecordClick() {
   if (isRecording) {
@@ -156,11 +156,11 @@ async function sendToFastAPI(movBlob) {
   try {
     const response =
       window.location.protocol == "https:"
-        ? await fetch("http://localhost:8000/videoSrt", {
+        ? await fetch("http://srt-generate.connectnow.website/videoSrt", {
             method: "POST",
             body: formData,
           })
-        : await fetch("http://srt-generate.connectnow.website/videoSrt", {
+        : await fetch("http://localhost:8000/videoSrt", {
             method: "POST",
             body: formData,
           });

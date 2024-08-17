@@ -11,7 +11,7 @@ let current = {
 canvas.addEventListener("mousedown", onMouseDown, false);
 canvas.addEventListener("mouseup", onMouseUp, false);
 canvas.addEventListener("mouseout", onMouseUp, false);
-canvas.addEventListener("mousemove", throttle(onMouseMove, 10), false);
+canvas.addEventListener("mousemove", onMouseMove, false);
 
 // 設置顏色和寬度變更事件
 document.querySelector(".color-picker").addEventListener("input", (e) => {
@@ -43,43 +43,42 @@ function drawLine(x0, y0, x1, y1, color, width, emit) {
   socket.emit("draw", { roomId, x0, y0, x1, y1, color, width });
 }
 
-function onMouseDown(e) {
-  drawing = true;
-  current.x = e.clientX - canvas.offsetLeft;
-  current.y = e.clientY - canvas.offsetTop;
-}
-
 function onMouseUp(e) {
   if (!drawing) {
     return;
   }
   drawing = false;
-  drawLine(
-    current.x,
-    current.y,
-    e.clientX - canvas.offsetLeft,
-    e.clientY - canvas.offsetTop,
-    current.color,
-    current.width,
-    true
-  );
+}
+function getMousePos(canvas, evt) {
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: (evt.clientX - rect.left) * (canvas.width / rect.width),
+    y: (evt.clientY - rect.top) * (canvas.height / rect.height),
+  };
+}
+
+function onMouseDown(e) {
+  drawing = true;
+  const pos = getMousePos(canvas, e);
+  current.x = pos.x;
+  current.y = pos.y;
 }
 
 function onMouseMove(e) {
-  if (!drawing) {
-    return;
-  }
+  if (!drawing) return;
+
+  const pos = getMousePos(canvas, e);
   drawLine(
     current.x,
     current.y,
-    e.clientX - canvas.offsetLeft,
-    e.clientY - canvas.offsetTop,
+    pos.x,
+    pos.y,
     current.color,
     current.width,
     true
   );
-  current.x = e.clientX - canvas.offsetLeft;
-  current.y = e.clientY - canvas.offsetTop;
+  current.x = pos.x;
+  current.y = pos.y;
 }
 
 function clearWhiteboard() {
@@ -118,17 +117,17 @@ socket.on("current-whiteboard-state", (whiteboardState) => {
 });
 
 // 防止事件過於頻繁
-function throttle(callback, delay) {
-  let previousCall = new Date().getTime();
-  return function () {
-    const time = new Date().getTime();
+// function throttle(callback, delay) {
+//   let previousCall = new Date().getTime();
+//   return function () {
+//     const time = new Date().getTime();
 
-    if (time - previousCall >= delay) {
-      previousCall = time;
-      callback.apply(null, arguments);
-    }
-  };
-}
+//     if (time - previousCall >= delay) {
+//       previousCall = time;
+//       callback.apply(null, arguments);
+//     }
+//   };
+// }
 
 // 當用戶加入房間時，發送 join-room 事件並請求白板狀態
 function joinRoom(roomId, userId) {
@@ -157,6 +156,8 @@ const whiteBoardBtn = document.querySelector(".white-board");
 whiteBoardBtn.addEventListener("click", (e) => {
   const videoStream = document.querySelector(".video-stream");
   const videos = Array.from(videoStream.querySelectorAll("video"));
+  const localStream = document.querySelector(".local-stream");
+  videos.unshift(localStream);
   const whiteBoardCanvas = document.querySelector(".whiteboard-content");
   let smallVideosContainer = videoStream.querySelector(
     ".small-videos-container"
