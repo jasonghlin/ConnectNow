@@ -156,7 +156,7 @@ async function sendToFastAPI(movBlob) {
   try {
     const response =
       window.location.protocol == "https:"
-        ? await fetch("http://srt-generate.connectnow.website/videoSrt", {
+        ? await fetch("https://srt-generate.connectnow.website/videoSrt", {
             method: "POST",
             body: formData,
           })
