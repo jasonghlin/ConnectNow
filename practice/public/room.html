@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Connect Now</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
         crossorigin="anonymous" />
     <link rel="stylesheet" href="/static/css/style.css">
@@ -21,6 +21,7 @@
     <div class="video-stream">
         <!-- 动态生成 video -->
         <div class="whiteboard-content hidden">
+            <button class="close-whiteboard">X</button>
             <canvas id="whiteboard-canvas" width="800" height="400"></canvas>
             <div class="whiteboard-controls">
                 <button class="clear-whiteboard">清除白板</button>
@@ -132,7 +133,7 @@
                     </div>
                 </div>
 
-                <!-- <div class="video-record">
+                <div class="video-record">
                     <div class="icon-wrapper">
                         <i class="fas fa-record-vinyl"></i>
                     </div>
@@ -140,7 +141,7 @@
                         <p>錄製</p>
                         <p>錄下會議過程供日後隨選觀看</p>
                     </div>
-                </div> -->
+                </div>
 
             </div>
         </div>
@@ -159,7 +160,7 @@
         <div>
             <button id="close-breakout-room">X</button>
         </div>
-        <div id="controls" class="hidden">
+        <div id="controls" class="">
             <input type="number" id="groupCount" placeholder="Enter number of groups">
             <button id="createGroups">Create Groups</button>
             <input type="number" id="timerInput" placeholder="Enter timer in seconds">
@@ -176,7 +177,7 @@
         <div class="poll-content">
             <h2>意見調查</h2>
             <form id="poll-form">
-                <!-- <label for="poll-question">問題：</label>
+                <label for="poll-question">問題：</label>
                 <input type="text" id="poll-question" name="poll-question" required>
                 <div id="poll-options">
                     <label for="option-1">選項 1：</label>
@@ -185,7 +186,7 @@
                     <input type="text" id="option-2" name="options" required>
                 </div>
                 <button type="button" id="add-option">添加選項</button>
-                <button type="submit">提交投票</button> -->
+                <button type="submit">提交投票</button>
             </form>
             <div id="poll-question-display"></div>
             <div id="poll-options-display" class="hidden"></div>
@@ -233,7 +234,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-    <script type="module" src="/static/js/adminFeature.js"></script>
+    <!-- <script type="module" src="/static/js/adminFeature.js"></script> -->
     <script type="module" src="/static/js/shareScreen.js"></script>
     <script type="module" src="/static/js/script.js"></script>
     <script type="module" src="/static/js/activitiesPanel.js"></script>

@@ -1,11 +1,9 @@
 import { handleFinishGrouping } from "./groupHandler.js";
 
-document
-  .getElementById("createGroups")
-  ?.addEventListener("click", createGroups);
+document.getElementById("createGroups").addEventListener("click", createGroups);
 document
   .getElementById("finishGrouping")
-  ?.addEventListener("click", finishGrouping);
+  .addEventListener("click", finishGrouping);
 
 let timerInterval;
 

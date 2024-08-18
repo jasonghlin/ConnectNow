@@ -300,8 +300,10 @@ body.panel-open footer {
 }
 
 .video-stream video {
-    width: 40%;
-    height: 50%;
+    /* width: 40%; */
+    width: 52rem;
+    /* height: 50%; */
+    height: 39rem;
     /* object-fit: cover; */
     margin: 5px;
 }

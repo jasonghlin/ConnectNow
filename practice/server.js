@@ -195,73 +195,90 @@ io.on("connection", (socket) => {
     console.log(
       `Attempt to join: User ${userId} joining room ${roomId} with peer ${peerId}`
     );
-    const isBreakoutRoom = roomId.startsWith("breakout-");
-    socket.userId = userId; // 将 userId 绑定到 socket 对象
-    if (!isBreakoutRoom) {
-      if (!rooms.has(roomId)) {
-        rooms.set(roomId, new Map());
-        roomAdmins.set(roomId, userId); // Set the first user as admin
-        socket.emit("admin-status", true);
-        rooms.get(roomId).set(userId, { peerId }); // Add admin to room
-        socket.join(roomId);
-      } else {
-        const isAdmin = roomAdmins.get(roomId) === userId;
-        socket.emit("admin-status", isAdmin);
+    // const isBreakoutRoom = roomId.startsWith("breakout-");
+    // socket.userId = userId; // 将 userId 绑定到 socket 对象
+    // if (!isBreakoutRoom) {
+    //   if (!rooms.has(roomId)) {
+    //     rooms.set(roomId, new Map());
+    //     roomAdmins.set(roomId, userId); // Set the first user as admin
+    //     socket.emit("admin-status", true);
+    //     rooms.get(roomId).set(userId, { peerId }); // Add admin to room
+    //     socket.join(roomId);
+    //   } else {
+    //     const isAdmin = roomAdmins.get(roomId) === userId;
+    //     socket.emit("admin-status", isAdmin);
 
-        if (!isAdmin) {
-          pendingUsers.set(socket.id, { userId, peerId, roomId });
+    //     if (!isAdmin) {
+    //       pendingUsers.set(socket.id, { userId, peerId, roomId });
 
-          const adminSocketId = [...io.sockets.sockets].find(([id, sock]) => {
-            return sock.userId === roomAdmins.get(roomId);
-          })?.[0];
+    //       const adminSocketId = [...io.sockets.sockets].find(([id, sock]) => {
+    //         return sock.userId === roomAdmins.get(roomId);
+    //       })?.[0];
 
-          if (adminSocketId) {
-            const users = await getAllUsers(roomId);
-            if (users.some((user) => user.id === userId)) {
-              socket.join(roomId);
-              socket.emit("join-approved", roomId);
-              io.to(roomId).emit("user-connected", peerId, userId);
-              return;
-            } else {
-              io.to(adminSocketId).emit("user-join-request", {
-                socketId: socket.id,
-                userId,
-                peerId,
-                roomId,
-              });
-            }
-          } else {
-            socket.emit("join-rejected");
-          }
-        } else {
-          const roomUsers = rooms.get(roomId);
+    //       if (adminSocketId) {
+    //         const users = await getAllUsers(roomId);
+    //         if (users.some((user) => user.id === userId)) {
+    //           socket.join(roomId);
+    //           socket.emit("join-approved", roomId);
+    //           io.to(roomId).emit("user-connected", peerId, userId);
+    //           return;
+    //         } else {
+    //           io.to(adminSocketId).emit("user-join-request", {
+    //             socketId: socket.id,
+    //             userId,
+    //             peerId,
+    //             roomId,
+    //           });
+    //         }
+    //       } else {
+    //         socket.emit("join-rejected");
+    //       }
+    //     } else {
+    //       const roomUsers = rooms.get(roomId);
 
-          if (roomUsers.has(userId)) {
-            let existingUser = roomUsers.get(userId);
-            existingUser = { ...existingUser, peerId, userId }; // 確保 userId 屬性存在於 existingUser 中
-            roomUsers.set(userId, existingUser);
-          } else {
-            console.log("room users no userId: ", userId);
-            roomUsers.set(userId, { peerId });
-          }
+    //       if (roomUsers.has(userId)) {
+    //         let existingUser = roomUsers.get(userId);
+    //         existingUser = { ...existingUser, peerId, userId }; // 確保 userId 屬性存在於 existingUser 中
+    //         roomUsers.set(userId, existingUser);
+    //       } else {
+    //         console.log("room users no userId: ", userId);
+    //         roomUsers.set(userId, { peerId });
+    //       }
 
-          socket.join(roomId);
-          io.to(roomId).emit("user-connected", peerId, userId);
-        }
-      }
-    } else {
-      // For breakout rooms, simply add the user to the room without admin checks
-      if (!rooms.has(roomId)) {
-        rooms.set(roomId, new Map());
-      }
+    //       socket.join(roomId);
+    //       io.to(roomId).emit("user-connected", peerId, userId);
+    //     }
+    //   }
+    // } else {
+    //   // For breakout rooms, simply add the user to the room without admin checks
+    //   if (!rooms.has(roomId)) {
+    //     rooms.set(roomId, new Map());
+    //   }
 
-      const roomUsers = rooms.get(roomId);
-      console.log("breakout room userId", userId);
-      roomUsers.set(userId, { peerId });
-      socket.join(roomId);
-      io.to(roomId).emit("user-connected", peerId, userId);
-      // Notify the user to load the new chat
-      socket.emit("switch-room", roomId);
+    //   const roomUsers = rooms.get(roomId);
+    //   console.log("breakout room userId", userId);
+    //   roomUsers.set(userId, { peerId });
+    //   socket.join(roomId);
+    //   io.to(roomId).emit("user-connected", peerId, userId);
+    //   // Notify the user to load the new chat
+    //   socket.emit("switch-room", roomId);
+    // }
+
+    // 檢查 roomId、userId 和 peerId 是否有效
+    if (!roomId || roomId === "null" || roomId === "undefined") {
+      console.error("Invalid roomId:", roomId);
+      socket.emit("join-error", "Invalid room ID");
+      return;
+    }
+    if (!userId || userId === "null" || userId === "undefined") {
+      console.error("Invalid userId:", userId);
+      socket.emit("join-error", "Invalid user ID");
+      return;
+    }
+    if (!peerId || peerId === "null" || peerId === "undefined") {
+      console.error("Invalid peerId:", peerId);
+      socket.emit("join-error", "Invalid peer ID");
+      return;
     }
 
     socket.join(roomId);
@@ -342,7 +359,7 @@ io.on("connection", (socket) => {
         console.log("User disconnected:", userId);
         const isBreakoutRoom = roomId.startsWith("breakout-");
         if (!isBreakoutRoom) {
-          await deleteUserInUserGroups();
+          await deleteUserInUserGroups(userId);
           await deleteUserInUsersRoomsRelation(userId);
           await deleteUserInMainRoom(userId);
           await deleteUser(userId);
@@ -371,29 +388,29 @@ io.on("connection", (socket) => {
     );
   });
 
-  socket.on("admin-approve-user", ({ socketId }) => {
-    const pendingUser = pendingUsers.get(socketId);
-    if (pendingUser) {
-      const { userId, peerId, roomId } = pendingUser;
-      rooms.get(roomId).set(userId, { peerId }); // 将用户加入房间
-      const userSocket = io.sockets.sockets.get(socketId);
-      if (userSocket) {
-        userSocket.join(roomId);
-        io.to(userSocket.id).emit("join-approved", roomId);
-        io.to(roomId).emit("user-connected", peerId, userId);
-        pendingUsers.delete(socketId); // 確保每個請求只處理一次
-      }
-    }
-  });
+  // socket.on("admin-approve-user", ({ socketId }) => {
+  //   const pendingUser = pendingUsers.get(socketId);
+  //   if (pendingUser) {
+  //     const { userId, peerId, roomId } = pendingUser;
+  //     rooms.get(roomId).set(userId, { peerId }); // 将用户加入房间
+  //     const userSocket = io.sockets.sockets.get(socketId);
+  //     if (userSocket) {
+  //       userSocket.join(roomId);
+  //       io.to(userSocket.id).emit("join-approved", roomId);
+  //       io.to(roomId).emit("user-connected", peerId, userId);
+  //       pendingUsers.delete(socketId); // 確保每個請求只處理一次
+  //     }
+  //   }
+  // });
 
-  socket.on("admin-reject-user", ({ socketId }) => {
-    const userSocket = io.sockets.sockets.get(socketId);
-    if (userSocket) {
-      io.to(userSocket.id).emit("join-rejected");
-      userSocket.disconnect(true);
-      pendingUsers.delete(socketId); // 確保每個請求只處理一次
-    }
-  });
+  // socket.on("admin-reject-user", ({ socketId }) => {
+  //   const userSocket = io.sockets.sockets.get(socketId);
+  //   if (userSocket) {
+  //     io.to(userSocket.id).emit("join-rejected");
+  //     userSocket.disconnect(true);
+  //     pendingUsers.delete(socketId); // 確保每個請求只處理一次
+  //   }
+  // });
 
   socket.on("timer-ended", () => {
     const roomId = [...socket.rooms][1]; // 獲取房間 ID
@@ -697,14 +714,14 @@ app.post("/api/mainRoom/:roomId", authenticateJWT, async (req, res) => {
 });
 
 // check if user is admin
-app.post("/api/admin", authenticateJWT, async (req, res) => {
-  const isAdmin = await checkIsAdmin(req.body.roomId, req.payload.userId);
-  if (isAdmin.length > 0) {
-    res.status(200).json({ admin: true });
-  } else {
-    res.status(403).json({ admin: false });
-  }
-});
+// app.post("/api/admin", authenticateJWT, async (req, res) => {
+//   const isAdmin = await checkIsAdmin(req.body.roomId, req.payload.userId);
+//   if (isAdmin.length > 0) {
+//     res.status(200).json({ admin: true });
+//   } else {
+//     res.status(403).json({ admin: false });
+//   }
+// });
 
 app.get("/api/allUsers", authenticateJWT, async (req, res) => {
   try {

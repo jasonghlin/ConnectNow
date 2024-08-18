@@ -395,19 +395,19 @@ export function connectToNewUser(userId, stream) {
     const roomId = path[path.length - 1];
     const token = localStorage.getItem("session");
 
-    // const joinUserRoomResponse = await fetch(`/api/mainRoom/${roomId}`, {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //     Authorization: `Bearer ${token}`,
-    //   },
-    //   body: JSON.stringify({ userInfo: payload.payload }),
-    // });
+    const joinUserRoomResponse = await fetch(`/api/mainRoom/${roomId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ userInfo: payload.payload }),
+    });
 
-    // if (!joinUserRoomResponse.ok) {
-    //   throw new Error("Failed to join room");
-    // }
-    // console.log("Join room response:", joinUserRoomResponse);
+    if (!joinUserRoomResponse.ok) {
+      throw new Error("Failed to join room");
+    }
+    console.log("Join room response:", joinUserRoomResponse);
 
     initializeMainRoom();
 
@@ -488,44 +488,44 @@ export function connectToNewUser(userId, stream) {
     });
     let hasJoinRequestListener = false; // 添加一個標誌來跟蹤是否已經綁定了監聽器
 
-    socket.on("admin-status", (isAdmin) => {
-      if (isAdmin && !hasJoinRequestListener) {
-        hasJoinRequestListener = true; // 設置標誌為 true，表示已經綁定了監聽器
-        socket.on("user-join-request", ({ socketId, userId, roomId }) => {
-          const allowed = window.confirm(
-            `User ${userId} requests to join the room. Allow?`
-          );
-          if (allowed) {
-            socket.emit("admin-approve-user", { socketId });
-          } else {
-            socket.emit("admin-reject-user", { socketId });
-          }
-        });
-      }
-    });
+    // socket.on("admin-status", (isAdmin) => {
+    //   if (isAdmin && !hasJoinRequestListener) {
+    //     hasJoinRequestListener = true; // 設置標誌為 true，表示已經綁定了監聽器
+    //     socket.on("user-join-request", ({ socketId, userId, roomId }) => {
+    //       const allowed = window.confirm(
+    //         `User ${userId} requests to join the room. Allow?`
+    //       );
+    //       if (allowed) {
+    //         socket.emit("admin-approve-user", { socketId });
+    //       } else {
+    //         socket.emit("admin-reject-user", { socketId });
+    //       }
+    //     });
+    //   }
+    // });
 
-    socket.on("join-approved", async (roomId) => {
-      console.log("You have been approved to join the room.");
-      // 可以继续处理加入房间的逻辑
-      const joinUserRoomResponse = await fetch(`/api/mainRoom/${roomId}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ userInfo: payload.payload }),
-      });
+    // socket.on("join-approved", async (roomId) => {
+    //   console.log("You have been approved to join the room.");
+    //   // 可以继续处理加入房间的逻辑
+    //   const joinUserRoomResponse = await fetch(`/api/mainRoom/${roomId}`, {
+    //     method: "POST",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //       Authorization: `Bearer ${token}`,
+    //     },
+    //     body: JSON.stringify({ userInfo: payload.payload }),
+    //   });
 
-      if (!joinUserRoomResponse.ok) {
-        throw new Error("Failed to join room");
-      }
-      console.log("Join room response:", joinUserRoomResponse);
-    });
+    //   if (!joinUserRoomResponse.ok) {
+    //     throw new Error("Failed to join room");
+    //   }
+    //   console.log("Join room response:", joinUserRoomResponse);
+    // });
 
-    socket.on("join-rejected", () => {
-      alert("You were not allowed to join the room.");
-      window.location.href = "/";
-    });
+    // socket.on("join-rejected", () => {
+    //   alert("You were not allowed to join the room.");
+    //   window.location.href = "/";
+    // });
 
     // 監聽 groups-finished 事件
     socket.on("groups-finished", (data) => {
