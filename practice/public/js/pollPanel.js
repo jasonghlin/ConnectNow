@@ -33,9 +33,11 @@ closePollButton.addEventListener("click", () => {
 addOptionButton?.addEventListener("click", () => {
   optionCount++;
   const newOption = document.createElement("div");
+  newOption.classList.add("option-container");
+  newOption.classList.add(`option-${optionCount}-container`);
   newOption.innerHTML = `
-      <label for="option-${optionCount}">選項 ${optionCount}：</label>
-      <input type="text" id="option-${optionCount}" name="options" required>
+        <label for="option-${optionCount}">選項 ${optionCount}：</label>
+        <input type="text" id="option-${optionCount}" name="options" required>
     `;
   document.getElementById("poll-options").appendChild(newOption);
 });
@@ -84,6 +86,7 @@ socket.on("show-poll", ({ question, options }) => {
   pollPanel.classList.add("show");
   pollForm.style.display = "none";
   pollOptionsDisplay.style.display = "block";
+  pollOptionsDisplay.classList.remove("hidden");
   returnButton.style.display = "none";
   console.log("Poll options displayed");
 });

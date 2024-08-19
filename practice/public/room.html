@@ -179,13 +179,19 @@
         <div class="poll-content">
             <h2>意見調查</h2>
             <form id="poll-form">
-                <label for="poll-question">問題：</label>
-                <input type="text" id="poll-question" name="poll-question" required>
+                <div class="poll-question-container">
+                    <label for="poll-question">問題：</label>
+                    <input type="text" id="poll-question" name="poll-question" required>
+                </div>
                 <div id="poll-options">
-                    <label for="option-1">選項 1：</label>
-                    <input type="text" id="option-1" name="options" required>
-                    <label for="option-2">選項 2：</label>
-                    <input type="text" id="option-2" name="options" required>
+                    <div class="option-container option-1-container">
+                        <label for="option-1">選項 1：</label>
+                        <input type="text" id="option-1" name="options" required>
+                    </div>
+                    <div class="option-container option-2-container">
+                        <label for="option-2">選項 2：</label>
+                        <input type="text" id="option-2" name="options" required>
+                    </div>
                 </div>
                 <button type="button" id="add-option">添加選項</button>
                 <button type="submit">提交投票</button>

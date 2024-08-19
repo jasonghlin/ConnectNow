@@ -24,8 +24,11 @@ body {
     right: 2rem;
     background: none;
     cursor: pointer;
-    color: white;
+    color: black;
     font-size: 2rem;
+    border: none;
+    right: 4rem;
+    top: 2rem
 }
 
 .whiteboard-header {
@@ -34,10 +37,6 @@ body {
     align-items: center;
     padding: 10px;
     background-color: #f0f0f0;
-}
-
-.whiteboard-content {
-    padding: 10px;
 }
 
 #whiteboard-canvas {
@@ -55,7 +54,9 @@ body {
 }
 
 .whiteboard-content {
-    width: 120rem
+    padding: 10px;
+    width: 100%;
+    position: relative;
 }
 
 .menu-container {
@@ -92,4 +93,8 @@ body {
     border: none;
     transition: .3s;
     background: #E8D5C4;
+}
+
+.line-width {
+    margin-right: 2rem
 }
