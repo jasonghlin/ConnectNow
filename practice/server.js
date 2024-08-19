@@ -358,7 +358,7 @@ io.on("connection", (socket) => {
         console.log("User disconnected:", userId);
         const isBreakoutRoom = roomId.startsWith("breakout-");
         if (!isBreakoutRoom) {
-          await deleteUserInUserGroups(userId);
+          // await deleteUserInUserGroups(userId);
           await deleteUserInUsersRoomsRelation(userId, roomId);
           // await deleteUserInMainRoom(userId);
           // await deleteUser(userId);
@@ -754,8 +754,8 @@ app.get("/api/allUsers", authenticateJWT, async (req, res) => {
 app.post("/api/groups", authenticateJWT, async (req, res) => {
   try {
     const groups = req.body;
-    const result = await saveGroups(groups);
-    console.log("Saved groups:", groups);
+    // const result = await saveGroups(groups);
+    console.log("create groups:", groups);
 
     // 通知所有客戶端
     io.emit("groups-finished", result);

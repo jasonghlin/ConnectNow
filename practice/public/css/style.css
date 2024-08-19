@@ -227,18 +227,7 @@ body.panel-open footer {
 
 
 /* panels */
-.activities-panel {
-    position: fixed;
-    top: 0;
-    right: -40rem;
-    width: 30rem;
-    height: 95vh;
-    background-color: #202124;
-    transition: right 0.3s ease-in-out;
-    z-index: 1000;
-    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
-    border: .1rem solid white
-}
+
 
 .activities-panel.show, .users-panel.show, .chat-panel.show {
     right: 0;
@@ -257,13 +246,6 @@ body.panel-open footer {
     font-size: 1.8rem;
 }
 
-#close-activities {
-    background: none;
-    border: none;
-    color: #fff;
-    font-size: 1.6rem;
-    cursor: pointer;
-}
 
 .activities-content, .users-content {
     padding: 1rem;

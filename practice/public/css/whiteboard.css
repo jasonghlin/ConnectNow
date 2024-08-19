@@ -43,6 +43,8 @@ body {
 #whiteboard-canvas {
     border: 1px solid #ccc;
     width: 100%;
+    background-color: white;
+    border-radius: .5rem;
 }
 
 .whiteboard-controls {
