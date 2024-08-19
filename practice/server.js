@@ -775,7 +775,10 @@ app.get("/api/userImg", authenticateJWT, async (req, res) => {
   const result = await getDbUserImg(req.payload.userId);
 
   if (result) {
-    return res.json({ message: "File found successfully", url: result.url });
+    return res.json({
+      message: "File found successfully",
+      url: result.avatar_url,
+    });
   }
 
   return res.status(404).json({ message: "File not found" });
@@ -820,7 +823,7 @@ app.post(
 
 const uploadVideo = multer({ storage: multer.memoryStorage() }); // Use memory storage to avoid saving to disk
 
-app.post("/video-record", uploadVideo.single("recording"), (req, res) => {
+app.post("/videoRecord", uploadVideo.single("recording"), (req, res) => {
   convertToMovStream(req.file.buffer, (err, movStream) => {
     if (err) {
       return res.status(500).send("Error converting file.");

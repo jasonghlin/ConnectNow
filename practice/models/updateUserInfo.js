@@ -1,10 +1,4 @@
-import {
-  pool,
-  createDatabase,
-  useDatabase,
-  createUserTable,
-  createUserImgTable,
-} from "./mysql.js";
+import { pool, createDatabase, useDatabase, createUserTable } from "./mysql.js";
 
 async function updateUserName(new_name, user_id) {
   try {
@@ -163,7 +157,6 @@ async function getDbUserImg(user_id) {
         }
       });
     });
-
     return result;
   } catch (err) {
     console.error("Error when retrieving user image:", err);
@@ -175,11 +168,9 @@ async function updateDbUserImg(user_id, img_url) {
   try {
     await createDatabase();
     await useDatabase();
-    await createUserImgTable();
 
-    // Check if image already exists
-    const imgExistQuery =
-      "SELECT COUNT(*) as count FROM user_img WHERE user_id = ?";
+    // Check if user exists
+    const imgExistQuery = "SELECT * FROM users WHERE id = ?";
     const rows = await new Promise((resolve, reject) => {
       pool.getConnection((err, connection) => {
         if (err) {
@@ -199,17 +190,17 @@ async function updateDbUserImg(user_id, img_url) {
 
     // Validate the result
     if (!rows || rows.length === 0 || rows[0] === undefined) {
-      throw new Error("Failed to retrieve count from user_img table.");
+      console.log("no image exist");
     }
 
     let query;
     const values = [img_url, user_id];
 
     // Update if image exists, else insert a new record
-    if (rows[0].count > 0) {
-      query = "UPDATE user_img SET url = ? WHERE user_id = ?";
+    if (rows.length > 0) {
+      query = "UPDATE users SET avatar_url = ? WHERE id = ?";
     } else {
-      query = "INSERT INTO user_img (url, user_id) VALUES (?, ?)";
+      query = "INSERT INTO users (avatar_url, id) VALUES (?, ?)";
     }
 
     const result = await new Promise((resolve, reject) => {

@@ -125,7 +125,7 @@ async function convertToMov(webmBlob) {
   formData.append("recording", webmBlob, "video.webm");
 
   try {
-    const response = await fetch("/video-record", {
+    const response = await fetch("/videoRecord", {
       method: "POST",
       body: formData,
     });
