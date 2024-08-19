@@ -12,7 +12,7 @@ function handleVideoRecordClick() {
     ).innerHTML = `<div class="icon-wrapper is-recording">
                         <i class="fas fa-record-vinyl"></i>
                     </div>
-                    <div>
+                    <div class="activities-description">
                         <p>停止錄製</p>
                         <p>再次按下來停止錄製</p>
                     </div>`;
@@ -22,7 +22,7 @@ function handleVideoRecordClick() {
     ).innerHTML = `<div class="icon-wrapper">
                         <i class="fas fa-record-vinyl"></i>
                     </div>
-                    <div>
+                    <div class="activities-description">
                         <p>錄製</p>
                         <p>錄下會議過程供日後隨選觀看</p>
                     </div>`;
@@ -31,7 +31,6 @@ function handleVideoRecordClick() {
     (!mediaRecorder || mediaRecorder.state === "inactive") &&
     confirm("是否要開始錄影")
   ) {
-    alert("錄影設定中...");
     isRecording = !isRecording;
     startRecording();
   } else if (mediaRecorder.state === "recording") {
@@ -40,21 +39,25 @@ function handleVideoRecordClick() {
   }
 }
 
+document
+  .querySelector(".video-record")
+  .addEventListener("click", handleVideoRecordClick);
+
 // 使用 MutationObserver 監聽 DOM 變化
-const observer = new MutationObserver((mutations) => {
-  mutations.forEach((mutation) => {
-    mutation.addedNodes.forEach((node) => {
-      // 檢查是否是我們想要的按鈕
-      if (node.classList && node.classList.contains("video-record")) {
-        // 為新加的按鈕增加事件監聽器
-        node.addEventListener("click", handleVideoRecordClick);
-      }
-    });
-  });
-});
+// const observer = new MutationObserver((mutations) => {
+//   mutations.forEach((mutation) => {
+//     mutation.addedNodes.forEach((node) => {
+//       // 檢查是否是我們想要的按鈕
+//       if (node.classList && node.classList.contains("video-record")) {
+//         // 為新加的按鈕增加事件監聽器
+//         node.addEventListener("click", handleVideoRecordClick);
+//       }
+//     });
+//   });
+// });
 
 // 啟動 observer 監聽 document body 上的變化
-observer.observe(document.body, { childList: true, subtree: true });
+// observer.observe(document.body, { childList: true, subtree: true });
 
 async function startRecording() {
   try {
@@ -67,6 +70,8 @@ async function startRecording() {
         noiseSuppression: true,
       },
     });
+
+    alert("錄影設定中...");
 
     // 捕获麦克风音频流
     const audioStream = await navigator.mediaDevices.getUserMedia({
@@ -101,7 +106,7 @@ async function startRecording() {
 
 function stopRecording() {
   mediaRecorder.stop();
-  console.log("Recording stopped");
+  console.log("錄影結束");
 }
 
 function handleDataAvailable(event) {
@@ -141,7 +146,7 @@ async function convertToMov(webmBlob) {
     window.URL.revokeObjectURL(url);
 
     // Notify user that subtitles are being generated
-    alert("影片已下載完成，字幕正在產生中...");
+    alert("影片已開始下載，字幕正在產生中...");
 
     // Send MOV file to FastAPI for subtitle processing
     await sendToFastAPI(blob);

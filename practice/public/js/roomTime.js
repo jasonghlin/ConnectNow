@@ -9,7 +9,7 @@ function roomTime() {
         ? `0${new Date().getHours()}`
         : new Date().getHours()
       : new Date().getHours() - 12 < 10
-      ? `0${new Date().getHours()}`
+      ? `0${new Date().getHours() - 12}`
       : new Date().getHours();
 
   minute.textContent =
