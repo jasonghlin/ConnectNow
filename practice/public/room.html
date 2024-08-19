@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="/static/css/videoRecord.css">
     <link rel="stylesheet" href="/static/css/chatPanel.css">
     <link rel="stylesheet" href="/static/css/whiteboard.css">
+    <link rel="stylesheet" href="/static/css/usersPanel.css">
 </head>
 
 <body>
@@ -49,7 +50,7 @@
             </div>
             <div>
                 <select class="video-list hidden"></select>
-                <button class="video">
+                <button class="video-icon">
                     <span class="choose-icon choose-video">^</span>
                     <i class="fas fa-video"></i>
                 </button>
@@ -109,7 +110,7 @@
                     </div>
                     <div>
                         <p>虛擬背景</p>
-                        <p>更換成不同的背景</p>
+                        <p>更換成不同的視覺背景</p>
                     </div>
                 </div>
 
@@ -119,7 +120,7 @@
                     </div>
                     <div>
                         <p>分組</p>
-                        <p>一同集思廣益並構思點子</p>
+                        <p>促進小組內的高效溝通與合作</p>
                     </div>
                 </div>
 
@@ -250,6 +251,7 @@
     <script type="module" src="/static/js/backgroundEffects.js"></script>
     <script type="module" src="/static/js/videoToggleHandler.js"></script>
     <script type="module" src="/static/js/videoRecord.js"></script>
+    <script type="module" src="/static/js/roomTime.js"></script>
 
     <script>
         window.onerror = function (message, source, lineno, colno, error) {

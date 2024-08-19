@@ -353,7 +353,7 @@ async function uploadImage(event) {
       return;
     } else {
       alert(getUploadInfo.message);
-      localStorage.setItem("proImg", getUploadInfo.url);
+      localStorage.setItem("proImg", getUploadInfo.avatar_url);
       //   修改
       window.location.href = `/member`;
     }
@@ -379,7 +379,7 @@ async function userImg() {
     });
     let url = await response.json();
     console.log(url);
-    if (url.message !== "File not found" && !url.url) {
+    if (url.message !== "File not found" && !url.avatar_url) {
       localStorage.setItem("proImg", url.url);
       document.querySelector(".photo > img").src = url.url;
     }

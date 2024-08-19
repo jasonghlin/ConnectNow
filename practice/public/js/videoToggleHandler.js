@@ -15,7 +15,7 @@ export const toggleVideo = async (
 ) => {
   videoEnabled = !videoEnabled;
 
-  const videoIcon = document.querySelector(".video i");
+  const videoIcon = document.querySelector(".video-icon i");
   if (videoEnabled) {
     try {
       videoIcon.classList.remove("fa-video-slash");

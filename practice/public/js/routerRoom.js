@@ -15,7 +15,7 @@ async function main() {
       // 確保請求成功
       const data = await response.json();
       console.log(data); // 檢查返回的數據格式
-      userImgUrl = data.url || "/static/images/user.png"; // 確保 url 存在
+      userImgUrl = data.avatar_url || "/static/images/user.png"; // 確保 url 存在
     } else {
       console.error("Failed to fetch user image");
       userImgUrl = "/static/images/user.png"; // 默認圖片

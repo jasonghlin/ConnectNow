@@ -13,9 +13,14 @@ async function updateUsersList() {
     });
     const usersList = await usersResponse.json();
     usersList.forEach((user) => {
-      const userDiv = document.createElement("div");
-      userDiv.textContent = user.name;
-      participantsList.appendChild(userDiv);
+      const html = `<div class="user-container">
+      <div class="avatar">
+          <img src="${user.avatar_url || "/static/images/user.png"}" alt="">
+      </div>
+      <div class="user-name">${user.name}</div>
+  </div>`;
+
+      participantsList.insertAdjacentHTML("beforeend", html);
     });
   } catch (error) {
     console.error("Error fetching users:", error);

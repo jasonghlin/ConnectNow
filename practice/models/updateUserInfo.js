@@ -150,7 +150,7 @@ async function getDbUserImg(user_id) {
       });
     });
 
-    const imgQuery = "SELECT * FROM user_img WHERE user_id = ?";
+    const imgQuery = "SELECT * FROM users WHERE id = ?";
     const values = [user_id];
 
     const result = await new Promise((resolve, reject) => {

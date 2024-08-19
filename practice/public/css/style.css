@@ -82,7 +82,7 @@ footer {
     right: 1.9rem;
 }
 
-.video {
+.video-icon {
     width: 7rem;
     height: 4.8rem;
     display: flex;
@@ -102,7 +102,7 @@ footer {
     transform: translateY(-0.3rem);
 }
 
-.video > i {
+.video-icon > i {
     position: absolute;
     right: 1.9rem;
 }
@@ -227,7 +227,7 @@ body.panel-open footer {
 
 
 /* panels */
-.activities-panel, .users-panel {
+.activities-panel {
     position: fixed;
     top: 0;
     right: -40rem;
@@ -257,7 +257,7 @@ body.panel-open footer {
     font-size: 1.8rem;
 }
 
-#close-activities, #close-users {
+#close-activities {
     background: none;
     border: none;
     color: #fff;

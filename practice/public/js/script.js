@@ -238,7 +238,7 @@ export const switchStream = (newStream, isScreenShare = false) => {
 };
 
 // 使用新建的 toggleVideo 函數
-document.querySelector(".video i").addEventListener("click", () => {
+document.querySelector(".video-icon i").addEventListener("click", () => {
   toggleVideo(
     localStream,
     document.querySelector(".local-stream"),

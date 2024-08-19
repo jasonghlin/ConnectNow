@@ -65,7 +65,7 @@ function createUserTable() {
           name NVARCHAR(255) NOT NULL,
           email VARCHAR(255) UNIQUE NOT NULL,
           password_hash VARCHAR(255) NOT NULL,
-          avatar VARCHAR(255)
+          avatar_url VARCHAR(255)
         )
       `;
       connection.query(createTableQuery, (error, results) => {
