@@ -31,6 +31,7 @@ function handleVideoRecordClick() {
     (!mediaRecorder || mediaRecorder.state === "inactive") &&
     confirm("是否要開始錄影")
   ) {
+    alert("錄影設定中...");
     isRecording = !isRecording;
     startRecording();
   } else if (mediaRecorder.state === "recording") {
@@ -140,7 +141,7 @@ async function convertToMov(webmBlob) {
     window.URL.revokeObjectURL(url);
 
     // Notify user that subtitles are being generated
-    alert("Video downloaded. Subtitles are being generated...");
+    alert("影片已下載完成，字幕正在產生中...");
 
     // Send MOV file to FastAPI for subtitle processing
     await sendToFastAPI(blob);
@@ -178,8 +179,9 @@ async function sendToFastAPI(movBlob) {
     a.click();
     window.URL.revokeObjectURL(url);
 
-    alert("Subtitles have been generated and downloaded.");
+    alert("字幕已產生完成");
   } catch (error) {
+    alert(`字幕產生錯誤 ${error}`);
     console.error("Error during subtitle processing:", error);
   }
 }
