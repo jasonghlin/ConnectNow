@@ -33,7 +33,6 @@ import {
   deleteUserInUserGroups,
   deleteUserInUsersRoomsRelation,
   deleteUserInMainRoom,
-  deleteUser,
 } from "./models/deleteUsersFromMainRoom.js";
 import {
   S3Client,
@@ -360,9 +359,9 @@ io.on("connection", (socket) => {
         const isBreakoutRoom = roomId.startsWith("breakout-");
         if (!isBreakoutRoom) {
           await deleteUserInUserGroups(userId);
-          await deleteUserInUsersRoomsRelation(userId);
-          await deleteUserInMainRoom(userId);
-          await deleteUser(userId);
+          await deleteUserInUsersRoomsRelation(userId, roomId);
+          // await deleteUserInMainRoom(userId);
+          // await deleteUser(userId);
         }
         if (userRooms.has(userId)) {
           const roomId = userRooms.get(userId);

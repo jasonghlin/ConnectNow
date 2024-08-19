@@ -15,8 +15,11 @@ export const toggleVideo = async (
 ) => {
   videoEnabled = !videoEnabled;
 
+  const videoIcon = document.querySelector(".video i");
   if (videoEnabled) {
     try {
+      videoIcon.classList.remove("fa-video-slash");
+      videoIcon.classList.add("fa-video");
       myStream = await convertCanvasToStream(canvasElement);
       if (myStream) {
         switchStream(myStream);
@@ -27,6 +30,8 @@ export const toggleVideo = async (
       console.error("Error capturing stream from canvas:", error);
     }
   } else {
+    videoIcon.classList.remove("fa-video");
+    videoIcon.classList.add("fa-video-slash");
     // Store the original video track
     originalVideoTrack = localStream.getVideoTracks()[0];
 

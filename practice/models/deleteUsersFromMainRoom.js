@@ -38,14 +38,40 @@ async function deleteUserInUserGroups(userId) {
   }
 }
 
-async function deleteUserInUsersRoomsRelation(userId) {
+async function deleteUserInUsersRoomsRelation(userId, mainRoomName) {
   try {
     await createDatabase();
     await useDatabase();
     await createUserTable();
 
-    const query = "DELETE FROM users_rooms_relation WHERE user_id = ?";
-    const values = [userId];
+    // 先取得 main_room_id
+    const getMainRoomIdQuery = "SELECT id FROM main_room WHERE name = ?";
+    const mainRoomId = await new Promise((resolve, reject) => {
+      pool.getConnection((err, connection) => {
+        if (err) {
+          reject(err);
+        } else {
+          connection.query(
+            getMainRoomIdQuery,
+            [mainRoomName],
+            (error, results) => {
+              connection.release();
+              if (error) {
+                reject(error);
+              } else if (results.length > 0) {
+                resolve(results[0].id);
+              } else {
+                reject(new Error("Main room not found"));
+              }
+            }
+          );
+        }
+      });
+    });
+
+    const query =
+      "DELETE FROM users_rooms_relation WHERE user_id = ? AND main_room_id = ?";
+    const values = [userId, mainRoomId];
 
     const connection = await new Promise((resolve, reject) => {
       pool.getConnection((err, connection) => {
@@ -114,47 +140,8 @@ async function deleteUserInMainRoom(userId) {
   }
 }
 
-async function deleteUser(userId) {
-  try {
-    await createDatabase();
-    await useDatabase();
-    await createUserTable();
-
-    const query = "DELETE FROM users WHERE id = ?";
-    const values = [userId];
-
-    const connection = await new Promise((resolve, reject) => {
-      pool.getConnection((err, connection) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(connection);
-        }
-      });
-    });
-
-    const results = await new Promise((resolve, reject) => {
-      connection.query(query, values, (error, results) => {
-        connection.release();
-        if (error) {
-          reject(error);
-        } else {
-          resolve(results);
-        }
-      });
-    });
-
-    console.log("User deleted with ID:", userId);
-    return results;
-  } catch (err) {
-    console.error("Error in deleteUser function:", err);
-    throw err;
-  }
-}
-
 export {
   deleteUserInUserGroups,
   deleteUserInUsersRoomsRelation,
   deleteUserInMainRoom,
-  deleteUser,
 };

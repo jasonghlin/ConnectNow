@@ -19,6 +19,15 @@ body {
     right: 0;
 }
 
+.close-whiteboard {
+    position: absolute;
+    right: 2rem;
+    background: none;
+    cursor: pointer;
+    color: white;
+    font-size: 2rem;
+}
+
 .whiteboard-header {
     display: flex;
     justify-content: space-between;

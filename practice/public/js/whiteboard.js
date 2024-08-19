@@ -183,3 +183,32 @@ whiteBoardBtn.addEventListener("click", (e) => {
 
   whiteBoardCanvas.classList.remove("hidden");
 });
+
+document.querySelector(".close-whiteboard").addEventListener("click", (e) => {
+  const videoStream = document.querySelector(".video-stream");
+  const whiteBoardCanvas = document.querySelector(".whiteboard-content");
+  const smallVideosContainer = videoStream.querySelector(
+    ".small-videos-container"
+  );
+
+  if (smallVideosContainer) {
+    // 逐一將視訊移回 video-stream 並恢復樣式
+    const videos = Array.from(smallVideosContainer.querySelectorAll("video"));
+    const localStream = document.querySelector(".local-stream");
+    videos.unshift(localStream);
+    videos.forEach((video) => {
+      video.classList.remove("small-video");
+      video.classList.add("main-video");
+      video.style.maxWidth = "";
+      video.style.height = "";
+      videoStream.appendChild(video); // 確保視訊移回 video-stream 容器
+    });
+
+    // 移除小視訊容器
+    smallVideosContainer.remove();
+  }
+
+  // 恢復排版
+  videoStream.style.flexDirection = "row";
+  whiteBoardCanvas.classList.add("hidden");
+});
