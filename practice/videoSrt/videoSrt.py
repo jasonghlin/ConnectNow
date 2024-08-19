@@ -15,7 +15,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:8080", "www.connectnow.website"],  # Specify the origin explicitly
+    allow_origins=["http://127.0.0.1:8080", "https://www.connectnow.website"],  # Specify the origin explicitly
     allow_credentials=True,
     allow_methods=["*"],  # Allows all methods
     allow_headers=["*"],  # Allows all headers
