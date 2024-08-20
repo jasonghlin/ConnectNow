@@ -5,7 +5,7 @@ html {
 body {
     box-sizing: border-box;
     font-size: 1.6rem;
-    font-family: Noto Sans TC, Sans-Serif;
+    font-family: Noto Sans TC, Sans-Serif ;
     background-color: rgb(32,33,36);
     color: white;
     position: relative;
