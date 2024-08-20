@@ -13,6 +13,10 @@
     border-radius: .5rem;
 }
 
+.activities-panel.show {
+    right: 0;
+}
+
 #close-activities {
     background: none;
     border: none;

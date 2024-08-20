@@ -98,3 +98,11 @@ body {
 .line-width {
     margin-right: 2rem
 }
+
+.clear-whiteboard {
+    padding: 1rem;
+    background-color: #4285f4;
+    border: none;
+    border-radius: .5rem;
+    color: white;
+}

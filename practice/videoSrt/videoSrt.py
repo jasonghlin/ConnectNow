@@ -10,12 +10,13 @@ from datetime import timedelta
 import os
 import tempfile
 from fastapi.middleware.cors import CORSMiddleware
+import ssl
 
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:8080", "https://www.connectnow.website"],  # Specify the origin explicitly
+    allow_origins=["http://127.0.0.1:8080", "https://www.connectnow.website", "https://localhost:8080"],  # Specify the origin explicitly
     allow_credentials=True,
     allow_methods=["*"],  # Allows all methods
     allow_headers=["*"],  # Allows all headers
@@ -24,12 +25,20 @@ app.add_middleware(
 # Load the Whisper model and processor
 model_name = "openai/whisper-medium"
 processor = WhisperProcessor.from_pretrained(model_name)
-model = WhisperForConditionalGeneration.from_pretrained(model_name)
+
+# Move model to GPU if available
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print("cuda_available: ", torch.cuda.is_available())
+model = WhisperForConditionalGeneration.from_pretrained(model_name).to(device)
 
 def format_time(seconds):
     """Convert time to SRT format timestamp"""
     td = timedelta(seconds=seconds)
-    return str(td)[:-3].replace(".", ",")
+    total_seconds = int(td.total_seconds())
+    milliseconds = int((seconds - total_seconds) * 1000)
+    hours, remainder = divmod(total_seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    return f"{hours:02}:{minutes:02}:{seconds:02},{milliseconds:03}"
 
 def create_srt(transcriptions, timestamps):
     """Generate SRT file content"""
@@ -61,12 +70,12 @@ async def process_video(file: UploadFile = File(...)):
 
     # Load audio and prepare for processing
     speech_array, sampling_rate = sf.read(audio_path)
-    speech_array = torch.tensor(speech_array, dtype=torch.float32)
+    speech_array = torch.tensor(speech_array, dtype=torch.float32).to(device)
 
     if len(speech_array.shape) > 1:
         speech_array = speech_array.mean(dim=1)
 
-    resampler = T.Resample(sampling_rate, 16000)
+    resampler = T.Resample(sampling_rate, 16000).to(device)
     speech_array = resampler(speech_array)
     sampling_rate = 16000
 
@@ -78,17 +87,17 @@ async def process_video(file: UploadFile = File(...)):
     # Transcribe each segment
     transcriptions = []
     for segment in segments:
-        inputs = processor(segment, sampling_rate=sampling_rate, return_tensors="pt")
+        inputs = processor(segment.cpu(), sampling_rate=sampling_rate, return_tensors="pt").to(device)
         attention_mask = torch.ones_like(inputs.input_features)
 
         with torch.no_grad():
             predicted_ids = model.generate(
-                inputs.input_features,
+                inputs.input_features.to(device),
                 num_beams=5,  # Increased beam width for better transcription quality
                 early_stopping=True,
                 max_length=250,  # Increased max length to capture more content
                 min_length=20,  # Increased min length to avoid short incomplete sentences
-                attention_mask=attention_mask
+                attention_mask=attention_mask.to(device)
             )
 
         transcription = processor.batch_decode(predicted_ids, skip_special_tokens=True)

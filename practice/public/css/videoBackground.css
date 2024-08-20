@@ -5,11 +5,12 @@
     right: -40rem;
     width: 30rem;
     height: 95vh;
-    background-color: #202124;
+    background-color: white;
     transition: right 0.3s ease-in-out;
     z-index: 1000;
     box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
-    border: .1rem solid white
+    border: none;
+    border-radius: .5rem;
 }
 
 .background-panel.show {
@@ -35,6 +36,7 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
+    margin-top: 1rem
 }
 
 .bg-img {
@@ -44,7 +46,8 @@
 }
 
 .bg-img > img {
-    width: 100%
+    width: 100%;
+    height: 7.8398rem
 }
 
 #close-bacground-panel {
@@ -53,7 +56,7 @@
     right: 1rem;
     background: none;
     border: none;
-    color: #fff;
+    color: black;
     font-size: 1.6rem;
     cursor: pointer;
 }

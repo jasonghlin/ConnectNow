@@ -228,11 +228,6 @@ body.panel-open footer {
 
 /* panels */
 
-
-.activities-panel.show, .users-panel.show, .chat-panel.show {
-    right: 0;
-}
-
 .activities-header, .users-header, .chat-header {
     display: flex;
     justify-content: space-between;
@@ -250,7 +245,7 @@ body.panel-open footer {
 .activities-content, .users-content {
     padding: 1rem;
 }
-
+/*  */
 
 
 .video-stream {
@@ -320,8 +315,8 @@ body.panel-open footer {
 
 .video-canvas {
     display: block;
-  }
+}
 
-  .hidden-video {
+.hidden-video {
     display: none;
-  }
+}
