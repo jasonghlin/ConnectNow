@@ -103,6 +103,11 @@ async function handleMicList(peers, localStream, switchStream) {
         currentVideoStream = newStream;
         localStream = newStream; // 更新本地流
 
+        updateLocalVideoOutputDisplay(
+          localStream,
+          document.querySelector(".local-stream")
+        );
+
         switchStream(newStream);
       } catch (error) {
         console.log(error);
@@ -113,6 +118,34 @@ async function handleMicList(peers, localStream, switchStream) {
     chooseVideo.addEventListener("click", toggleVideoList);
   } catch (error) {
     console.log(error);
+  }
+}
+
+function updateLocalVideoOutputDisplay(stream, canvasElement) {
+  const ctx = canvasElement.getContext("2d");
+  const videoTrack = stream.getVideoTracks()[0];
+
+  if (videoTrack) {
+    const videoElement = document.createElement("video");
+    videoElement.srcObject = new MediaStream([videoTrack]);
+    videoElement.play();
+
+    videoElement.onloadedmetadata = () => {
+      canvasElement.width = videoElement.videoWidth;
+      canvasElement.height = videoElement.videoHeight;
+
+      function drawVideo() {
+        ctx.drawImage(
+          videoElement,
+          0,
+          0,
+          canvasElement.width,
+          canvasElement.height
+        );
+        requestAnimationFrame(drawVideo);
+      }
+      drawVideo();
+    };
   }
 }
 
