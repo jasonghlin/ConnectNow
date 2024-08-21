@@ -86,7 +86,7 @@ function createMainRoomTable() {
           CREATE TABLE IF NOT EXISTS main_room (
             id INT AUTO_INCREMENT PRIMARY KEY,
             name NVARCHAR(255) UNIQUE NOT NULL,
-            admin INT,
+            admin_user_id INT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (admin) REFERENCES users(id)
           )
@@ -122,7 +122,7 @@ function createBreakoutRoomTable() {
   });
 }
 
-function createUserRoomsRelationTable() {
+function createUsersRoomsRelationTable() {
   return new Promise((resolve, reject) => {
     pool.getConnection((err, connection) => {
       if (err) return reject(err);
@@ -148,28 +148,27 @@ function createUserRoomsRelationTable() {
   });
 }
 
-function createUserGroupsTable() {
-  return new Promise((resolve, reject) => {
-    pool.getConnection((err, connection) => {
-      if (err) return reject(err);
-      const createTableQuery = `
-          CREATE TABLE IF NOT EXISTS user_groups (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            user_id INT NOT NULL,
-            breakout_room_id INT,
-            FOREIGN KEY (user_id) REFERENCES users(id),
-            FOREIGN KEY (breakout_room_id) REFERENCES breakout_room(id)
-          )
-        `;
-      connection.query(createTableQuery, (error, results) => {
-        connection.release();
-        if (error) return reject(error);
-        console.log("users groups table created");
-        resolve();
-      });
-    });
-  });
-}
+// function createUserGroupsTable() {
+//   return new Promise((resolve, reject) => {
+//     pool.getConnection((err, connection) => {
+//       if (err) return reject(err);
+//       const createTableQuery = `
+//           CREATE TABLE IF NOT EXISTS user_groups (
+//             id INT AUTO_INCREMENT PRIMARY KEY,
+//             user_id INT NOT NULL,
+//             FOREIGN KEY (user_id) REFERENCES users(id),
+//             FOREIGN KEY (breakout_room_id) REFERENCES breakout_room(id)
+//           )
+//         `;
+//       connection.query(createTableQuery, (error, results) => {
+//         connection.release();
+//         if (error) return reject(error);
+//         console.log("users groups table created");
+//         resolve();
+//       });
+//     });
+//   });
+// }
 
 export {
   pool,
@@ -178,6 +177,6 @@ export {
   createUserTable,
   createMainRoomTable,
   createBreakoutRoomTable,
-  createUserRoomsRelationTable,
-  createUserGroupsTable,
+  createUsersRoomsRelationTable,
+  // createUserGroupsTable,
 };

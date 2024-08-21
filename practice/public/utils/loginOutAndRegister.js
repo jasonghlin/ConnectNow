@@ -30,8 +30,6 @@ function registerUser() {
   });
 }
 
-registerUser();
-
 function loginUser() {
   const loginForm = document.querySelector(".login-form");
   loginForm?.addEventListener("submit", async (e) => {
@@ -54,10 +52,9 @@ function loginUser() {
     }
     localStorage.setItem("session", token.token);
     localStorage.setItem("username", token.username);
+    localStorage.setItem("username", token.userId);
   });
 }
-
-loginUser();
 
 function logOutUser() {
   const logoutBtn = document.querySelector(".logout");
@@ -85,6 +82,7 @@ async function checkStatus() {
 
       if (!response.ok) {
         console.error("Error:", response.statusText);
+        localStorage.clear();
         return null;
       } else {
         const payload = await response.json();
@@ -96,6 +94,7 @@ async function checkStatus() {
     }
   } else {
     console.error("No token found in localStorage");
+    localStorage.clear();
     return null;
   }
 }

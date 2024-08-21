@@ -1,0 +1,14 @@
+[req]
+default_bits = 2048
+prompt = no
+default_md = sha256
+distinguished_name = dn
+
+[dn]
+C=TW # 國別
+ST=Taiwan # 國名
+L=Taipei # 城市
+O=ConnectNow # 組織名稱
+OU=Dev # 組織底下的部門名稱
+emailAddress=dev@connectnow.website # 聯絡用email
+CN = localhost

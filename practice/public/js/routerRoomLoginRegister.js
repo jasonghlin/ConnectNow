@@ -92,6 +92,8 @@ function handleRegister() {
       registerErrorDiv.textContent = errorData.message;
     } else {
       const data = await response.json();
+      registerErrorDiv.style.color = "green";
+      registerErrorDiv.textContent = data.message;
       console.log("Success:", data);
       return data;
     }
@@ -117,8 +119,7 @@ function logoutEvent() {
   login.removeEventListener("click", logoutEvent);
   login.textContent = "登入/註冊";
   login.addEventListener("click", loginEvent);
-  localStorage.removeItem("session");
-  localStorage.removeItem("proImg");
+  localStorage.clear();
   window.location.reload();
 }
 
@@ -145,13 +146,19 @@ function handleLogin() {
       window.location.reload();
       return data;
     }
+    localStorage.setItem("session", token.token);
+    localStorage.setItem("username", token.username);
   };
 
-  loginForm.addEventListener("submit", async (e) => {
+  loginForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const jwtToken = await loginUser(loginEmail.value, loginPassword.value);
-    localStorage.setItem("session", jwtToken.token);
+    localStorage.setItem("session", token.token);
+    localStorage.setItem("username", token.username);
+    localStorage.setItem("username", token.userId);
   });
 }
 
 handleLogin();
+
+// handle logout

@@ -25,6 +25,7 @@
     <header></header>
     <div class="video-stream">
         <!-- 动态生成 video -->
+        <!-- <video src="" data-peer-id="" data-user-id=""></video> -->
         <div class="whiteboard-content hidden">
             <button class="close-whiteboard">X</button>
             <canvas id="whiteboard-canvas"></canvas>
@@ -228,10 +229,10 @@
             <div class="bg-img bg-2">
                 <img src="/static/images/bgs/bg-2.jpeg" alt="bg-2">
             </div>
-            <div class="bg-img bg-2">
+            <div class="bg-img bg-3">
                 <img src="/static/images/bgs/bg-3.jpeg" alt="bg-3">
             </div>
-            <div class="bg-img bg-2">
+            <div class="bg-img bg-4">
                 <img src="/static/images/bgs/bg-4.jpeg" alt="bg-4">
             </div>
 
@@ -240,28 +241,31 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/vision_bundle.js"
         crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <!-- <script type="module" src="/static/js/adminFeature.js"></script> -->
-    <script type="module" src="/static/js/shareScreen.js"></script>
-    <script type="module" src="/static/js/script.js"></script>
+    <!-- <script type="module" src="/static/js/shareScreen.js"></script> -->
+
     <script type="module" src="/static/js/activitiesPanel.js"></script>
-    <script type="module" src="/static/js/usersPanel.js"></script>
-    <script type="module" src="/static/js/chatPanel.js"></script>
-    <script type="module" src="/static/js/whiteboard.js"></script>
-    <script type="module" src="/static/js/videoLayout.js"></script>
-    <script type="module" src="/static/js/createGroups.js"></script>
-    <script type="module" src="/static/js/groupHandler.js"></script>
-    <script type="module" src="/static/js/pollPanel.js"></script>
-    <script type="module" src="/static/js/hangout.js"></script>
-    <script type="module" src="/static/js/shareScreenDisplay.js"></script>
+    <!-- <script type="module" src="/static/js/usersPanel.js"></script> -->
+    <!-- <script type="module" src="/static/js/chatPanel.js"></script> -->
+    <!-- <script type="module" src="/static/js/whiteboard.js"></script> -->
+    <!-- <script type="module" src="/static/js/videoLayout.js"></script> -->
+    <!-- <script type="module" src="/static/js/createGroups.js"></script> -->
+    <!-- <script type="module" src="/static/js/groupHandler.js"></script> -->
+    <!-- <script type="module" src="/static/js/pollPanel.js"></script> -->
+    <!-- <script type="module" src="/static/js/hangout.js"></script> -->
+    <!-- <script type="module" src="/static/js/shareScreenDisplay.js"></script> -->
     <script type="module" src="/static/js/backgroundEffects.js"></script>
-    <script type="module" src="/static/js/videoToggleHandler.js"></script>
-    <script type="module" src="/static/js/videoRecord.js"></script>
-    <script type="module" src="/static/js/roomTime.js"></script>
+    <!-- <script type="module" src="/static/js/videoToggleHandler.js"></script> -->
+    <!-- <script type="module" src="/static/js/videoRecord.js"></script> -->
+    <!-- <script type="module" src="/static/js/roomTime.js"></script> -->
+    <script type="module" src="/static/js/mediapipeBackground.js"></script>
+    <script type="module" src="/static/js/script.js"></script>
 
     <script>
         window.onerror = function (message, source, lineno, colno, error) {

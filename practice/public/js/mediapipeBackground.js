@@ -118,8 +118,8 @@ async function startCamera() {
     onFrame: async () => {
       await selfieSegmentation.send({ image: videoElement });
     },
-    width: 640,
-    height: 480,
+    // width: 640,
+    // height: 480,
   });
 
   camera.start();
@@ -156,34 +156,6 @@ function setBackground(mode, imageSrc) {
     backgroundImage = null;
   }
 }
-
-// 监听按钮点击事件
-document
-  .querySelector(".none-blur")
-  .addEventListener("click", () => setBackground("none"));
-document
-  .querySelector(".blur")
-  .addEventListener("click", () => setBackground("blur"));
-document
-  .querySelector(".bg-1")
-  .addEventListener("click", () =>
-    setBackground("image", "/static/images/bgs/bg-1.jpeg")
-  );
-document
-  .querySelector(".bg-2")
-  .addEventListener("click", () =>
-    setBackground("image", "/static/images/bgs/bg-2.jpeg")
-  );
-document
-  .querySelector(".bg-3")
-  .addEventListener("click", () =>
-    setBackground("image", "/static/images/bgs/bg-3.jpeg")
-  );
-document
-  .querySelector(".bg-4")
-  .addEventListener("click", () =>
-    setBackground("image", "/static/images/bgs/bg-4.jpeg")
-  );
 
 // 启动摄像头和背景处理
 startCamera();

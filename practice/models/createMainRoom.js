@@ -1,12 +1,17 @@
-import { pool, createDatabase, useDatabase, createUserTable } from "./mysql.js";
+import {
+  pool,
+  createDatabase,
+  useDatabase,
+  createMainRoomTable,
+} from "./mysql.js";
 
-async function get_user(request_body) {
+async function createMainRoom(userInfo, roomId) {
   try {
     await createDatabase();
     await useDatabase();
-    await createUserTable();
-    const query = "SELECT * FROM users WHERE email = ?";
-    const values = [request_body.email];
+    await createMainRoomTable();
+    const query = "INSERT INTO main_room (name, admin) VALUES (?, ?)";
+    const values = [roomId, userInfo.userId];
 
     return new Promise((resolve, reject) => {
       pool.getConnection((err, connection) => {
@@ -19,15 +24,14 @@ async function get_user(request_body) {
           if (error) {
             reject(error);
           } else {
-            resolve(results);
+            resolve(results.insertId);
           }
         });
       });
     });
-  } catch (err) {
-    console.error("Error in get_user function:", err);
-    throw err;
+  } catch (error) {
+    console.log(error);
   }
 }
 
-export { get_user };
+export { createMainRoom };

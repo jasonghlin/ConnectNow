@@ -2,7 +2,6 @@ import {
   ImageSegmenter,
   FilesetResolver,
 } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.2";
-import { addVideoStream } from "./script.js"; // Ensure this import is correct
 
 let imageSegmenter;
 let labels;
@@ -88,12 +87,12 @@ async function predictWebcam() {
   }
 
   // 新增: 定期更新 stream
-  if (performance.now() - lastStreamUpdate > 1000) {
-    // 每秒更新一次
-    myStream = await convertCanvasToStream(canvasElement);
-    updateStreamForPeers(myStream);
-    lastStreamUpdate = performance.now();
-  }
+  // if (performance.now() - lastStreamUpdate > 1000) {
+  //   // 每秒更新一次
+  //   myStream = await convertCanvasToStream(canvasElement);
+  //   updateStreamForPeers(myStream);
+  //   lastStreamUpdate = performance.now();
+  // }
 }
 
 function callbackForVideo(result) {
@@ -164,8 +163,8 @@ function callbackForVideo(result) {
 
   canvasCtx.putImageData(imageData, 0, 0);
   if (webcamRunning === true) {
-    window.requestAnimationFrame(predictWebcam);
-    // setTimeout(predictWebcam, 1000 / 60);
+    // window.requestAnimationFrame(predictWebcam);
+    setTimeout(predictWebcam, 1000 / 120);
   }
 }
 
@@ -218,9 +217,9 @@ export async function convertCanvasToStream(canvas) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  if (!document.querySelector(".local-stream")) {
-    addVideoStream(localVideo, myStream, "local");
-  }
+  //     if (!document.querySelector(".local-stream")) {
+  //       addVideoStream(localVideo, myStream, "local");
+  //     }
 });
 
 document.querySelector(".none-blur-bg").addEventListener("click", () => {
@@ -259,16 +258,13 @@ function backgroundPanelDisplay() {
   const closebacgroundEffectsButton = document.getElementById(
     "close-bacground-panel"
   );
-  const body = document.body;
 
   backgrounEffectsButton.addEventListener("click", () => {
     backgrounEffectsPanel.classList.add("show");
-    body.classList.add("panel-open");
   });
 
   closebacgroundEffectsButton.addEventListener("click", () => {
     backgrounEffectsPanel.classList.remove("show");
-    body.classList.remove("panel-open");
   });
 }
 backgroundPanelDisplay();
