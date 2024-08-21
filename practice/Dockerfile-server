@@ -13,7 +13,7 @@ RUN npm install --no-audit
 COPY backend/ .
 
 # 複製所有 practice 資料夾的內容到 /app/practice/ 中，並保持結構
-COPY ./practice /app/practice/
+COPY practice/ /app/practice/
 RUN rm -rf .env
 
 # 曝露應用的端口
