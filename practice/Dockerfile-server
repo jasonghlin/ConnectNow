@@ -7,15 +7,15 @@ WORKDIR /app
 # 複製 package.json 和 package-lock.json 來安裝依賴
 COPY package.json package-lock.json ./
 
-# 排除 node_modules 資料夾
-RUN npm install --no-audit
-
 # 複製其他文件，並排除 .env 和 node_modules
 COPY . .
 RUN rm -rf .env
 
 # 進入 backend 資料夾
 WORKDIR /app/backend
+
+# 安裝相依套件
+RUN npm install --no-audit
 
 # 曝露應用的端口
 EXPOSE 8080
