@@ -1,7 +1,7 @@
 # 使用最新的 Node.js 版本
 FROM node:latest
 
-WORKDIR /usr/src/app
+WORKDIR /app/practice/backend
 
 # 複製 package.json 和 package-lock.json 來安裝依賴
 COPY package.json package-lock.json ./
@@ -10,7 +10,10 @@ COPY package.json package-lock.json ./
 RUN npm install --no-audit
 
 # 複製其他文件，並排除 .env 和 node_modules
-COPY . .
+COPY backend/ .
+
+# 複製所有 practice 資料夾的內容到 /app/practice/ 中，並保持結構
+COPY practice/ /app/practice/
 RUN rm -rf .env
 
 # 曝露應用的端口

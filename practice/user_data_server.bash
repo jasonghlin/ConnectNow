@@ -4,7 +4,7 @@
 echo "開始執行 user data 腳本" >> /var/log/user-data.log
 
 # 更新系統
-apt update && apt upgrade -y || { echo "系統更新失敗" >> /var/log/user-data.log; exit 1; }
+sudo apt update && apt upgrade -y || { echo "系統更新失敗" >> /var/log/user-data.log; exit 1; }
 
 # 安裝必要的包
 sudo apt-get update
