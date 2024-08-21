@@ -1,3 +1,4 @@
 .env
 connect_now_tmp/
 node_modules/
+user_data*
