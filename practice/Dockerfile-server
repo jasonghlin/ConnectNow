@@ -1,7 +1,8 @@
 # 使用最新的 Node.js 版本
 FROM node:latest
 
-WORKDIR /app/practice/backend
+# 設定工作目錄為 /app
+WORKDIR /app
 
 # 複製 package.json 和 package-lock.json 來安裝依賴
 COPY package.json package-lock.json ./
@@ -10,14 +11,14 @@ COPY package.json package-lock.json ./
 RUN npm install --no-audit
 
 # 複製其他文件，並排除 .env 和 node_modules
-COPY backend/ .
-
-# 複製所有 practice 資料夾的內容到 /app/practice/ 中，並保持結構
-COPY . /app/practice/
+COPY . .
 RUN rm -rf .env
+
+# 進入 backend 資料夾
+WORKDIR /app/backend
 
 # 曝露應用的端口
 EXPOSE 8080
 
 # 啟動應用時指定 .env 文件
-CMD ["node", "server.js"]
+CMD ["node", "/app/backend/server.js"]
