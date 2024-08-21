@@ -130,7 +130,6 @@ function initializeMainRoom() {
       if (userId && peerId) {
         console.log("Emitting join-room event");
         socket.emit("join-main-room", roomId, peerId, userId);
-        mainRoom.addPeer(peerId, peer);
       } else {
         console.error("userId or peerId is undefined");
       }
@@ -142,7 +141,10 @@ function initializeMainRoom() {
       call.on("stream", (userVideoStream) => {
         updateRemoteVideos(call.peer, userVideoStream);
       });
-      mainRoom.peers[userId] = call;
+      // 監聽使用者離開事件，移除對應的 video 元素
+      call.on("close", () => {
+        removeVideoElement(call.peer);
+      });
     }
 
     peer.on("call", (call) => {
@@ -153,7 +155,7 @@ function initializeMainRoom() {
   }
 })();
 
-// socket listen
+// socket listener
 
 function updateRemoteVideos(peerId, userVideoStream) {
   // 检查页面上是否已经有这个用户的视频元素
@@ -196,6 +198,7 @@ function connectToNewUser(peerId, stream) {
   call.on("close", () => {
     // 清理关闭后的资源
     console.log(`Call with ${peerId} ended`);
+    removeVideoElement(call.peer);
   });
 
   mainRoom.peers[peerId] = call;
@@ -205,6 +208,23 @@ const peerIdToUserIdMap = new Map();
 socket.on("user-connected-mainRoom", (peerId, userId) => {
   console.log("New user connected to room:", peerId, userId);
   connectToNewUser(peerId, currentStream);
+});
+
+// leave event
+// 移除對應的 video 元素
+function removeVideoElement(peerId) {
+  const videoElement = document.querySelector(
+    `video[data-peer-id="${peerId}"]`
+  );
+  if (videoElement) {
+    videoElement.remove();
+  }
+}
+
+// 當有使用者離開時移除其 video 元素
+socket.on("user-disconnected-mainRoom", (peerId, userId) => {
+  console.log("User disconnected from room:", peerId, userId);
+  removeVideoElement(peerId);
 });
 
 export { connectToNewUser };

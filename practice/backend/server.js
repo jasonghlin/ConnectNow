@@ -14,6 +14,7 @@ import { authenticateJWT } from "../public/utils/authenticateJWT.js";
 import { createMainRoom } from "../models/createMainRoom.js";
 import { checkMainRoomExist } from "../models/checkMainRoomExist.js";
 import { joinMainRoom } from "../models/joinMainRoom.js";
+import { removeUserFromMainRoom } from "../models/removeUserFromMainRoom.js";
 
 dotenv.config();
 const { JWT_SECRET_KEY, ENV, AWS_ACCESS_KEY, AWS_SECRET_KEY, BUCKET_NAME } =
@@ -126,21 +127,16 @@ io.on("connection", (socket) => {
       );
 
       // 檢查 roomName、userId 和 peerId 是否有效
-      if (!roomName || roomName === "null" || roomName === "undefined") {
-        console.error("Invalid roomName:", roomName);
-        socket.emit("join-error", "Invalid room ID");
+      if (!roomName || !userId || !peerId) {
+        console.error("Invalid roomName, userId, or peerId");
+        socket.emit("join-error", "Invalid room or user data");
         return;
       }
-      if (!userId || userId === "null" || userId === "undefined") {
-        console.error("Invalid userId:", userId);
-        socket.emit("join-error", "Invalid user ID");
-        return;
-      }
-      if (!peerId || peerId === "null" || peerId === "undefined") {
-        console.error("Invalid peerId:", peerId);
-        socket.emit("join-error", "Invalid peer ID");
-        return;
-      }
+
+      // 儲存房間和使用者信息
+      socket.data.roomName = roomName;
+      socket.data.userId = userId;
+      socket.data.peerId = peerId;
 
       socket.join(roomName);
 
@@ -181,6 +177,39 @@ io.on("connection", (socket) => {
       console.log(error);
     }
   });
+
+  //   disconnect
+  socket.on("disconnect", () => {
+    console.log("User disconnected");
+    handleUserLeave(socket);
+  });
+
+  async function handleUserLeave(socket) {
+    const roomName = socket.data.roomName;
+    const userId = socket.data.userId;
+    const peerId = socket.data.peerId;
+    console.log("socket roomName, userId, peerId: ", roomName, userId, peerId);
+    if (!roomName || !userId || !peerId) return;
+    console.log("rooms.has(roomName): ", rooms.has(roomName));
+    if (rooms.has(roomName)) {
+      const roomUsers = rooms.get(roomName);
+      if (roomUsers.has(userId)) {
+        roomUsers.delete(userId);
+        socket.to(roomName).emit("user-disconnected-mainRoom", peerId, userId);
+        await removeUserFromMainRoom(roomName, userId);
+        console.log(`User ${userId} removed from room ${roomName}`);
+      }
+
+      // 如果該房間已無任何使用者，移除該房間
+      if (roomUsers.size === 0) {
+        rooms.delete(roomName);
+      }
+    }
+
+    // 從 userRooms 中移除該使用者
+    userRooms.delete(userId);
+    console.log(`User ${userId} removed from userRooms`);
+  }
 });
 
 //
