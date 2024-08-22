@@ -26,6 +26,12 @@ export const getPeer =
             host: "peer-server.connectnow.website",
             port: 443,
             path: "/myapp",
+            secure: true,
+          });
+
+          // 錯誤處理
+          peerInstance.on("error", (err) => {
+            console.error("PeerJS Error (HTTPS):", err);
           });
         }
         return peerInstance;
@@ -36,6 +42,11 @@ export const getPeer =
             host: "localhost",
             port: 9001,
             path: "/myapp",
+          });
+
+          // 錯誤處理
+          peerInstance.on("error", (err) => {
+            console.error("PeerJS Error (HTTPS):", err);
           });
         }
         return peerInstance;
