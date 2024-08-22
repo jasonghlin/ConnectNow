@@ -175,9 +175,8 @@ document.querySelector(".mic-icon > i").addEventListener("click", async () => {
   isMicMuted = !isMicMuted;
   const canvasElement = document.querySelector(".local-stream");
   // Update the stream with the new mic status
-  let localStream = await convertCanvasToStream(canvasElement, isMicMuted);
+  localStream.getAudioTracks()[0].enabled = !isMicMuted;
   currentStream = localStream;
-
   // 重新連接所有使用者
   socket.emit("toggle-mic-status", roomId, myPeerId, myUserId, isMicMuted);
 
@@ -260,9 +259,14 @@ socket.on("user-disconnected-mainRoom", (peerId, userId) => {
   removeVideoElement(peerId);
 });
 
-// 監聽重新連接的事件，並使用新 stream 重新呼叫 connectToNewUser
-socket.on("reconnect-users-mainRoom", (peerId, userId) => {
-  connectToNewUser(peerId, currentStream);
+// mute mic toggle
+socket.on("user-mic-status-changed", (peerId, isMicMuted) => {
+  const videoElement = document.querySelector(
+    `video[data-peer-id="${peerId}"]`
+  );
+  if (videoElement) {
+    videoElement.muted = isMicMuted;
+  }
 });
 
-export { connectToNewUser, socket, roomId, myPeerId, myUserId, currentStream };
+export { connectToNewUser };
