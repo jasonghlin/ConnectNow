@@ -1,4 +1,5 @@
 .env
 connect_now_tmp/
 node_modules/
-user_data*
+user_data*.bash
+code.bash

@@ -22,15 +22,15 @@ const { JWT_SECRET_KEY, ENV, AWS_ACCESS_KEY, AWS_SECRET_KEY, BUCKET_NAME } =
 const port = 8080;
 
 let redisClient;
-if (ENV === "production") {
-  redisClient = createClient({
-    url: "rediss://clustercfg.connectnow-elasticache.z2mtgi.usw2.cache.amazonaws.com:6379",
-  });
-} else {
-  redisClient = createClient();
-}
-redisClient.on("error", (err) => console.log("Redis Client Error", err));
-await redisClient.connect();
+// if (ENV === "production") {
+//   redisClient = createClient({
+//     url: "rediss://clustercfg.connectnow-elasticache.z2mtgi.usw2.cache.amazonaws.com:6379",
+//   });
+// } else {
+//   redisClient = createClient();
+// }
+// redisClient.on("error", (err) => console.log("Redis Client Error", err));
+// await redisClient.connect();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

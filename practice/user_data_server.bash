@@ -37,3 +37,6 @@ sudo chmod -R 755 /home/ubuntu/ConnectNow
 
 # 啟動 docker-compose
 sudo docker compose -f /home/ubuntu/ConnectNow/practice/docker-compose.yml up --build -d
+
+# 進入 image
+sudo docker run -it --rm --entrypoint /bin/bash
