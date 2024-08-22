@@ -212,8 +212,6 @@ function connectToNewUser(peerId, stream) {
     console.log(`Call with ${peerId} ended`);
     removeVideoElement(call.peer);
   });
-
-  mainRoom.peers[peerId] = call;
 }
 
 const peerIdToUserIdMap = new Map();
