@@ -25,7 +25,7 @@ export const getPeer =
           peerInstance = new Peer(undefined, {
             host: "peer-server.connectnow.website",
             port: 443,
-            path: "/myapp",
+            path: "/myapp/peerjs",
             secure: true,
           });
 
@@ -41,12 +41,12 @@ export const getPeer =
           peerInstance = new Peer(undefined, {
             host: "localhost",
             port: 9001,
-            path: "/myapp",
+            path: "/myapp/peerjs",
           });
 
           // 錯誤處理
           peerInstance.on("error", (err) => {
-            console.error("PeerJS Error (HTTPS):", err);
+            console.error("PeerJS Error (HTTP):", err);
           });
         }
         return peerInstance;

@@ -1,18 +1,15 @@
-import { PeerServer } from "peer";
+import { ExpressPeerServer } from "peer";
 import express from "express";
 import dotenv from "dotenv";
+import cors from "cors";
+
 dotenv.config();
 
 const { ENV } = process.env;
 
 // 建立 Express 應用程式
 const app = express();
-
-// 建立 PeerJS server
-const peerServer = PeerServer({
-  port: 9001,
-  path: "/myapp",
-});
+app.use(cors()); // 允许所有来源访问
 
 // 使用 Express 中間件來處理 Cache-Control
 app.use((req, res, next) => {
@@ -27,10 +24,11 @@ app.use((req, res, next) => {
   next();
 });
 
-// 讓 Express 使用 PeerJS server
-app.use("/peerjs", peerServer);
+const server = app.listen(9001);
 
-// 啟動伺服器
-app.listen(9000, () => {
-  console.log("PeerJS server running on http://localhost:9001");
+const peerServer = ExpressPeerServer(server, {
+  path: "/peerjs",
 });
+
+// 讓 Express 使用 PeerJS server
+app.use("/myapp", peerServer);
