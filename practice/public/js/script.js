@@ -97,6 +97,7 @@ function initializeMainRoom() {
     if (!payload) {
       localStorage.clear();
       window.location.href = "/";
+      return;
     }
 
     const currentUrl = window.location.href;

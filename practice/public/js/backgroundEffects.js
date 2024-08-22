@@ -204,16 +204,20 @@ function applyBlurEffect(pixels, mask, width, height) {
 }
 
 export async function convertCanvasToStream(canvas) {
-  const videoOutput = await canvas.captureStream();
-  const mic = await navigator.mediaDevices.getUserMedia({
-    audio: true,
-    video: false,
-  });
-  const combine = new MediaStream([
-    ...videoOutput.getTracks(),
-    ...mic.getTracks(),
-  ]);
-  return combine;
+  try {
+    const videoOutput = await canvas.captureStream();
+    const mic = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+      video: false,
+    });
+    const combine = new MediaStream([
+      ...videoOutput.getTracks(),
+      ...mic.getTracks(),
+    ]);
+    return combine;
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 document.addEventListener("DOMContentLoaded", () => {

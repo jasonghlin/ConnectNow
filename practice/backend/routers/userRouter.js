@@ -92,9 +92,11 @@ router.put("/api/user/auth", async (req, res) => {
 
 // Authenticate user
 router.get("/api/user/auth", authenticateJWT, (req, res) => {
+  console.log();
   res.json({ message: "Authenticated", payload: req.payload });
 });
 
+// getAll user
 router.get("/api/allUsers", authenticateJWT, async (req, res) => {
   try {
     const url = req.headers.referer;

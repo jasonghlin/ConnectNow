@@ -11,11 +11,13 @@ export const authenticateJWT = (req, res, next) => {
       req.header("Authorization").replace("Bearer ", "")); // 從 Authorization 標頭中獲取 token
 
   if (!token) {
+    console.log("Client Error (No token)");
     return res.status(401).json({ message: "Client Error (No token)" });
   }
 
   jwt.verify(token, JWT_SECRET_KEY, (err, payload) => {
     if (err) {
+      console.log("Client Error (Wrong token)");
       return res.status(403).json({ message: "Client Error (Wrong token)" });
     }
     req.payload = payload;
