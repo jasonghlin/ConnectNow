@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 dotenv.config();
 const { JWT_SECRET_KEY, ENV } = process.env;
 
-async function createAccessToken(userId, userName, userEmail, expire) {
+export async function createAccessToken(userId, userName, userEmail, expire) {
   const payload = {
     userId,
     userName,
@@ -23,5 +23,3 @@ async function createAccessToken(userId, userName, userEmail, expire) {
     });
   });
 }
-
-export { createAccessToken };

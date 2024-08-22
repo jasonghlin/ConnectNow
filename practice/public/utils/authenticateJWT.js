@@ -4,7 +4,7 @@ dotenv.config();
 import jwt from "jsonwebtoken";
 const { JWT_SECRET_KEY } = process.env;
 
-const authenticateJWT = (req, res, next) => {
+export const authenticateJWT = (req, res, next) => {
   const token =
     req.cookies.token || // 從 cookie 中獲取 token
     (req.header("Authorization") &&
@@ -22,4 +22,3 @@ const authenticateJWT = (req, res, next) => {
     return next();
   });
 };
-export { authenticateJWT };
