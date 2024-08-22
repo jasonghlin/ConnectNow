@@ -133,10 +133,19 @@ io.on("connection", (socket) => {
       }
 
       // 儲存房間和使用者信息
+      console.log(
+        "Received roomName:",
+        roomName,
+        "userId:",
+        userId,
+        "peerId:",
+        peerId
+      );
       socket.data.roomName = roomName;
       socket.data.userId = userId;
       socket.data.peerId = peerId;
 
+      console.log("Data stored in socket:", socket.data);
       socket.join(roomName);
 
       // 確保 rooms Map 中存在該房間，並添加或更新用戶
@@ -176,14 +185,19 @@ io.on("connection", (socket) => {
 
   //   disconnect
   socket.on("disconnect", () => {
+    console.log("Disconnecting socket data:", socket.data);
     const roomName = socket.data.roomName;
     const roomUsers = rooms.get(roomName);
     console.log("User disconnected");
     handleUserLeave(socket);
-    console.log(
-      `2Room ${roomName} after leaving users:`,
-      [...roomUsers.values()].map((u) => `${u.userId} (${u.peerId})`)
-    );
+    if (roomUsers) {
+      console.log(
+        `2Room ${roomName} after leaving users:`,
+        [...roomUsers.values()].map((u) => `${u.userId} (${u.peerId})`)
+      );
+    } else {
+      console.log(`roomUsers with roomName ${roomName} does not exist`);
+    }
   });
 
   async function handleUserLeave(socket) {

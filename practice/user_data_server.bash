@@ -39,4 +39,4 @@ sudo chmod -R 755 /home/ubuntu/ConnectNow
 sudo docker compose -f /home/ubuntu/ConnectNow/practice/docker-compose.yml up --build -d
 
 # 進入 image
-sudo docker run -it --rm --entrypoint /bin/bash
+# sudo docker run -it --rm --entrypoint /bin/bash

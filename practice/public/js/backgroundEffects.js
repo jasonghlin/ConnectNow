@@ -163,8 +163,8 @@ function callbackForVideo(result) {
 
   canvasCtx.putImageData(imageData, 0, 0);
   if (webcamRunning === true) {
-    // window.requestAnimationFrame(predictWebcam);
-    setTimeout(predictWebcam, 1000 / 120);
+    window.requestAnimationFrame(predictWebcam);
+    // setTimeout(predictWebcam, 1000 / 120);
   }
 }
 
