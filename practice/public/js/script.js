@@ -190,6 +190,136 @@ document.querySelector(".mic-icon > i").addEventListener("click", async () => {
     : "mic-icon";
 });
 
+// mute video toggle
+
+// switch mic and video
+// 這個方法處理裝置的切換，並通知其他使用者
+function reconnectToAllUsers() {
+  const connectedPeers = peerInstance.connections;
+  for (let peerId in connectedPeers) {
+    connectToNewUser(peerId, currentStream); // 使用更新後的流
+  }
+}
+
+async function switchMediaSource(newAudioDeviceId, newVideoDeviceId) {
+  try {
+    // 取得新的媒體流
+    const newStream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        deviceId: newVideoDeviceId ? { exact: newVideoDeviceId } : undefined,
+      },
+      audio: {
+        deviceId: newAudioDeviceId ? { exact: newAudioDeviceId } : undefined,
+      },
+    });
+
+    // 使用新的視頻流畫到 canvas 上
+    const canvasElement = document.querySelector(".local-stream");
+    const canvasCtx = canvasElement.getContext("2d");
+
+    const videoTrack = newStream.getVideoTracks()[0];
+    const videoElement = document.createElement("video");
+    videoElement.srcObject = newStream;
+    videoElement.play();
+
+    videoElement.addEventListener("loadedmetadata", () => {
+      // 設定 canvas 尺寸與新的視頻尺寸一致
+      canvasElement.width = videoElement.videoWidth;
+      canvasElement.height = videoElement.videoHeight;
+
+      // 持續將視頻畫到 canvas 上
+      function drawToCanvas() {
+        canvasCtx.drawImage(
+          videoElement,
+          0,
+          0,
+          canvasElement.width,
+          canvasElement.height
+        );
+        requestAnimationFrame(drawToCanvas); // 持續更新畫面
+      }
+      drawToCanvas();
+
+      // 將 Canvas 轉換為 MediaStream
+      localStream = convertCanvasToStream(canvasElement);
+      currentStream = localStream;
+
+      // 通知其他使用者
+      socket.emit("update-stream", roomId, myPeerId, myUserId);
+
+      // 重新連接所有使用者
+      reconnectToAllUsers();
+    });
+  } catch (error) {
+    console.error("Error switching media source:", error);
+  }
+}
+
+// 當使用者切換裝置時調用該方法
+document.querySelector(".mic-list").addEventListener("change", (event) => {
+  document.querySelector(".mic-list").classList.add("hidden");
+  console.log("mic value: ", event.target.value);
+  const newAudioDeviceId = event.target.value;
+  const currentVideoDeviceId = document.querySelector(".video-list").value;
+  switchMediaSource(newAudioDeviceId, currentVideoDeviceId);
+});
+
+document.querySelector(".video-list").addEventListener("change", (event) => {
+  document.querySelector(".video-list").classList.add("hidden");
+  console.log("video value: ", event.target.value);
+  const newVideoDeviceId = event.target.value;
+  const currentAudioDeviceId = document.querySelector(".mic-list").value;
+  switchMediaSource(currentAudioDeviceId, newVideoDeviceId);
+});
+
+// toggle mic and video list
+
+const chooseMic = document.querySelector(".choose-mic");
+const chooseVideo = document.querySelector(".choose-video");
+chooseMic.addEventListener("click", toggleMicList);
+chooseVideo.addEventListener("click", toggleVideoList);
+let isMicListActive = false; // 变量来跟踪 listMic 是否处于活动状态
+let isVideoListActive = false;
+const micList = document.querySelector(".mic-list");
+const videoList = document.querySelector(".video-list");
+
+const devices = await navigator.mediaDevices.enumerateDevices();
+function listMicVideo() {
+  micList.innerHTML = ""; // 清空之前的列表
+  videoList.innerHTML = ""; // 清空之前的列表
+
+  devices.forEach((device) => {
+    const option = document.createElement("option");
+    option.value = device.deviceId;
+    option.text = device.label;
+    if (device.kind === "audioinput") {
+      micList.appendChild(option);
+    } else if (device.kind === "videoinput") {
+      videoList.appendChild(option);
+    }
+  });
+}
+
+listMicVideo();
+
+function toggleMicList() {
+  if (isMicListActive) {
+    micList.classList.add("hidden");
+  } else {
+    micList.classList.remove("hidden");
+  }
+  isMicListActive = !isMicListActive; // 切换状态
+}
+
+function toggleVideoList() {
+  if (isVideoListActive) {
+    videoList.classList.add("hidden");
+  } else {
+    videoList.classList.remove("hidden");
+  }
+  isVideoListActive = !isVideoListActive; // 切换状态
+}
+
 // socket listener
 
 function updateRemoteVideos(peerId, userVideoStream) {
@@ -266,6 +396,14 @@ socket.on("user-mic-status-changed", (peerId, isMicMuted) => {
   );
   if (videoElement) {
     videoElement.muted = isMicMuted;
+  }
+});
+
+// mic video list change
+socket.on("update-stream", (roomId, peerId, userId) => {
+  console.log(`${userId} switched their media source`);
+  if (peerId !== myPeerId) {
+    connectToNewUser(peerId, currentStream); // 重新連接，使用更新後的流
   }
 });
 

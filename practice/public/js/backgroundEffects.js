@@ -194,6 +194,11 @@ function applyBlurEffect(pixels, mask, width, height) {
 export async function convertCanvasToStream(canvas, isMicMuted = false) {
   try {
     const videoOutput = await canvas.captureStream();
+    if (!videoOutput.getTracks) {
+      throw new Error(
+        "Canvas captureStream did not return a valid MediaStream"
+      );
+    }
     const mic = await navigator.mediaDevices.getUserMedia({
       audio: true,
       video: false,

@@ -227,6 +227,12 @@ io.on("connection", (socket) => {
   socket.on("toggle-mic-status", (roomId, peerId, userId, isMicMuted) => {
     socket.to(roomId).emit("user-mic-status-changed", peerId, isMicMuted);
   });
+
+  //   change video audio
+  socket.on("update-stream", (roomId, peerId, userId) => {
+    console.log(`${userId} updated their media source in room: ${roomId}`);
+    socket.to(roomId).emit("update-stream", roomId, peerId, userId);
+  });
 });
 
 //
