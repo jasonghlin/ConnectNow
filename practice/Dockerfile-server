@@ -15,9 +15,6 @@ RUN rm -rf .env
 # 設置 NODE_PATH 環境變量
 ENV NODE_PATH=/app/node_modules
 
-# 進入 backend 資料夾
-WORKDIR /app/backend
-
 # 曝露應用的端口
 EXPOSE 8080
 
