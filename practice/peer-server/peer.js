@@ -31,8 +31,8 @@ app.get("/health", (req, res) => {
 const server = app.listen(9001);
 
 const peerServer = ExpressPeerServer(server, {
-  path: "/peerjs",
+  path: "/myapp",
 });
 
 // 讓 Express 使用 PeerJS server
-app.use("/myapp", peerServer);
+app.use(peerServer);
