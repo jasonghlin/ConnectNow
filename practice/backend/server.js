@@ -118,7 +118,6 @@ app.post("/api/mainRoom", authenticateJWT, async (req, res) => {
 
 // sockets
 const rooms = new Map();
-const userRooms = new Map();
 io.on("connection", (socket) => {
   socket.on("join-main-room", async (roomName, peerId, userId) => {
     try {
@@ -159,13 +158,10 @@ io.on("connection", (socket) => {
         console.log(`User ${userId} successfully joined room ${roomName}`);
       }
 
-      userRooms.set(userId, roomName);
-
       console.log(
         `1Room ${roomName} users:`,
         [...roomUsers.values()].map((u) => `${u.userId} (${u.peerId})`)
       );
-      console.log("userRooms: ", userRooms);
 
       // 通知房間其他用戶有新用戶加入
       //   socket.to(roomName).emit("user-connected-mainRoom", peerId, userId);
@@ -180,8 +176,14 @@ io.on("connection", (socket) => {
 
   //   disconnect
   socket.on("disconnect", () => {
+    const roomName = socket.data.roomName;
+    const roomUsers = rooms.get(roomName);
     console.log("User disconnected");
     handleUserLeave(socket);
+    console.log(
+      `2Room ${roomName} after leaving users:`,
+      [...roomUsers.values()].map((u) => `${u.userId} (${u.peerId})`)
+    );
   });
 
   async function handleUserLeave(socket) {
@@ -205,10 +207,6 @@ io.on("connection", (socket) => {
         rooms.delete(roomName);
       }
     }
-
-    // 從 userRooms 中移除該使用者
-    userRooms.delete(userId);
-    console.log(`User ${userId} removed from userRooms`);
   }
 });
 

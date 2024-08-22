@@ -84,6 +84,8 @@ body.panel-open footer {
     height: 15px; /* 更小的高度 */
     text-align: center;
     font-size: 1.2rem; /* 更小的字体 */
+    color: black;
+    font-size: 1.4rem
 }
 
 #timerDisplay {

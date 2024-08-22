@@ -13,7 +13,7 @@ COPY . .
 RUN rm -rf .env
 
 # 進入 backend 資料夾
-WORKDIR /app/backend
+WORKDIR /app/practice/backend
 
 # 安裝相依套件
 RUN npm install --no-audit

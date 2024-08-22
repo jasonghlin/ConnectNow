@@ -94,7 +94,7 @@ function createMainRoomTable() {
       connection.query(createTableQuery, (error, results) => {
         connection.release();
         if (error) return reject(error);
-        console.log("users table created");
+        console.log("main_room table created");
         resolve();
       });
     });
@@ -115,7 +115,7 @@ function createBreakoutRoomTable() {
       connection.query(createTableQuery, (error, results) => {
         connection.release();
         if (error) return reject(error);
-        console.log("users table created");
+        console.log("breakout_room table created");
         resolve();
       });
     });
@@ -141,7 +141,7 @@ function createUsersRoomsRelationTable() {
       connection.query(createTableQuery, (error, results) => {
         connection.release();
         if (error) return reject(error);
-        console.log("users table created");
+        console.log("users_rooms_relation table created");
         resolve();
       });
     });

@@ -6,6 +6,8 @@ import { createUser } from "../../models/createUser.js";
 import { createAccessToken } from "../../public/utils/createAccessToken.js";
 import { hashPassword } from "../../public/utils/hashPassword.js";
 import { authenticateJWT } from "../../public/utils/authenticateJWT.js";
+import { getAllUsers } from "../../models/getAllUsers.js";
+import { saveGroups } from "../../models/saveGroups.js";
 
 const router = express.Router();
 
@@ -91,6 +93,54 @@ router.put("/api/user/auth", async (req, res) => {
 // Authenticate user
 router.get("/api/user/auth", authenticateJWT, (req, res) => {
   res.json({ message: "Authenticated", payload: req.payload });
+});
+
+router.get("/api/allUsers", authenticateJWT, async (req, res) => {
+  try {
+    const url = req.headers.referer;
+    if (!url) {
+      console.error("Referer header is missing");
+      return res.status(400).json({ error: "Unable to determine room ID" });
+    }
+    const urlParts = url.split("/");
+    const roomId = urlParts[urlParts.length - 1];
+
+    if (!roomId) {
+      console.error("Unable to extract room ID from URL");
+      return res.status(400).json({ error: "Unable to determine room ID" });
+    }
+
+    console.log("Fetching users for room:", roomId);
+    const users = await getAllUsers(roomId);
+    res.status(200).json(users);
+  } catch (error) {
+    console.error("Error fetching all users:", error);
+    if (error.message.includes("No main room found")) {
+      res.status(404).json({ error: "Room not found" });
+    } else {
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
+});
+
+router.post("/api/groups", authenticateJWT, async (req, res) => {
+  try {
+    const groups = req.body;
+    const result = await saveGroups(groups);
+    console.log("create groups:", groups);
+
+    // 通知所有客戶端
+    // io.emit("groups-finished", result);
+
+    res
+      .status(200)
+      .json({ message: "Groups saved successfully", data: groups });
+  } catch (error) {
+    console.error("Error saving groups:", error);
+    res
+      .status(500)
+      .json({ message: "Error saving groups", error: error.message });
+  }
 });
 
 export default router;
