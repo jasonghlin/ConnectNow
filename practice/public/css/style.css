@@ -82,6 +82,14 @@ footer {
     right: 1.9rem;
 }
 
+.mic-icon.mic-mute {
+    background: red;
+}
+
+.mic-icon.mic-mute > .choose-mic {
+    color: white;
+}
+
 .video-icon {
     width: 7rem;
     height: 4.8rem;
@@ -98,7 +106,7 @@ footer {
     margin-right: 2rem;
 }
 
-.video:hover {
+.video-icon:hover {
     transform: translateY(-0.3rem);
 }
 

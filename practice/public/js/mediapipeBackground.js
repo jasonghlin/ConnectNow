@@ -82,11 +82,6 @@ function onResults(results) {
     backgroundCanvas.width,
     backgroundCanvas.height
   );
-
-  if (!backgroundStream) {
-    backgroundStream = backgroundCanvas.captureStream();
-    applyBackgroundStream(backgroundStream, window.peers);
-  }
 }
 
 async function startCamera() {
@@ -125,23 +120,6 @@ async function startCamera() {
   camera.start();
 }
 
-function applyBackgroundStream(newStream, peers) {
-  const myVideo = document.querySelector(".local-stream");
-  if (myVideo) {
-    myVideo.srcObject = newStream;
-  }
-
-  // 更新所有 peers 的 video track
-  for (let userId in peers) {
-    const sender = peers[userId].peerConnection
-      .getSenders()
-      .find((sender) => sender.track.kind === "video");
-    if (sender) {
-      sender.replaceTrack(newStream.getVideoTracks()[0]);
-    }
-  }
-}
-
 // 背景处理函数
 function setBackground(mode, imageSrc) {
   backgroundMode = mode;
@@ -160,4 +138,4 @@ function setBackground(mode, imageSrc) {
 // 启动摄像头和背景处理
 startCamera();
 
-export { setBackground, applyBackgroundStream, startCamera };
+export { setBackground, startCamera };

@@ -85,14 +85,6 @@ async function predictWebcam() {
       setTimeout(predictWebcam);
     }
   }
-
-  // 新增: 定期更新 stream
-  // if (performance.now() - lastStreamUpdate > 1000) {
-  //   // 每秒更新一次
-  //   myStream = await convertCanvasToStream(canvasElement);
-  //   updateStreamForPeers(myStream);
-  //   lastStreamUpdate = performance.now();
-  // }
 }
 
 function callbackForVideo(result) {
@@ -177,10 +169,6 @@ export async function startBackgroundEffects() {
   }
   webcamRunning = true;
   predictWebcam();
-
-  // 新增: 更新 stream 並通知 peers
-  myStream = await convertCanvasToStream(canvasElement);
-  updateStreamForPeers(myStream);
 }
 
 function applyBlurEffect(pixels, mask, width, height) {
@@ -203,13 +191,16 @@ function applyBlurEffect(pixels, mask, width, height) {
   }
 }
 
-export async function convertCanvasToStream(canvas) {
+export async function convertCanvasToStream(canvas, isMicMuted = false) {
   try {
     const videoOutput = await canvas.captureStream();
     const mic = await navigator.mediaDevices.getUserMedia({
       audio: true,
       video: false,
     });
+    // Mute or unmute the audio based on the isMicMuted parameter
+    mic.getAudioTracks()[0].enabled = !isMicMuted;
+
     const combine = new MediaStream([
       ...videoOutput.getTracks(),
       ...mic.getTracks(),
@@ -219,12 +210,6 @@ export async function convertCanvasToStream(canvas) {
     console.log(error);
   }
 }
-
-document.addEventListener("DOMContentLoaded", () => {
-  //     if (!document.querySelector(".local-stream")) {
-  //       addVideoStream(localVideo, myStream, "local");
-  //     }
-});
 
 document.querySelector(".none-blur-bg").addEventListener("click", () => {
   applyForegroundReplacement = false;
@@ -244,18 +229,6 @@ document.querySelectorAll(".bg-img").forEach((el, index) => {
   });
 });
 
-// 2. 添加 updateStreamForPeers 函數
-function updateStreamForPeers(newStream) {
-  for (let userId in window.peers) {
-    const sender = window.peers[userId].peerConnection
-      .getSenders()
-      .find((sender) => sender.track.kind === "video");
-    if (sender) {
-      sender.replaceTrack(newStream.getVideoTracks()[0]);
-    }
-  }
-}
-
 function backgroundPanelDisplay() {
   const backgrounEffectsButton = document.querySelector(".background-effects");
   const backgrounEffectsPanel = document.querySelector(".background-panel");
@@ -272,4 +245,4 @@ function backgroundPanelDisplay() {
   });
 }
 backgroundPanelDisplay();
-export { myStream, updateStreamForPeers };
+export { myStream };

@@ -167,6 +167,30 @@ function initializeMainRoom() {
   }
 })();
 
+// mic mute toggle
+let isMicMuted = false;
+
+document.querySelector(".mic-icon > i").addEventListener("click", async () => {
+  console.log("roomId, myPeerId, myUserId: ", roomId, myPeerId, myUserId);
+  isMicMuted = !isMicMuted;
+  const canvasElement = document.querySelector(".local-stream");
+  // Update the stream with the new mic status
+  let localStream = await convertCanvasToStream(canvasElement, isMicMuted);
+  currentStream = localStream;
+
+  // 重新連接所有使用者
+  socket.emit("toggle-mic-status", roomId, myPeerId, myUserId, isMicMuted);
+
+  // Optionally update the UI to show mic status (muted/unmuted)
+  document.querySelector(".mic-icon > i").className = isMicMuted
+    ? "fas fa-microphone-slash"
+    : "fas fa-microphone";
+
+  document.querySelector(".mic-icon").className = isMicMuted
+    ? "mic-icon mic-mute"
+    : "mic-icon";
+});
+
 // socket listener
 
 function updateRemoteVideos(peerId, userVideoStream) {
@@ -214,7 +238,6 @@ function connectToNewUser(peerId, stream) {
   });
 }
 
-const peerIdToUserIdMap = new Map();
 socket.on("user-connected-mainRoom", (peerId, userId) => {
   console.log("New user connected to room:", peerId, userId);
   connectToNewUser(peerId, currentStream);
@@ -237,4 +260,9 @@ socket.on("user-disconnected-mainRoom", (peerId, userId) => {
   removeVideoElement(peerId);
 });
 
-export { connectToNewUser };
+// 監聽重新連接的事件，並使用新 stream 重新呼叫 connectToNewUser
+socket.on("reconnect-users-mainRoom", (peerId, userId) => {
+  connectToNewUser(peerId, currentStream);
+});
+
+export { connectToNewUser, socket, roomId, myPeerId, myUserId, currentStream };

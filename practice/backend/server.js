@@ -222,6 +222,15 @@ io.on("connection", (socket) => {
       }
     }
   }
+
+  // toggle mic
+  socket.on("reconnect-users-mainRoom", (roomId, peerId, userId) => {
+    // 廣播給房間中的其他用戶，使用新的 stream 重新連接
+    socket.to(roomId).emit("user-connected-mainRoom", peerId, userId);
+    console.log(
+      `User ${userId} with peerId ${peerId} reconnected to room ${roomId}`
+    );
+  });
 });
 
 //
