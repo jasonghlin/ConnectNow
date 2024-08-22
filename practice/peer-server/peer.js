@@ -24,6 +24,10 @@ app.use((req, res, next) => {
   next();
 });
 
+app.get("/health", (req, res) => {
+  res.send({ ok: true });
+});
+
 const server = app.listen(9001);
 
 const peerServer = ExpressPeerServer(server, {
