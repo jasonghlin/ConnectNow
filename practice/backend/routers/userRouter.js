@@ -62,7 +62,7 @@ router.put("/api/user/auth", async (req, res) => {
                   secure: req.protocol === "https",
                   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 天的有效期
                 })
-                .json({ token, username: user[0].name });
+                .json({ token, username: user[0].name, userId: user[0].id });
             } catch (tokenError) {
               console.error("Error creating token:", tokenError);
               res.status(500).json({

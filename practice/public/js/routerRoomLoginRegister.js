@@ -128,6 +128,7 @@ function handleLogin() {
   const loginEmail = document.querySelector("#login-email");
   const loginPassword = document.querySelector("#login-password");
   const loginForm = document.querySelector(".login-form");
+
   const loginUser = async (email, password) => {
     const response = await fetch("/api/user/auth", {
       method: "PUT",
@@ -143,19 +144,20 @@ function handleLogin() {
       loginErrorDiv.textContent = errorData.message;
     } else {
       const data = await response.json();
+      // Set the localStorage items here
+      localStorage.setItem("session", data.token);
+      localStorage.setItem("username", data.username);
+      localStorage.setItem("userId", data.userId); // Assuming data contains userId
+
+      // Then reload the page
       window.location.reload();
       return data;
     }
-    localStorage.setItem("session", token.token);
-    localStorage.setItem("username", token.username);
   };
 
   loginForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const jwtToken = await loginUser(loginEmail.value, loginPassword.value);
-    localStorage.setItem("session", token.token);
-    localStorage.setItem("username", token.username);
-    localStorage.setItem("username", token.userId);
+    await loginUser(loginEmail.value, loginPassword.value);
   });
 }
 
