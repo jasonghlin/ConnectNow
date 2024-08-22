@@ -25,4 +25,4 @@ EXPOSE 8080
 RUN echo "export NODE_PATH=/app/node_modules" >> /root/.bashrc
 
 # 啟動應用時指定 .env 文件
-CMD ["node", "server.js"]
+CMD ["node", "/app/backend/server.js"]
