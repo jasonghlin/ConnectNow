@@ -19,4 +19,4 @@ WORKDIR /app/backend
 EXPOSE 8080
 
 # 啟動應用時指定 .env 文件
-CMD ["node", "/app/backend/server.js"]
+CMD ["node", "server.js"]
