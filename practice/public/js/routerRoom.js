@@ -1,6 +1,44 @@
 import { checkStatus } from "../utils/loginOutAndRegister.js";
 
 async function routerRoom() {
+  const payload = await checkStatus();
+  let userImgUrl = localStorage.getItem("proImg");
+  if (payload && !userImgUrl) {
+    let response = await fetch("/api/userImg", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("session")}`,
+      },
+    });
+    if (response.ok) {
+      // 確保請求成功
+      const data = await response.json();
+      console.log(data); // 檢查返回的數據格式
+      userImgUrl = data.url || "/static/images/user.png"; // 確保 url 存在
+    } else {
+      console.error("Failed to fetch user image");
+      userImgUrl = "/static/images/user.png"; // 默認圖片
+    }
+  } else if (!userImgUrl) {
+    userImgUrl = "/static/images/user.png"; // 默認圖片
+  }
+  if (payload) {
+    document.querySelector(
+      ".login-register"
+    ).innerHTML = `<div class="userInfo-img-container">
+                    <div class="user-welcome">
+                        <div class="user-name">${payload.payload.userName}</div>
+                        <div class="welcome">歡迎使用 ConnectNow</div>
+                    </div>
+                    <div class="user-img">
+                        <img src="${userImgUrl}" alt="user-img">
+                    </div>
+                </div>`;
+    document.querySelector(".login-register").addEventListener("click", (e) => {
+      window.location.href = "/member";
+    });
+  }
+
   const createRoomBtn = document.querySelector(".create-room-btn");
   const joinRoomBtn = document.querySelector(".join-room-btn");
 

@@ -56,12 +56,19 @@ function loginUser() {
   });
 }
 
+function deleteCookie(name) {
+  document.cookie =
+    name +
+    "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=" +
+    window.location.hostname +
+    ";";
+}
+
 function logOutUser() {
   const logoutBtn = document.querySelector(".logout");
   logoutBtn.addEventListener("click", (e) => {
-    localStorage.removeItem("session");
-    localStorage.removeItem("username");
-    localStorage.removeItem("proImg");
+    localStorage.clear();
+    deleteCookie("token");
     window.location.href = "/";
   });
 }

@@ -1,6 +1,9 @@
 // routes/userRouter.js
 import express from "express";
 import bcrypt from "bcrypt";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import multer from "multer";
+import dotenv from "dotenv";
 import { getUser } from "../../models/registerAndLoginGetUser.js";
 import { createUser } from "../../models/createUser.js";
 import { createAccessToken } from "../../public/utils/createAccessToken.js";
@@ -8,8 +11,24 @@ import { hashPassword } from "../../public/utils/hashPassword.js";
 import { authenticateJWT } from "../../public/utils/authenticateJWT.js";
 import { getAllUsers } from "../../models/getAllUsers.js";
 import { saveGroups } from "../../models/saveGroups.js";
+import { updateUserName } from "../../models/updateUserName.js";
+import { updateUserEmail } from "../../models/updateUserEmail.js";
+import { updateUserPassword } from "../../models/updateUserPassword.js";
+import { getDbUserImg } from "../../models/getDbUserImg.js";
+import { updateDbUserImg } from "../../models/updateDbUserImg.js";
+
+dotenv.config();
+const { ENV, AWS_ACCESS_KEY, AWS_SECRET_KEY, BUCKET_NAME } = process.env;
 
 const router = express.Router();
+const upload = multer();
+const s3Client = new S3Client({
+  region: "us-west-2", // 替换为你实际的区域
+  credentials: {
+    accessKeyId: AWS_ACCESS_KEY,
+    secretAccessKey: AWS_SECRET_KEY,
+  },
+});
 
 // Register
 router.post("/api/user", async (req, res) => {
@@ -58,7 +77,7 @@ router.put("/api/user/auth", async (req, res) => {
               res
                 .status(200)
                 .cookie("token", token, {
-                  httpOnly: true,
+                  httpOnly: false,
                   secure: req.protocol === "https",
                   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 天的有效期
                 })
@@ -144,5 +163,122 @@ router.post("/api/groups", authenticateJWT, async (req, res) => {
       .json({ message: "Error saving groups", error: error.message });
   }
 });
+
+// update user info
+router.patch("/api/user/userInfo", authenticateJWT, async (req, res) => {
+  console.log(req.body);
+  console.log(req.payload);
+  try {
+    if (req.body.name) {
+      const result = await updateUserName(req.body.name, req.payload.userId);
+
+      if (result) {
+        const token = await createAccessToken(
+          req.payload.userId,
+          req.body.name,
+          req.payload.userEmail
+        );
+
+        res
+          .status(200)
+          .cookie("token", token, {
+            httpOnly: false,
+            secure: req.protocol === "https",
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 天的有效期
+          })
+          .json({ token, username: req.body.name });
+      }
+    } else if (req.body.email) {
+      const userExist = await getUser(req.body);
+      console.log(userExist.length);
+      if (userExist.length > 0) {
+        res.status(400).json({ error: true, message: "此 email 已註冊過" });
+      } else {
+        const result = await updateUserEmail(
+          req.body.email,
+          req.payload.userId
+        );
+
+        if (result) {
+          const token = await createAccessToken(
+            req.payload.userId,
+            req.payload.userName,
+            req.body.email
+          );
+
+          res
+            .status(200)
+            .cookie("token", token, {
+              httpOnly: false,
+              secure: req.protocol === "https",
+              maxAge: 7 * 24 * 60 * 60 * 1000, // 7 天的有效期
+            })
+            .json({ token });
+        }
+      }
+    } else if (req.body.password) {
+      const hash_password = await hashPassword(req.body.password);
+      const result = updateUserPassword(hash_password, req.payload.userId);
+      console.log(result);
+      if (result) {
+        res.status(200).json({ ok: true });
+      }
+    }
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+// get user Img
+router.get("/api/userImg", authenticateJWT, async (req, res) => {
+  const result = await getDbUserImg(req.payload.userId);
+
+  if (result) {
+    return res.json({
+      message: "File found successfully",
+      url: result.avatar_url,
+    });
+  }
+
+  return res.status(404).json({ message: "File not found" });
+});
+
+// update userImg
+router.post(
+  "/api/userImg",
+  authenticateJWT,
+  upload.single("file"),
+  async (req, res) => {
+    const file = req.file;
+
+    if (!file || !["image/jpeg", "image/png"].includes(file.mimetype)) {
+      return res.status(400).json({ message: "Invalid file type" });
+    }
+
+    const fileKey = `user-${req.payload.userId}-${file.originalname}`;
+
+    try {
+      // Upload file to S3
+      const uploadParams = {
+        Bucket: BUCKET_NAME,
+        Key: fileKey,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+      };
+      await s3Client.send(new PutObjectCommand(uploadParams));
+
+      // Get file URL
+      const fileUrl = `https://d3u8ez3u55dl9n.cloudfront.net/${fileKey}`;
+      await updateDbUserImg(req.payload.userId, fileUrl);
+
+      return res.json({ message: "File uploaded successfully", url: fileUrl });
+    } catch (err) {
+      console.error(err);
+      return res
+        .status(500)
+        .json({ message: "File upload failed", error: err.message });
+    }
+  }
+);
 
 export default router;
