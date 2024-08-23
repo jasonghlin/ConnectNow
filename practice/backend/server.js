@@ -240,6 +240,16 @@ io.on("connection", (socket) => {
     // 將音訊更新事件廣播給房間內的其他用戶
     socket.to(roomId).emit("user-audio-source-updated", peerId, userId);
   });
+
+  // toggle video
+  socket.on("toggle-video-status", (roomId, peerId, userId, isVideoMuted) => {
+    console.log(
+      `${userId} (${peerId}) toggled video status to: ${isVideoMuted}`
+    );
+
+    // 廣播給同房間的其他使用者
+    socket.to(roomId).emit("toggle-video-status", peerId, isVideoMuted);
+  });
 });
 
 //

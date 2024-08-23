@@ -115,6 +115,14 @@ footer {
     right: 1.9rem;
 }
 
+.video-icon.video-muted {
+    background: red;
+}
+
+.video-icon.video-muted > .choose-video {
+    color: white
+}
+
 .share-screen {
     width: 4.8rem;
     height: 4.8rem;

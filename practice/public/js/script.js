@@ -260,7 +260,14 @@ function updateCanvasStream(stream) {
     const context = canvas.getContext("2d");
 
     function drawFrame() {
-      context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+      if (!isVideoMuted) {
+        // 當視訊開啟時，繪製視訊內容
+        context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+      } else {
+        // 當視訊關閉時，填充黑色背景
+        context.fillStyle = "black";
+        context.fillRect(0, 0, canvas.width, canvas.height);
+      }
       requestAnimationFrame(drawFrame);
     }
 
@@ -354,6 +361,54 @@ function toggleVideoList() {
   isVideoListActive = !isVideoListActive; // 切换状态
 }
 
+// 關閉視訊
+let isVideoMuted = false;
+document
+  .querySelector(".video-icon > i")
+  .addEventListener("click", async () => {
+    console.log("Toggling video status...");
+    isVideoMuted = !isVideoMuted;
+
+    if (isVideoMuted) {
+      // 關閉視訊，並顯示黑畫面
+      localStream.getVideoTracks()[0].enabled = false;
+      updateCanvasStream(localStream); // 更新畫布為黑色
+    } else {
+      // 重新擷取視訊流
+      const newVideoStream = await navigator.mediaDevices.getUserMedia({
+        video: true, // 重新取得視訊流
+        audio: false,
+      });
+
+      // 保留現有的音訊軌道，並結合新的視訊流
+      const updatedStream = new MediaStream([
+        ...localStream.getAudioTracks(),
+        ...newVideoStream.getVideoTracks(),
+      ]);
+
+      localStream = updatedStream;
+      currentStream = localStream;
+      updateCanvasStream(localStream); // 更新畫布為新視訊內容
+
+      // 通知其他參與者視訊流已更新
+      socket.emit(
+        "toggle-video-status",
+        roomId,
+        myPeerId,
+        myUserId,
+        isVideoMuted
+      );
+    }
+
+    // 更新 UI 的圖示
+    document.querySelector(".video-icon > i").className = isVideoMuted
+      ? "fas fa-video-slash"
+      : "fas fa-video";
+
+    document.querySelector(".video-icon").className = isVideoMuted
+      ? "video-icon video-muted"
+      : "video-icon";
+  });
 // socket listener
 
 function updateRemoteVideos(peerId, userVideoStream) {
@@ -446,8 +501,32 @@ socket.on("user-audio-source-updated", (peerId, userId) => {
   if (peerId !== myPeerId) {
     connectToNewUser(peerId, currentStream); // 重新連接，使用更新後的流
   }
-  // 這裡可以撰寫更新音訊的邏輯
-  // 例如取得新的音訊流或處理其他邏輯
+});
+
+// 關閉視訊
+socket.on("toggle-video-status", (peerId, isVideoMuted) => {
+  const videoElement = document.querySelector(
+    `video[data-peer-id="${peerId}"]`
+  );
+  if (videoElement) {
+    if (isVideoMuted) {
+      // 顯示黑畫面
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+      canvas.width = videoElement.videoWidth;
+      canvas.height = videoElement.videoHeight;
+
+      context.fillStyle = "black";
+      context.fillRect(0, 0, canvas.width, canvas.height);
+
+      videoElement.srcObject = canvas.captureStream();
+    } else {
+      // 恢復播放視訊
+      if (peerId !== myPeerId) {
+        connectToNewUser(peerId, currentStream); // 重新連接，使用更新後的流
+      }
+    }
+  }
 });
 
 export { connectToNewUser };
