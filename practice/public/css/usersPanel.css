@@ -26,7 +26,14 @@
     cursor: pointer;
 }
 
-.user-container {
+.users-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.avater-userName-wrapper {
     display: flex;
     align-items: center;
 }
@@ -49,5 +56,9 @@
 }
 
 .user-name {
-    margin-left: 1rem;
+    margin-left: 1.5rem;
+}
+
+.usersPanel-mic {
+    cursor: pointer;
 }

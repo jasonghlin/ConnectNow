@@ -182,6 +182,13 @@ document.querySelector(".mic-icon > i").addEventListener("click", async () => {
   // 重新連接所有使用者
   socket.emit("toggle-mic-status", roomId, myPeerId, myUserId, isMicMuted);
 
+  // 更新所有參與者的 usersPanel-mic 圖示
+  socket.emit("sync-mic-icons", {
+    roomId,
+    userId: myUserId,
+    isMuted: isMicMuted,
+  });
+
   // Optionally update the UI to show mic status (muted/unmuted)
   document.querySelector(".mic-icon > i").className = isMicMuted
     ? "fas fa-microphone-slash"
@@ -488,6 +495,33 @@ socket.on("user-mic-status-changed", (peerId, isMicMuted) => {
   }
 });
 
+// toggle mic by users panel
+socket.on("user-mic-status-changed-by-usersPanel", ({ userId, isMuted }) => {
+  const micButton = document.querySelector(
+    `.usersPanel-mic[data-user-id="${userId}"]`
+  );
+  if (micButton) {
+    const micIcon = micButton.querySelector("i");
+    micIcon.classList.toggle("fa-microphone", !isMuted);
+    micIcon.classList.toggle("fa-microphone-slash", isMuted);
+  }
+
+  // // 同步音訊狀態
+  // const videoElement = document.querySelector(
+  //   `video[data-user-id="${userId}"]`
+  // );
+  // if (videoElement) {
+  //   videoElement.muted = isMuted;
+  // }
+
+  if (userId == localStorage.getItem("userId")) {
+    const userMic = document.querySelector(
+      `.mic-icon[data-user-id="${userId}"] > i`
+    );
+    userMic.click();
+  }
+});
+
 // mic video list change
 socket.on("update-video-stream", (roomId, peerId, userId) => {
   console.log(`${userId} switched their media source, Updating...`);
@@ -529,4 +563,4 @@ socket.on("toggle-video-status", (peerId, isVideoMuted) => {
   }
 });
 
-export { connectToNewUser };
+export { connectToNewUser, socket, roomId };

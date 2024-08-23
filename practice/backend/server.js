@@ -116,8 +116,15 @@ app.post("/api/mainRoom", authenticateJWT, async (req, res) => {
   res.status(200).json({ ok: true, roomId: roomName });
 });
 
+app.get("/api/muteStatus/:roomId", (req, res) => {
+  const { roomId } = req.params;
+  const muteStatus = userMuteStatus[roomId] || {};
+  res.json(muteStatus);
+});
+
 // sockets
 const rooms = new Map();
+const userMuteStatus = {}; // 儲存每個房間中使用者的靜音狀態，键为 roomId, 值为包含用户静音状态的对象
 io.on("connection", (socket) => {
   socket.on("join-main-room", async (roomName, peerId, userId) => {
     try {
@@ -225,7 +232,31 @@ io.on("connection", (socket) => {
 
   // toggle mic
   socket.on("toggle-mic-status", (roomId, peerId, userId, isMicMuted) => {
+    // 更新静音状态
+    if (!userMuteStatus[roomId]) {
+      userMuteStatus[roomId] = {};
+    }
+    userMuteStatus[roomId][userId] = isMicMuted;
+
     socket.to(roomId).emit("user-mic-status-changed", peerId, isMicMuted);
+  });
+
+  //   從 usersPanel 面板 toggle mic
+  socket.on("toggle-user-mic", ({ roomId, userId, isMuted }) => {
+    if (!userMuteStatus[roomId]) {
+      userMuteStatus[roomId] = {};
+    }
+    userMuteStatus[roomId][userId] = isMuted;
+
+    // 將變更通知給同個房間內的其他用戶
+    io.to(roomId).emit("user-mic-status-changed-by-usersPanel", {
+      userId,
+      isMuted,
+    });
+  });
+
+  socket.on("sync-mic-icons", ({ roomId, userId, isMuted }) => {
+    io.to(roomId).emit("sync-mic-icons", { userId, isMuted });
   });
 
   //   change video audio
