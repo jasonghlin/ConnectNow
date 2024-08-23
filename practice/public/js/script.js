@@ -145,6 +145,10 @@ function initializeMainRoom() {
       } else {
         console.error("userId or peerId is undefined");
       }
+
+      peer.on("call", (call) => {
+        handleIncomingCall(call, currentStream);
+      });
     });
 
     // handle incoming call
@@ -158,10 +162,6 @@ function initializeMainRoom() {
         removeVideoElement(call.peer);
       });
     }
-
-    peer.on("call", (call) => {
-      handleIncomingCall(call, currentStream);
-    });
   } catch (error) {
     console.error(error);
   }
