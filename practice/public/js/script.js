@@ -118,6 +118,8 @@ function initializeMainRoom() {
     initializeMainRoom();
     console.log("mainRoom: ", mainRoom, "currentRoom: ", currentRoom);
     const localStreamCanvas = await waitForLocalStream();
+    console.log(".local-stream element is ready");
+
     localStream = await convertCanvasToStream(localStreamCanvas);
     currentStream = localStream;
     console.log("currentStream: ", currentStream, "localStream: ", localStream);
@@ -192,84 +194,116 @@ document.querySelector(".mic-icon > i").addEventListener("click", async () => {
 
 // mute video toggle
 
-// switch mic and video
-// 這個方法處理裝置的切換，並通知其他使用者
-function reconnectToAllUsers() {
-  const connectedPeers = peerInstance.connections;
-  for (let peerId in connectedPeers) {
-    connectToNewUser(peerId, currentStream); // 使用更新後的流
-  }
-}
+// switch video
 
-async function switchMediaSource(newAudioDeviceId, newVideoDeviceId) {
-  try {
-    // 取得新的媒體流
-    const newStream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        deviceId: newVideoDeviceId ? { exact: newVideoDeviceId } : undefined,
-      },
-      audio: {
-        deviceId: newAudioDeviceId ? { exact: newAudioDeviceId } : undefined,
-      },
-    });
+function updateLocalStream(updatedStream) {
+  const videoTrack = updatedStream.getVideoTracks()[0];
+  const videoElement = document.createElement("video");
+  videoElement.srcObject = new MediaStream([videoTrack]);
 
-    // 使用新的視頻流畫到 canvas 上
-    const canvasElement = document.querySelector(".local-stream");
-    const canvasCtx = canvasElement.getContext("2d");
-
-    const videoTrack = newStream.getVideoTracks()[0];
-    const videoElement = document.createElement("video");
-    videoElement.srcObject = newStream;
+  videoElement.onloadedmetadata = () => {
     videoElement.play();
+    const canvas = document.querySelector(".local-stream"); // 你的 canvas 元素
+    const context = canvas.getContext("2d");
 
-    videoElement.addEventListener("loadedmetadata", () => {
-      // 設定 canvas 尺寸與新的視頻尺寸一致
-      canvasElement.width = videoElement.videoWidth;
-      canvasElement.height = videoElement.videoHeight;
+    function drawFrame() {
+      context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+      requestAnimationFrame(drawFrame);
+    }
 
-      // 持續將視頻畫到 canvas 上
-      function drawToCanvas() {
-        canvasCtx.drawImage(
-          videoElement,
-          0,
-          0,
-          canvasElement.width,
-          canvasElement.height
-        );
-        requestAnimationFrame(drawToCanvas); // 持續更新畫面
-      }
-      drawToCanvas();
-
-      // 將 Canvas 轉換為 MediaStream
-      localStream = convertCanvasToStream(canvasElement);
-      currentStream = localStream;
-
-      // 通知其他使用者
-      socket.emit("update-stream", roomId, myPeerId, myUserId);
-
-      // 重新連接所有使用者
-      reconnectToAllUsers();
-    });
-  } catch (error) {
-    console.error("Error switching media source:", error);
-  }
+    drawFrame();
+  };
 }
 
+async function updateVideoSource(newVideoDeviceId) {
+  try {
+    // 取得現有音訊流
+    const currentAudioTracks = localStream.getAudioTracks();
+
+    // 使用新的 videoDeviceId 取得新的視訊流
+    const newVideoStream = await navigator.mediaDevices.getUserMedia({
+      video: { deviceId: { exact: newVideoDeviceId } },
+      audio: false, // 不需要更新音訊流
+    });
+
+    // 保留現有的音訊流，並結合新的視訊流
+    const updatedStream = new MediaStream([
+      ...currentAudioTracks,
+      ...newVideoStream.getVideoTracks(),
+    ]);
+
+    // 在本地 canvas 或 video 上更新流
+    updateLocalStream(updatedStream);
+
+    // 通知其他參與者視訊流已更新
+    socket.emit("update-video-stream", roomId, myPeerId, myUserId);
+  } catch (error) {
+    console.error("Failed to update video source:", error);
+  }
+}
+document.querySelector(".video-list").addEventListener("change", (event) => {
+  document.querySelector(".video-list").classList.add("hidden");
+  console.log("video value: ", event.target.value);
+  const newVideoDeviceId = event.target.value;
+  updateVideoSource(newVideoDeviceId);
+});
+
+// switch audio
+function updateCanvasStream(stream) {
+  const videoTrack = stream.getVideoTracks()[0];
+  const videoElement = document.createElement("video");
+  videoElement.srcObject = new MediaStream([videoTrack]);
+
+  videoElement.onloadedmetadata = () => {
+    videoElement.play();
+    const canvas = document.querySelector(".local-stream"); // 你的 canvas 元素
+    const context = canvas.getContext("2d");
+
+    function drawFrame() {
+      context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+      requestAnimationFrame(drawFrame);
+    }
+
+    drawFrame();
+  };
+}
+
+async function updateAudioSource(newAudioDeviceId) {
+  try {
+    // 获取现有的 canvas stream 视频轨道
+    const currentVideoTracks = localStream.getVideoTracks();
+
+    // 使用新的 audioDeviceId 获取新的音频流
+    const newAudioStream = await navigator.mediaDevices.getUserMedia({
+      video: false, // 不需要更新视频流
+      audio: { deviceId: { exact: newAudioDeviceId } },
+    });
+
+    // 将现有的视频轨道和新的音频轨道组合成一个新的 MediaStream
+    const updatedStream = new MediaStream([
+      ...currentVideoTracks,
+      ...newAudioStream.getAudioTracks(),
+    ]);
+
+    // 更新 canvas stream，使其包含新的音频轨道
+    localStream = updatedStream;
+    currentStream = localStream;
+
+    // 继续使用 localStream 在 canvas 上绘制视频内容
+    updateCanvasStream(localStream);
+
+    // 通知其他参与者音频流已更新
+    socket.emit("update-audio-source", roomId, myPeerId, myUserId);
+  } catch (error) {
+    console.error("Failed to update audio source:", error);
+  }
+}
 // 當使用者切換裝置時調用該方法
 document.querySelector(".mic-list").addEventListener("change", (event) => {
   document.querySelector(".mic-list").classList.add("hidden");
   console.log("mic value: ", event.target.value);
   const newAudioDeviceId = event.target.value;
-  const currentVideoDeviceId = document.querySelector(".video-list").value;
-  switchMediaSource(newAudioDeviceId, currentVideoDeviceId);
-});
-
-document.querySelector(".video-list").addEventListener("change", (event) => {
-  document.querySelector(".video-list").classList.add("hidden");
-  console.log("video value: ", event.target.value);
-  const newVideoDeviceId = event.target.value;
-  const currentAudioDeviceId = document.querySelector(".mic-list").value;
-  switchMediaSource(currentAudioDeviceId, newVideoDeviceId);
+  updateAudioSource(newAudioDeviceId);
 });
 
 // toggle mic and video list
@@ -400,11 +434,20 @@ socket.on("user-mic-status-changed", (peerId, isMicMuted) => {
 });
 
 // mic video list change
-socket.on("update-stream", (roomId, peerId, userId) => {
-  console.log(`${userId} switched their media source`);
+socket.on("update-video-stream", (roomId, peerId, userId) => {
+  console.log(`${userId} switched their media source, Updating...`);
   if (peerId !== myPeerId) {
     connectToNewUser(peerId, currentStream); // 重新連接，使用更新後的流
   }
+});
+
+socket.on("user-audio-source-updated", (peerId, userId) => {
+  console.log(`User ${userId} updated their audio source. Updating...`);
+  if (peerId !== myPeerId) {
+    connectToNewUser(peerId, currentStream); // 重新連接，使用更新後的流
+  }
+  // 這裡可以撰寫更新音訊的邏輯
+  // 例如取得新的音訊流或處理其他邏輯
 });
 
 export { connectToNewUser };

@@ -229,9 +229,16 @@ io.on("connection", (socket) => {
   });
 
   //   change video audio
-  socket.on("update-stream", (roomId, peerId, userId) => {
-    console.log(`${userId} updated their media source in room: ${roomId}`);
-    socket.to(roomId).emit("update-stream", roomId, peerId, userId);
+  socket.on("update-video-stream", (roomId, peerId, userId) => {
+    console.log(`${userId} updated their video source in room: ${roomId}`);
+    socket.to(roomId).emit("update-video-stream", roomId, peerId, userId);
+  });
+
+  socket.on("update-audio-source", (roomId, peerId, userId) => {
+    console.log(`User ${userId} in room ${roomId} updated their audio source`);
+
+    // 將音訊更新事件廣播給房間內的其他用戶
+    socket.to(roomId).emit("user-audio-source-updated", peerId, userId);
   });
 });
 
