@@ -1,11 +1,18 @@
-import { pool, createDatabase, useDatabase } from "./mysql.js";
+import {
+  pool,
+  createDatabase,
+  useDatabase,
+  createUserGroupsTable,
+} from "./mysql.js";
 
 import { v4 as uuidv4 } from "uuid"; // 引入 uuid 庫來生成唯一的 groupId
 
 async function saveGroups(groups) {
   try {
+    console.log("groups: ", groups);
     await createDatabase();
     await useDatabase();
+    await createUserGroupsTable();
     // 建立一個資料庫連線池
     const connection = await new Promise((resolve, reject) => {
       pool.getConnection((err, connection) => {
@@ -20,6 +27,7 @@ async function saveGroups(groups) {
     // 查找 mainRoom id
     const mainRoomId = await new Promise((resolve, reject) => {
       const query = "SELECT id FROM main_room WHERE name = ?";
+      console.log("groups[0]: ", groups[0]);
       const values = [groups[0].mainRoom];
       connection.query(query, values, (error, results) => {
         if (error) {

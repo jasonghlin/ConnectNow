@@ -148,27 +148,26 @@ function createUsersRoomsRelationTable() {
   });
 }
 
-// function createUserGroupsTable() {
-//   return new Promise((resolve, reject) => {
-//     pool.getConnection((err, connection) => {
-//       if (err) return reject(err);
-//       const createTableQuery = `
-//           CREATE TABLE IF NOT EXISTS user_groups (
-//             id INT AUTO_INCREMENT PRIMARY KEY,
-//             user_id INT NOT NULL,
-//             FOREIGN KEY (user_id) REFERENCES users(id),
-//             FOREIGN KEY (breakout_room_id) REFERENCES breakout_room(id)
-//           )
-//         `;
-//       connection.query(createTableQuery, (error, results) => {
-//         connection.release();
-//         if (error) return reject(error);
-//         console.log("users groups table created");
-//         resolve();
-//       });
-//     });
-//   });
-// }
+function createUserGroupsTable() {
+  return new Promise((resolve, reject) => {
+    pool.getConnection((err, connection) => {
+      if (err) return reject(err);
+      const createTableQuery = `
+          CREATE TABLE IF NOT EXISTS user_groups (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES users(id)
+          )
+        `;
+      connection.query(createTableQuery, (error, results) => {
+        connection.release();
+        if (error) return reject(error);
+        console.log("users groups table created");
+        resolve();
+      });
+    });
+  });
+}
 
 export {
   pool,
@@ -178,5 +177,5 @@ export {
   createMainRoomTable,
   createBreakoutRoomTable,
   createUsersRoomsRelationTable,
-  // createUserGroupsTable,
+  createUserGroupsTable,
 };

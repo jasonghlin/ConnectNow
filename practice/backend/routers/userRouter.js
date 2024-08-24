@@ -149,9 +149,10 @@ router.post("/api/groups", authenticateJWT, async (req, res) => {
     const groups = req.body;
     const result = await saveGroups(groups);
     console.log("create groups:", groups);
-
+    console.log(groups[0].groupId);
+    console.log("result: ", result);
     // 通知所有客戶端
-    // io.emit("groups-finished", result);
+    // io.to(groups[0].groupId).emit("start-grouping", result);
 
     res
       .status(200)

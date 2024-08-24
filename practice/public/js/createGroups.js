@@ -1,4 +1,5 @@
-// import { handleFinishGrouping } from "./groupHandler.js";
+import { handleFinishGrouping } from "./groupHandler.js";
+import { roomId } from "./script.js";
 
 document.getElementById("createGroups").addEventListener("click", createGroups);
 document
@@ -146,7 +147,7 @@ async function finishGrouping() {
       console.log("Success:", data);
 
       // Call the new function from groupHandler.js
-      // handleFinishGrouping(data.data, timerInputValue);
+      handleFinishGrouping(data.data, timerInputValue);
     })
     .catch((error) => {
       console.error("Error:", error);

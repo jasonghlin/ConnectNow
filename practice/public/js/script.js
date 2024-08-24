@@ -1,6 +1,7 @@
 import { checkStatus } from "../utils/loginOutAndRegister.js";
 import { MainRoom } from "../utils/mainRoomClass.js";
 import { convertCanvasToStream } from "./backgroundEffects.js";
+import { handleFinishGrouping } from "./groupHandler.js";
 
 // 獲取房間 ID
 const pathSegments = window.location.pathname.split("/");
@@ -13,10 +14,6 @@ const socket =
   window.location.protocol == "https:"
     ? io("https://www.connectnow.website")
     : io("http://localhost:8080");
-
-socket.on("connect", () => {
-  console.log("Connected to server");
-});
 
 export const getPeer =
   window.location.protocol == "https:"
@@ -58,6 +55,10 @@ let localStream;
 let currentStream;
 let myPeerId;
 let myUserId;
+
+function updateCurrentRoom(newRoom) {
+  currentRoom = newRoom;
+}
 
 // mutation observer of local-stream
 
@@ -111,10 +112,16 @@ function initializeMainRoom() {
       return;
     }
 
+    let userId = payload.payload.userId;
+
     const currentUrl = window.location.href;
     mainRoom = currentUrl.substring(currentUrl.lastIndexOf("/") + 1);
     localStorage.setItem("mainRoom", mainRoom);
 
+    socket.on("connect", () => {
+      console.log("Connected to server");
+      socket.emit("connect-to-server", userId, mainRoom);
+    });
     initializeMainRoom();
     console.log("mainRoom: ", mainRoom, "currentRoom: ", currentRoom);
     const localStreamCanvas = await waitForLocalStream();
@@ -130,7 +137,7 @@ function initializeMainRoom() {
     peer.on("open", (peerId) => {
       console.log("My peer ID is: " + peerId);
       myPeerId = peerId;
-      const userId = payload.payload.userId;
+      userId = payload.payload.userId;
       myUserId = userId;
       console.log(
         "Joining room with userId:",
@@ -485,6 +492,20 @@ socket.on("user-disconnected-mainRoom", (peerId, userId) => {
   removeVideoElement(peerId);
 });
 
+window.addEventListener("beforeunload", (event) => {
+  // 触发 disconnect 事件
+  socket.emit("user-leaving");
+  // 标准浏览器要求设置 returnValue 属性
+  event.returnValue = "";
+});
+
+window.addEventListener("unload", (event) => {
+  // 触发 disconnect 事件
+  socket.emit("user-leaving");
+  // 标准浏览器要求设置 returnValue 属性
+  event.returnValue = "";
+});
+
 // mute mic toggle
 socket.on("user-mic-status-changed", (peerId, isMicMuted) => {
   const videoElement = document.querySelector(
@@ -563,4 +584,14 @@ socket.on("toggle-video-status", (peerId, isVideoMuted) => {
   }
 });
 
-export { connectToNewUser, socket, roomId };
+// start grouping
+socket.on("start-grouping", (data, timerInputValue) => {});
+
+export {
+  connectToNewUser,
+  socket,
+  roomId,
+  updateCurrentRoom,
+  currentRoom,
+  peerInstance,
+};

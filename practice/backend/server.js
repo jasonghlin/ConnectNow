@@ -126,6 +126,13 @@ app.get("/api/muteStatus/:roomId", (req, res) => {
 const rooms = new Map();
 const userMuteStatus = {}; // 儲存每個房間中使用者的靜音狀態，键为 roomId, 值为包含用户静音状态的对象
 io.on("connection", (socket) => {
+  socket.on("connect-to-server", (userId, mainRoom) => {
+    if (userId && mainRoom) {
+      socket.data.roomName = mainRoom;
+      socket.data.userId = userId;
+    }
+  });
+
   socket.on("join-main-room", async (roomName, peerId, userId) => {
     try {
       console.log(
@@ -207,11 +214,30 @@ io.on("connection", (socket) => {
     }
   });
 
-  async function handleUserLeave(socket) {
+  socket.on("user-leaving", () => {
+    console.log("user leaving socket data:", socket.data);
     const roomName = socket.data.roomName;
+    const roomUsers = rooms.get(roomName);
+    console.log("User disconnected");
+    handleUserLeave(socket);
+    if (roomUsers) {
+      console.log(
+        `3Room ${roomName} after leaving users:`,
+        [...roomUsers.values()].map((u) => `${u.userId} (${u.peerId})`)
+      );
+    } else {
+      console.log(`roomUsers with roomName ${roomName} does not exist`);
+    }
+  });
+
+  async function handleUserLeave(socket) {
+    const roomName = socket.data.roomName.roomId;
     const userId = socket.data.userId;
     const peerId = socket.data.peerId;
     console.log("socket roomName, userId, peerId: ", roomName, userId, peerId);
+    if (roomName && userId) {
+      await removeUserFromMainRoom(roomName, userId);
+    }
     if (!roomName || !userId || !peerId) return;
     console.log("rooms.has(roomName): ", rooms.has(roomName));
     if (rooms.has(roomName)) {
@@ -219,7 +245,7 @@ io.on("connection", (socket) => {
       if (roomUsers.has(userId)) {
         roomUsers.delete(userId);
         socket.to(roomName).emit("user-disconnected-mainRoom", peerId, userId);
-        await removeUserFromMainRoom(roomName, userId);
+
         console.log(`User ${userId} removed from room ${roomName}`);
       }
 
