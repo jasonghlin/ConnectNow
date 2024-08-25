@@ -6,10 +6,10 @@ import {
   createUsersRoomsRelationTable,
 } from "./mysql.js";
 
-async function insertUsersRoomsRelation(userInfo, mainRoomId, roomAdmin) {
+async function insertUsersRoomsRelation(userInfo, mainRoomId) {
   const query =
     "INSERT INTO users_rooms_relation (user_id, main_room_id, admin_user_id) VALUES (?, ?, ?)";
-  const values = [userInfo.userId, mainRoomId, roomAdmin];
+  const values = [userInfo.userId, mainRoomId, userInfo.userId];
 
   return new Promise((resolve, reject) => {
     pool.getConnection((err, connection) => {
@@ -92,7 +92,7 @@ async function checkUserInRoom(userInfo, roomName) {
   }
 }
 
-async function joinMainRoom(userInfo, roomName, roomAdminId) {
+async function adminJoinMainRoom(userInfo, roomName) {
   try {
     await createDatabase();
     await useDatabase();
@@ -104,8 +104,7 @@ async function joinMainRoom(userInfo, roomName, roomAdminId) {
 
       const insertSuccess = await insertUsersRoomsRelation(
         userInfo,
-        mainRoomId[0].id,
-        roomAdminId
+        mainRoomId[0].id
       );
       if (insertSuccess) {
         return true;
@@ -121,4 +120,4 @@ async function joinMainRoom(userInfo, roomName, roomAdminId) {
   }
 }
 
-export { joinMainRoom };
+export { adminJoinMainRoom };

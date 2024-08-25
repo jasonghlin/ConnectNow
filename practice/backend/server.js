@@ -15,6 +15,10 @@ import { createMainRoom } from "../models/createMainRoom.js";
 import { checkMainRoomExist } from "../models/checkMainRoomExist.js";
 import { joinMainRoom } from "../models/joinMainRoom.js";
 import { removeUserFromMainRoom } from "../models/removeUserFromMainRoom.js";
+import { createBreakoutRoom } from "../models/createBreakoutRoom.js";
+import { joinBreakoutRoom } from "../models/joinBreakoutRoom.js";
+import { findMainRoomAdmin } from "../models/findMainRoomAdmin.js";
+import { adminJoinMainRoom } from "../models/adminJoinMainRoom.js";
 
 dotenv.config();
 const { JWT_SECRET_KEY, ENV, AWS_ACCESS_KEY, AWS_SECRET_KEY, BUCKET_NAME } =
@@ -94,13 +98,27 @@ app.get("/roomId/:roomId", authenticateJWT, async (req, res) => {
   if (!roomExist) {
     res.status(404).json({ error: "main room not found" });
   } else {
-    const joinMainRoomSuccess = await joinMainRoom(req.payload, roomName);
-    console.log("joinMainRoomSuccess: ", joinMainRoomSuccess);
-    if (!joinMainRoomSuccess) {
-      res.status(403).json({ error: "user already in room!" });
+    const roomAdminId = await findMainRoomAdmin(roomName);
+    if (roomAdminId.length === 0) {
+      await adminJoinMainRoom(req.payload, roomName);
     } else {
-      res.sendFile(join(workingDirectory, "public", "room.html"));
+      const roomAdminId = await findMainRoomAdmin(roomName);
+      console.log("roomAdminId", roomAdminId);
+      const joinMainRoomSuccess = await joinMainRoom(
+        req.payload,
+        roomName,
+        roomAdminId[0].admin_user_id
+      );
+      console.log("joinMainRoomSuccess: ", joinMainRoomSuccess);
     }
+
+    res.sendFile(join(workingDirectory, "public", "room.html"));
+
+    // if (!joinMainRoomSuccess) {
+    //   res.status(403).json({ error: "user already in room!" });
+    // } else {
+    //   res.sendFile(join(workingDirectory, "public", "room.html"));
+    // }
   }
 });
 
@@ -115,6 +133,31 @@ app.post("/api/mainRoom", authenticateJWT, async (req, res) => {
   await createMainRoom(req.payload, roomName);
   res.status(200).json({ ok: true, roomId: roomName });
 });
+
+// join breakout room
+app.get(
+  "/breakoutRoom/:mainRoomId/:breakoutRoomId",
+  authenticateJWT,
+  async (req, res) => {
+    try {
+      const { mainRoomId, breakoutRoomId } = req.params;
+      console.log("join breakout room: ", breakoutRoomId);
+      // create breakoutRoom
+      const breakoutRoomCreation = await createBreakoutRoom(breakoutRoomId);
+      console.log("breakoutRoomCreation: ", breakoutRoomCreation);
+      console.log("breakout room: ", breakoutRoomId, "created");
+      const joinBreakOutRoomSuccess = await joinBreakoutRoom(
+        req.payload,
+        mainRoomId,
+        breakoutRoomId
+      );
+      console.log("joinBreakoutRoomSuccess: ", joinBreakOutRoomSuccess);
+      res.sendFile(join(workingDirectory, "public", "room.html"));
+    } catch (error) {
+      console.log(error);
+    }
+  }
+);
 
 app.get("/api/muteStatus/:roomId", (req, res) => {
   const { roomId } = req.params;
@@ -155,8 +198,8 @@ io.on("connection", (socket) => {
         "peerId:",
         peerId
       );
-      socket.data.roomName = roomName;
-      socket.data.userId = userId;
+      // socket.data.roomName = roomName;
+      // socket.data.userId = userId;
       socket.data.peerId = peerId;
 
       console.log("Data stored in socket:", socket.data);
@@ -197,6 +240,43 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("join-breakout-room", (breakouRoomName, peerId, userId) => {
+    try {
+      console.log(
+        `Attempt to join: User ${userId} joining breakout room ${breakouRoomName} with peerId ${peerId}`
+      );
+
+      if (!breakouRoomName || !userId || !peerId) {
+        console.error("Invalid roomName, userId, or peerId");
+        socket.emit("join-error", "Invalid room or user data");
+        return;
+      }
+
+      // 儲存房間和使用者信息
+      console.log(
+        "Received breakout room Name:",
+        breakouRoomName,
+        "userId:",
+        userId,
+        "peerId:",
+        peerId
+      );
+      // socket.data.roomName = roomName;
+      // socket.data.userId = userId;
+      socket.data.peerId = peerId;
+
+      console.log("Data stored in socket:", socket.data);
+      socket.join(breakouRoomName);
+      io.to(breakouRoomName).emit(
+        "user-connected-breakoutRoom",
+        peerId,
+        userId
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  });
+
   //   disconnect
   socket.on("disconnect", () => {
     console.log("Disconnecting socket data:", socket.data);
@@ -231,28 +311,39 @@ io.on("connection", (socket) => {
   });
 
   async function handleUserLeave(socket) {
-    const roomName = socket.data.roomName.roomId;
-    const userId = socket.data.userId;
-    const peerId = socket.data.peerId;
-    console.log("socket roomName, userId, peerId: ", roomName, userId, peerId);
-    if (roomName && userId) {
-      await removeUserFromMainRoom(roomName, userId);
-    }
-    if (!roomName || !userId || !peerId) return;
-    console.log("rooms.has(roomName): ", rooms.has(roomName));
-    if (rooms.has(roomName)) {
-      const roomUsers = rooms.get(roomName);
-      if (roomUsers.has(userId)) {
-        roomUsers.delete(userId);
-        socket.to(roomName).emit("user-disconnected-mainRoom", peerId, userId);
-
-        console.log(`User ${userId} removed from room ${roomName}`);
+    try {
+      const roomName = socket.data.roomName.roomId;
+      const userId = socket.data.userId;
+      const peerId = socket.data.peerId;
+      console.log(
+        "socket roomName, userId, peerId: ",
+        roomName,
+        userId,
+        peerId
+      );
+      if (roomName && userId) {
+        await removeUserFromMainRoom(roomName, userId);
       }
+      if (!roomName || !userId || !peerId) return;
+      console.log("rooms.has(roomName): ", rooms.has(roomName));
+      if (rooms.has(roomName)) {
+        const roomUsers = rooms.get(roomName);
+        if (roomUsers.has(userId)) {
+          roomUsers.delete(userId);
+          socket
+            .to(roomName)
+            .emit("user-disconnected-mainRoom", peerId, userId);
 
-      // 如果該房間已無任何使用者，移除該房間
-      if (roomUsers.size === 0) {
-        rooms.delete(roomName);
+          console.log(`User ${userId} removed from room ${roomName}`);
+        }
+
+        // 如果該房間已無任何使用者，移除該房間
+        if (roomUsers.size === 0) {
+          rooms.delete(roomName);
+        }
       }
+    } catch (error) {
+      console.log(error);
     }
   }
 
@@ -306,6 +397,19 @@ io.on("connection", (socket) => {
 
     // 廣播給同房間的其他使用者
     socket.to(roomId).emit("toggle-video-status", peerId, isVideoMuted);
+  });
+
+  // finish grouping
+  socket.on("finish-grouping", (data, timerInputValue, roomId) => {
+    io.to(roomId).emit("start-breakoutRoom", data.data, timerInputValue);
+    setTimeout(() => {
+      io.to(roomId).emit("return-to-main-room", roomId);
+    }, timerInputValue * 1000);
+  });
+
+  // return to main room
+  socket.on("rejoin-main-room", (roomId, peerId, userId) => {
+    io.to(roomId).emit("rejoin-main-room", peerId, userId);
   });
 });
 

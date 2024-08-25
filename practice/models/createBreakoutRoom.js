@@ -2,15 +2,15 @@ import {
   pool,
   createDatabase,
   useDatabase,
-  createMainRoomTable,
+  createBreakoutRoomTable,
 } from "./mysql.js";
 
-async function createMainRoom(userInfo, roomId) {
+async function createBreakoutRoom(roomId) {
   try {
     await createDatabase();
     await useDatabase();
-    await createMainRoomTable();
-    const query = "INSERT INTO main_room (name) VALUES (?)";
+    await createBreakoutRoomTable();
+    const query = "INSERT INTO breakout_room (name) VALUES (?)";
     const values = [roomId];
 
     return new Promise((resolve, reject) => {
@@ -34,4 +34,4 @@ async function createMainRoom(userInfo, roomId) {
   }
 }
 
-export { createMainRoom };
+export { createBreakoutRoom };

@@ -1,5 +1,6 @@
 import { handleFinishGrouping } from "./groupHandler.js";
 import { roomId } from "./script.js";
+import { socket } from "./script.js";
 
 document.getElementById("createGroups").addEventListener("click", createGroups);
 document
@@ -147,7 +148,7 @@ async function finishGrouping() {
       console.log("Success:", data);
 
       // Call the new function from groupHandler.js
-      handleFinishGrouping(data.data, timerInputValue);
+      socket.emit("finish-grouping", data, timerInputValue, roomId);
     })
     .catch((error) => {
       console.error("Error:", error);
@@ -173,3 +174,9 @@ function createGroupsPanelShow() {
   });
 }
 createGroupsPanelShow();
+
+// socket listensers
+socket.on("start-breakoutRoom", (data, timerInputValue) => {
+  console.log("start-breakoutRoom: ", data, timerInputValue);
+  handleFinishGrouping(data, timerInputValue);
+});

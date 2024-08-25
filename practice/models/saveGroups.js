@@ -1,9 +1,4 @@
-import {
-  pool,
-  createDatabase,
-  useDatabase,
-  createUserGroupsTable,
-} from "./mysql.js";
+import { pool, createDatabase, useDatabase } from "./mysql.js";
 
 import { v4 as uuidv4 } from "uuid"; // 引入 uuid 庫來生成唯一的 groupId
 
@@ -12,7 +7,6 @@ async function saveGroups(groups) {
     console.log("groups: ", groups);
     await createDatabase();
     await useDatabase();
-    await createUserGroupsTable();
     // 建立一個資料庫連線池
     const connection = await new Promise((resolve, reject) => {
       pool.getConnection((err, connection) => {

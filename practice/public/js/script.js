@@ -1,7 +1,6 @@
 import { checkStatus } from "../utils/loginOutAndRegister.js";
 import { MainRoom } from "../utils/mainRoomClass.js";
 import { convertCanvasToStream } from "./backgroundEffects.js";
-import { handleFinishGrouping } from "./groupHandler.js";
 
 // 獲取房間 ID
 const pathSegments = window.location.pathname.split("/");
@@ -114,8 +113,11 @@ function initializeMainRoom() {
 
     let userId = payload.payload.userId;
 
-    const currentUrl = window.location.href;
-    mainRoom = currentUrl.substring(currentUrl.lastIndexOf("/") + 1);
+    let currentUrl = window.location.href;
+    let roomUrl = currentUrl.substring(currentUrl.lastIndexOf("/") + 1);
+    if (!roomUrl.startsWith("breakout-")) {
+      mainRoom = roomUrl;
+    }
     localStorage.setItem("mainRoom", mainRoom);
 
     socket.on("connect", () => {
@@ -148,11 +150,16 @@ function initializeMainRoom() {
         roomId
       );
 
-      if (userId && peerId) {
+      currentUrl = window.location.href;
+      roomUrl = currentUrl.substring(currentUrl.lastIndexOf("/") + 1);
+      console.log("roomUrl: ", roomUrl);
+      if (userId && peerId && !roomUrl.startsWith("breakout-")) {
         console.log("Emitting join-room event");
         socket.emit("join-main-room", roomId, peerId, userId);
       } else {
-        console.error("userId or peerId is undefined");
+        let breakoutRoomId = roomUrl;
+        console.log(userId, peerId, myUserId, myPeerId);
+        socket.emit("join-breakout-room", breakoutRoomId, myPeerId, userId);
       }
 
       peer.on("call", (call) => {
@@ -584,8 +591,41 @@ socket.on("toggle-video-status", (peerId, isVideoMuted) => {
   }
 });
 
-// start grouping
-socket.on("start-grouping", (data, timerInputValue) => {});
+// connect to breakout room users
+socket.on("user-connected-breakoutRoom", (peerId, userId) => {
+  console.log("New user connected to breakout room:", peerId, userId);
+  if (peerId !== myPeerId) {
+    connectToNewUser(peerId, currentStream); // 使用更新後的流重新連接
+  }
+});
+
+// return to main room
+socket.on("return-to-main-room", (roomId) => {
+  const newUrl = `${window.location.origin}/roomId/${roomId}`;
+  // 斷開所有當前的 peer 連接
+  peerInstance.disconnect();
+
+  // 清除所有遠端視訊
+  document
+    .querySelectorAll("video:not(.local-stream)")
+    .forEach((video) => video.remove());
+
+  history.pushState(null, "", newUrl);
+  // window.location.href = newUrl;
+  // 使用舊的 peerId 重新連接
+  peerInstance.reconnect(peerInstance.id);
+
+  console.log("peerInstance.id: ", peerInstance.id);
+  // 加入新的組
+  socket.emit("rejoin-main-room", roomId, peerInstance.id, myUserId);
+});
+
+socket.on("rejoin-main-room", (peerId, userId) => {
+  console.log("Rejoin room:", peerId, userId);
+  if (peerId !== myPeerId) {
+    connectToNewUser(peerId, currentStream); // 使用更新後的流重新連接
+  }
+});
 
 export {
   connectToNewUser,

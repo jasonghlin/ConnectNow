@@ -41,9 +41,10 @@ async function handleFinishGrouping(groupsData, timerInputValue) {
   console.log("userGroup: ", userGroup);
   if (userGroup) {
     const groupName = localStorage.getItem(`breakoutRoom`);
+    const mainRoomName = localStorage.getItem("mainRoom");
     updateCurrentRoom(groupName); // 更新 URL 並重定向
     console.log(currentRoom);
-    const newUrl = currentUrl.replace(mainRoomName, groupName);
+    const newUrl = `${window.location.origin}/breakoutRoom/${mainRoomName}/${groupName}`;
 
     // 斷開所有當前的 peer 連接
     peerInstance.disconnect();
@@ -54,9 +55,8 @@ async function handleFinishGrouping(groupsData, timerInputValue) {
       .forEach((video) => video.remove());
 
     history.pushState(null, "", newUrl);
-
+    // window.location.href = newUrl;
     // 使用舊的 peerId 重新連接
-    peerInstance.reconnect(peerInstance.id);
 
     console.log("peerInstance.id: ", peerInstance.id);
     // 加入新的組
@@ -66,12 +66,29 @@ async function handleFinishGrouping(groupsData, timerInputValue) {
       peerInstance.id,
       currentUserId
     );
-
+    peerInstance.reconnect(peerInstance.id);
     // 發送倒計時開始事件
-    // socket.emit("start-countdown", timerInputValue);
+    startCountdown(timerInputValue);
   } else {
     console.error("User is not part of any group.");
   }
+}
+
+function startCountdown(seconds) {
+  if (isNaN(seconds)) return;
+  const timerDisplay = document.getElementById("timerDisplay");
+  const timeLeft = document.getElementById("timeLeft");
+  timerDisplay.style.display = "block";
+
+  const countdownInterval = setInterval(() => {
+    timeLeft.textContent = `${seconds - 1}`;
+    seconds--;
+
+    if (seconds < 0) {
+      clearInterval(countdownInterval);
+      timeLeft.style.display = "none";
+    }
+  }, 1000);
 }
 
 export { handleFinishGrouping };

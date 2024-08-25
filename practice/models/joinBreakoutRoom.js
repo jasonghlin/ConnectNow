@@ -2,34 +2,39 @@ import {
   pool,
   createDatabase,
   useDatabase,
-  createMainRoomTable,
+  createBreakoutRoomTable,
   createUsersRoomsRelationTable,
+  createMainRoomTable,
 } from "./mysql.js";
 
-async function insertUsersRoomsRelation(userInfo, mainRoomId, roomAdmin) {
-  const query =
-    "INSERT INTO users_rooms_relation (user_id, main_room_id, admin_user_id) VALUES (?, ?, ?)";
-  const values = [userInfo.userId, mainRoomId, roomAdmin];
+async function insertUsersRoomsRelation(userInfo, mainRoomId, breakouRoomId) {
+  try {
+    const query =
+      "UPDATE  users_rooms_relation SET breakout_room_id = (?) WHERE user_id = (?) AND main_room_id = (?)";
+    const values = [breakouRoomId, userInfo.userId, mainRoomId];
 
-  return new Promise((resolve, reject) => {
-    pool.getConnection((err, connection) => {
-      if (err) {
-        reject(err);
-        return;
-      }
-      connection.query(query, values, (error, results, fields) => {
-        connection.release();
-        if (error) {
-          reject(error);
-        } else {
-          resolve(results.insertId);
+    return new Promise((resolve, reject) => {
+      pool.getConnection((err, connection) => {
+        if (err) {
+          reject(err);
+          return;
         }
+        connection.query(query, values, (error, results, fields) => {
+          connection.release();
+          if (error) {
+            reject(error);
+          } else {
+            resolve(results.insertId);
+          }
+        });
       });
     });
-  });
+  } catch (error) {
+    console.log(error);
+  }
 }
 
-async function findRoom(roomName) {
+async function findMainRoom(roomName) {
   try {
     await createDatabase();
     await useDatabase();
@@ -60,16 +65,15 @@ async function findRoom(roomName) {
   }
 }
 
-async function checkUserInRoom(userInfo, roomName) {
+async function findBreakoutRoom(roomName) {
   try {
     await createDatabase();
     await useDatabase();
-    await createMainRoomTable();
+    await createBreakoutRoomTable();
     await createUsersRoomsRelationTable();
-    const mainRoomId = await findRoom(roomName);
-    const query =
-      "SELECT * FROM users_rooms_relation WHERE user_id = (?) AND main_room_id = (?)";
-    const values = [userInfo.userId, mainRoomId[0].id];
+
+    const query = "SELECT * FROM breakout_room WHERE name = (?)";
+    const values = [roomName];
     return new Promise((resolve, reject) => {
       pool.getConnection((err, connection) => {
         if (err) {
@@ -87,31 +91,27 @@ async function checkUserInRoom(userInfo, roomName) {
       });
     });
   } catch (err) {
-    console.error("Error in checkUserInRoom:", err);
+    console.error("Error in find main_room:", err);
     throw err;
   }
 }
 
-async function joinMainRoom(userInfo, roomName, roomAdminId) {
+async function joinBreakoutRoom(userInfo, mainRoomName, breakouRoomName) {
   try {
     await createDatabase();
     await useDatabase();
-    await createMainRoomTable();
+    await createBreakoutRoomTable();
     await createUsersRoomsRelationTable();
-    const isUserInRoom = await checkUserInRoom(userInfo, roomName);
-    if (isUserInRoom.length === 0) {
-      const mainRoomId = await findRoom(roomName);
+    const mainRoomId = await findMainRoom(mainRoomName);
+    const breakouRoomId = await findBreakoutRoom(breakouRoomName);
 
-      const insertSuccess = await insertUsersRoomsRelation(
-        userInfo,
-        mainRoomId[0].id,
-        roomAdminId
-      );
-      if (insertSuccess) {
-        return true;
-      } else {
-        return false;
-      }
+    const insertSuccess = await insertUsersRoomsRelation(
+      userInfo,
+      mainRoomId[0].id,
+      breakouRoomId[0].id
+    );
+    if (insertSuccess) {
+      return true;
     } else {
       return false;
     }
@@ -121,4 +121,4 @@ async function joinMainRoom(userInfo, roomName, roomAdminId) {
   }
 }
 
-export { joinMainRoom };
+export { joinBreakoutRoom };
