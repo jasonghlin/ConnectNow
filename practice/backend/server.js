@@ -411,6 +411,16 @@ io.on("connection", (socket) => {
   socket.on("rejoin-main-room", (roomId, peerId, userId) => {
     io.to(roomId).emit("rejoin-main-room", peerId, userId);
   });
+
+  // 監聽螢幕分享開始事件
+  socket.on("start-screen-share", (roomId, peerId) => {
+    socket.to(roomId).emit("user-started-screen-share", peerId);
+  });
+
+  // 監聽螢幕分享停止事件
+  socket.on("stop-screen-share", (roomId, peerId) => {
+    socket.to(roomId).emit("user-stopped-screen-share", peerId);
+  });
 });
 
 //

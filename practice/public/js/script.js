@@ -634,4 +634,5 @@ export {
   updateCurrentRoom,
   currentRoom,
   peerInstance,
+  myPeerId,
 };
