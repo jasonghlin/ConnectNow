@@ -141,7 +141,7 @@ function initializeMainRoom() {
     const peer = getPeer();
     peerInstance = peer;
 
-    peer.on("open", (peerId) => {
+    peer.on("open", async (peerId) => {
       console.log("My peer ID is: " + peerId);
       myPeerId = peerId;
       userId = payload.payload.userId;
@@ -158,9 +158,81 @@ function initializeMainRoom() {
       currentUrl = window.location.href;
       roomUrl = currentUrl.substring(currentUrl.lastIndexOf("/") + 1);
       console.log("roomUrl: ", roomUrl);
+      const roomAdminResponse = await fetch(`/api/roomAdmin/${roomId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("session")}`,
+        },
+      });
+      const roomAdmin = await roomAdminResponse.json();
+      const roomAdminId = roomAdmin[0].admin_user_id;
+      const usersResponse = await fetch("/api/allUsers", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("session")}`,
+        },
+      });
+      const usersList = await usersResponse.json();
+      console.log(usersList);
+
       if (userId && peerId && !roomUrl.startsWith("breakout-")) {
-        console.log("Emitting join-room event");
-        socket.emit("join-main-room", roomId, peerId, userId);
+        if (!roomAdminId || payload.payload.userId == roomAdminId) {
+          console.log("Emitting join-room event");
+          socket.emit(
+            "join-main-room",
+            roomId,
+            peerId,
+            userId,
+            payload.payload
+          );
+          socket.on("user-join-request", (payload, roomId) => {
+            console.log("有人想加入房間");
+            let joinRequestConfirm = confirm(
+              ` ${payload.payload.userName} 想加入此會議`
+            );
+            if (!joinRequestConfirm) {
+              socket.emit("reject-join-request", roomId);
+            } else {
+              socket.emit("accept-join-request", roomId);
+            }
+          });
+        } else if (
+          usersList.some((user) => user.id == payload.payload.userId)
+        ) {
+          console.log("Emitting join-room event");
+          socket.emit(
+            "join-main-room",
+            roomId,
+            peerId,
+            userId,
+            payload.payload
+          );
+        } else if (userId && peerId && payload.payload.userId != roomAdminId) {
+          socket.emit("user-join-request", payload, roomId);
+          socket.on("accept-join-request", (response) => {
+            if (response.accept) {
+              console.log("Emitting join-room event");
+              socket.emit(
+                "join-main-room",
+                roomId,
+                peerId,
+                userId,
+                payload.payload
+              );
+            }
+            socket.off("accept-join-request").off("reject-join-request");
+          });
+
+          socket.on("reject-join-request", (response) => {
+            if (response.reject) {
+              alert("你被拒絕加入房間");
+              socket.off("accept-join-request").off("reject-join-request");
+              window.location.href = "/";
+            }
+          });
+        }
       } else {
         let breakoutRoomId = roomUrl;
         console.log(userId, peerId, myUserId, myPeerId);

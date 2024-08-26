@@ -1,8 +1,20 @@
 import { initializeMuteMicHandler } from "./muteMic.js";
 import { socket, roomId } from "./script.js";
+import { checkStatus } from "../utils/loginOutAndRegister.js";
 
 // users panel
 async function updateUsersList() {
+  const payload = await checkStatus();
+  const roomAdminResponse = await fetch(`/api/roomAdmin/${roomId}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("session")}`,
+    },
+  });
+  const roomAdmin = await roomAdminResponse.json();
+  const roomAdminId = roomAdmin[0].admin_user_id;
+
   const participantsList = document.querySelector(".users-content");
   participantsList.innerHTML = "";
   const token = localStorage.getItem("session");
@@ -43,7 +55,9 @@ async function updateUsersList() {
     });
 
     // 初始化靜音按鈕事件處理
-    initializeMuteMicHandler();
+    if (roomAdminId == payload.payload.userId) {
+      initializeMuteMicHandler();
+    }
   } catch (error) {
     console.error("Error fetching users:", error);
   }

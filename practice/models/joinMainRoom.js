@@ -6,10 +6,10 @@ import {
   createUsersRoomsRelationTable,
 } from "./mysql.js";
 
-async function insertUsersRoomsRelation(userInfo, mainRoomId, roomAdmin) {
+async function insertUsersRoomsRelation(userId, mainRoomId, roomAdmin) {
   const query =
     "INSERT INTO users_rooms_relation (user_id, main_room_id, admin_user_id) VALUES (?, ?, ?)";
-  const values = [userInfo.userId, mainRoomId, roomAdmin];
+  const values = [userId, mainRoomId, roomAdmin];
 
   return new Promise((resolve, reject) => {
     pool.getConnection((err, connection) => {
@@ -60,7 +60,7 @@ async function findRoom(roomName) {
   }
 }
 
-async function checkUserInRoom(userInfo, roomName) {
+async function checkUserInRoom(userId, roomName) {
   try {
     await createDatabase();
     await useDatabase();
@@ -69,7 +69,7 @@ async function checkUserInRoom(userInfo, roomName) {
     const mainRoomId = await findRoom(roomName);
     const query =
       "SELECT * FROM users_rooms_relation WHERE user_id = (?) AND main_room_id = (?)";
-    const values = [userInfo.userId, mainRoomId[0].id];
+    const values = [userId, mainRoomId[0].id];
     return new Promise((resolve, reject) => {
       pool.getConnection((err, connection) => {
         if (err) {
@@ -92,18 +92,18 @@ async function checkUserInRoom(userInfo, roomName) {
   }
 }
 
-async function joinMainRoom(userInfo, roomName, roomAdminId) {
+async function joinMainRoom(userId, roomName, roomAdminId) {
   try {
     await createDatabase();
     await useDatabase();
     await createMainRoomTable();
     await createUsersRoomsRelationTable();
-    const isUserInRoom = await checkUserInRoom(userInfo, roomName);
+    const isUserInRoom = await checkUserInRoom(userId, roomName);
     if (isUserInRoom.length === 0) {
       const mainRoomId = await findRoom(roomName);
 
       const insertSuccess = await insertUsersRoomsRelation(
-        userInfo,
+        userId,
         mainRoomId[0].id,
         roomAdminId
       );

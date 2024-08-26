@@ -78,6 +78,7 @@ function startCountdown(seconds) {
   if (isNaN(seconds)) return;
   const timerDisplay = document.getElementById("timerDisplay");
   const timeLeft = document.getElementById("timeLeft");
+  timeLeft.style.display = "inline";
   timerDisplay.style.display = "block";
 
   const countdownInterval = setInterval(() => {

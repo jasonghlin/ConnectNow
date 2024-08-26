@@ -16,6 +16,7 @@ import { updateUserEmail } from "../../models/updateUserEmail.js";
 import { updateUserPassword } from "../../models/updateUserPassword.js";
 import { getDbUserImg } from "../../models/getDbUserImg.js";
 import { updateDbUserImg } from "../../models/updateDbUserImg.js";
+import { getAllBreakoutRoomUsers } from "../../models/getAllBreakoutRoomUsers.js";
 
 dotenv.config();
 const { ENV, AWS_ACCESS_KEY, AWS_SECRET_KEY, BUCKET_NAME } = process.env;
@@ -118,6 +119,7 @@ router.get("/api/user/auth", authenticateJWT, (req, res) => {
 // getAll user
 router.get("/api/allUsers", authenticateJWT, async (req, res) => {
   try {
+    console.log("url: ", req.headers.referer);
     const url = req.headers.referer;
     if (!url) {
       console.error("Referer header is missing");
@@ -132,7 +134,12 @@ router.get("/api/allUsers", authenticateJWT, async (req, res) => {
     }
 
     console.log("Fetching users for room:", roomId);
-    const users = await getAllUsers(roomId);
+    let users;
+    if (roomId.startsWith("breakout-")) {
+      users = await getAllBreakoutRoomUsers(roomId);
+    } else {
+      users = await getAllUsers(roomId);
+    }
     res.status(200).json(users);
   } catch (error) {
     console.error("Error fetching all users:", error);

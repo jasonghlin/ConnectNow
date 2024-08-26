@@ -101,15 +101,6 @@ app.get("/roomId/:roomId", authenticateJWT, async (req, res) => {
     const roomAdminId = await findMainRoomAdmin(roomName);
     if (roomAdminId.length === 0) {
       await adminJoinMainRoom(req.payload, roomName);
-    } else {
-      const roomAdminId = await findMainRoomAdmin(roomName);
-      console.log("roomAdminId", roomAdminId);
-      const joinMainRoomSuccess = await joinMainRoom(
-        req.payload,
-        roomName,
-        roomAdminId[0].admin_user_id
-      );
-      console.log("joinMainRoomSuccess: ", joinMainRoomSuccess);
     }
 
     res.sendFile(join(workingDirectory, "public", "room.html"));
@@ -160,9 +151,15 @@ app.get(
 );
 
 app.get("/api/muteStatus/:roomId", (req, res) => {
-  const { roomId } = req.params;
-  const muteStatus = userMuteStatus[roomId] || {};
+  const { roomId: roomName } = req.params;
+  const muteStatus = userMuteStatus[roomName] || {};
   res.json(muteStatus);
+});
+
+app.get("/api/roomAdmin/:roomId", async (req, res) => {
+  const { roomId: roomName } = req.params;
+  const roomAdminId = await findMainRoomAdmin(roomName);
+  res.json(roomAdminId);
 });
 
 // sockets
@@ -189,6 +186,14 @@ io.on("connection", (socket) => {
         return;
       }
 
+      const roomAdminId = await findMainRoomAdmin(roomName);
+      console.log("roomAdminId", roomAdminId);
+      const joinMainRoomSuccess = await joinMainRoom(
+        userId,
+        roomName,
+        roomAdminId[0].admin_user_id
+      );
+      console.log("joinMainRoomSuccess: ", joinMainRoomSuccess);
       // 儲存房間和使用者信息
       console.log(
         "Received roomName:",
@@ -348,78 +353,95 @@ io.on("connection", (socket) => {
   }
 
   // toggle mic
-  socket.on("toggle-mic-status", (roomId, peerId, userId, isMicMuted) => {
+  socket.on("toggle-mic-status", (roomName, peerId, userId, isMicMuted) => {
     // 更新静音状态
-    if (!userMuteStatus[roomId]) {
-      userMuteStatus[roomId] = {};
+    if (!userMuteStatus[roomName]) {
+      userMuteStatus[roomName] = {};
     }
-    userMuteStatus[roomId][userId] = isMicMuted;
+    userMuteStatus[roomName][userId] = isMicMuted;
 
-    socket.to(roomId).emit("user-mic-status-changed", peerId, isMicMuted);
+    socket.to(roomName).emit("user-mic-status-changed", peerId, isMicMuted);
   });
 
   //   從 usersPanel 面板 toggle mic
-  socket.on("toggle-user-mic", ({ roomId, userId, isMuted }) => {
-    if (!userMuteStatus[roomId]) {
-      userMuteStatus[roomId] = {};
+  socket.on("toggle-user-mic", ({ roomName, userId, isMuted }) => {
+    if (!userMuteStatus[roomName]) {
+      userMuteStatus[roomName] = {};
     }
-    userMuteStatus[roomId][userId] = isMuted;
+    userMuteStatus[roomName][userId] = isMuted;
 
     // 將變更通知給同個房間內的其他用戶
-    io.to(roomId).emit("user-mic-status-changed-by-usersPanel", {
+    io.to(roomName).emit("user-mic-status-changed-by-usersPanel", {
       userId,
       isMuted,
     });
   });
 
-  socket.on("sync-mic-icons", ({ roomId, userId, isMuted }) => {
-    io.to(roomId).emit("sync-mic-icons", { userId, isMuted });
+  socket.on("sync-mic-icons", ({ roomName, userId, isMuted }) => {
+    io.to(roomName).emit("sync-mic-icons", { userId, isMuted });
   });
 
   //   change video audio
-  socket.on("update-video-stream", (roomId, peerId, userId) => {
-    console.log(`${userId} updated their video source in room: ${roomId}`);
-    socket.to(roomId).emit("update-video-stream", roomId, peerId, userId);
+  socket.on("update-video-stream", (roomName, peerId, userId) => {
+    console.log(`${userId} updated their video source in room: ${roomName}`);
+    socket.to(roomName).emit("update-video-stream", roomName, peerId, userId);
   });
 
-  socket.on("update-audio-source", (roomId, peerId, userId) => {
-    console.log(`User ${userId} in room ${roomId} updated their audio source`);
+  socket.on("update-audio-source", (roomName, peerId, userId) => {
+    console.log(
+      `User ${userId} in room ${roomName} updated their audio source`
+    );
 
     // 將音訊更新事件廣播給房間內的其他用戶
-    socket.to(roomId).emit("user-audio-source-updated", peerId, userId);
+    socket.to(roomName).emit("user-audio-source-updated", peerId, userId);
   });
 
   // toggle video
-  socket.on("toggle-video-status", (roomId, peerId, userId, isVideoMuted) => {
+  socket.on("toggle-video-status", (roomName, peerId, userId, isVideoMuted) => {
     console.log(
       `${userId} (${peerId}) toggled video status to: ${isVideoMuted}`
     );
 
     // 廣播給同房間的其他使用者
-    socket.to(roomId).emit("toggle-video-status", peerId, isVideoMuted);
+    socket.to(roomName).emit("toggle-video-status", peerId, isVideoMuted);
   });
 
   // finish grouping
-  socket.on("finish-grouping", (data, timerInputValue, roomId) => {
-    io.to(roomId).emit("start-breakoutRoom", data.data, timerInputValue);
+  socket.on("finish-grouping", (data, timerInputValue, roomName) => {
+    io.to(roomName).emit("start-breakoutRoom", data.data, timerInputValue);
     setTimeout(() => {
-      io.to(roomId).emit("return-to-main-room", roomId);
+      io.to(roomName).emit("return-to-main-room", roomName);
     }, timerInputValue * 1000);
   });
 
   // return to main room
-  socket.on("rejoin-main-room", (roomId, peerId, userId) => {
-    io.to(roomId).emit("rejoin-main-room", peerId, userId);
+  socket.on("rejoin-main-room", (roomName, peerId, userId) => {
+    io.to(roomName).emit("rejoin-main-room", peerId, userId);
   });
 
   // 處理開始螢幕分享
-  socket.on("start-screen-share", (roomId, peerId) => {
-    socket.to(roomId).emit("user-screen-share-started", peerId);
+  socket.on("start-screen-share", (roomName, peerId) => {
+    socket.to(roomName).emit("user-screen-share-started", peerId);
   });
 
   // 處理停止螢幕分享
-  socket.on("stop-screen-share", (roomId, peerId) => {
-    socket.to(roomId).emit("user-screen-share-stopped", peerId);
+  socket.on("stop-screen-share", (roomName, peerId) => {
+    socket.to(roomName).emit("user-screen-share-stopped", peerId);
+  });
+
+  // 加入房間
+  socket.on("user-join-request", (payload, roomName) => {
+    console.log("user-join-request in:", roomName);
+    socket.join(roomName);
+    socket.to(roomName).emit("user-join-request", payload, roomName);
+  });
+
+  socket.on("reject-join-request", (roomName) => {
+    socket.to(roomName).emit("reject-join-request", { reject: true });
+  });
+
+  socket.on("accept-join-request", (roomName) => {
+    socket.to(roomName).emit("accept-join-request", { accept: true });
   });
 });
 

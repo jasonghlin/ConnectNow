@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 dotenv.config();
-import mysql from "mysql";
+import mysql from "mysql2";
 
 const { MYSQL_USER, MYSQL_HOST, MYSQL_PASSWORD, ENV } = process.env;
 
@@ -88,7 +88,7 @@ function createMainRoomTable() {
             name NVARCHAR(255) UNIQUE NOT NULL,
             admin_user_id INT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (admin) REFERENCES users(id)
+            FOREIGN KEY (admin_user_id) REFERENCES users(id)
           )
         `;
       connection.query(createTableQuery, (error, results) => {

@@ -2,10 +2,12 @@ import { handleFinishGrouping } from "./groupHandler.js";
 import { roomId } from "./script.js";
 import { socket } from "./script.js";
 
-document.getElementById("createGroups").addEventListener("click", createGroups);
+document
+  .getElementById("createGroups")
+  ?.addEventListener("click", createGroups);
 document
   .getElementById("finishGrouping")
-  .addEventListener("click", finishGrouping);
+  ?.addEventListener("click", finishGrouping);
 
 async function createGroups() {
   const groupCount = parseInt(document.getElementById("groupCount").value);
