@@ -10,6 +10,7 @@ document
   ?.addEventListener("click", finishGrouping);
 
 async function createGroups() {
+  console.log("create Groups ok");
   const groupCount = parseInt(document.getElementById("groupCount").value);
   const roomsContainer = document.getElementById("roomsContainer");
   roomsContainer.innerHTML = "";
