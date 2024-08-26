@@ -412,14 +412,14 @@ io.on("connection", (socket) => {
     io.to(roomId).emit("rejoin-main-room", peerId, userId);
   });
 
-  // 監聽螢幕分享開始事件
+  // 處理開始螢幕分享
   socket.on("start-screen-share", (roomId, peerId) => {
-    socket.to(roomId).emit("user-started-screen-share", peerId);
+    socket.to(roomId).emit("user-screen-share-started", peerId);
   });
 
-  // 監聽螢幕分享停止事件
+  // 處理停止螢幕分享
   socket.on("stop-screen-share", (roomId, peerId) => {
-    socket.to(roomId).emit("user-stopped-screen-share", peerId);
+    socket.to(roomId).emit("user-screen-share-stopped", peerId);
   });
 });
 

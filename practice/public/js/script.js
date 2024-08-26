@@ -1,6 +1,11 @@
 import { checkStatus } from "../utils/loginOutAndRegister.js";
 import { MainRoom } from "../utils/mainRoomClass.js";
 import { convertCanvasToStream } from "./backgroundEffects.js";
+import {
+  startScreenShare,
+  stopScreenShare,
+  handleIncomingScreenShare,
+} from "./shareScreen.js";
 
 // 獲取房間 ID
 const pathSegments = window.location.pathname.split("/");
@@ -163,7 +168,11 @@ function initializeMainRoom() {
       }
 
       peer.on("call", (call) => {
-        handleIncomingCall(call, currentStream);
+        if (call.metadata && call.metadata.type === "screenShare") {
+          handleIncomingScreenShare(call);
+        } else {
+          handleIncomingCall(call, currentStream);
+        }
       });
     });
 
@@ -212,8 +221,6 @@ document.querySelector(".mic-icon > i").addEventListener("click", async () => {
     ? "mic-icon mic-mute"
     : "mic-icon";
 });
-
-// mute video toggle
 
 // switch video
 
@@ -627,6 +634,40 @@ socket.on("rejoin-main-room", (peerId, userId) => {
   }
 });
 
+// share screen
+let isScreenSharing = false;
+
+// Modify the screen share button event listener
+document.querySelector(".share-screen").addEventListener("click", () => {
+  if (!isScreenSharing) {
+    startScreenShare();
+    isScreenSharing = true;
+  } else {
+    stopScreenShare();
+    isScreenSharing = false;
+  }
+});
+
+// Add new socket listeners for screen sharing events
+socket.on("user-started-screen-share", (peerId) => {
+  console.log(`User ${peerId} started screen sharing`);
+});
+
+socket.on("user-stopped-screen-share", (peerId) => {
+  console.log(`User ${peerId} stopped screen sharing`);
+  const screenShareVideo = document.querySelector(
+    `video[video-share-peer-id="${peerId}"]`
+  );
+  if (screenShareVideo) {
+    screenShareVideo.remove();
+  }
+  // Restore the original video for this peer
+  const peerVideo = document.querySelector(`video[data-peer-id="${peerId}"]`);
+  if (peerVideo) {
+    peerVideo.style.display = "block";
+  }
+});
+
 export {
   connectToNewUser,
   socket,
@@ -635,4 +676,5 @@ export {
   currentRoom,
   peerInstance,
   myPeerId,
+  currentStream,
 };

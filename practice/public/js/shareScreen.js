@@ -1,117 +1,110 @@
-import { socket, roomId, myPeerId, peerInstance } from "./script.js"; // 假設主程式的檔案名是 main.js
+import {
+  socket,
+  roomId,
+  peerInstance,
+  myPeerId,
+  currentStream,
+} from "./script.js";
 
-let isSharingScreen = false;
-let screenStream;
+let screenStream = null;
+let originalStream = null;
 
-function updateRemoteSharingVideos(peerId, userVideoStream) {
-  // 檢查頁面上是否已經有這個使用者的螢幕分享視訊元素
-  let videoElement = document.querySelector(
-    `video[data-peer-id="${peerId}-sharing"]`
-  );
+export async function startScreenShare() {
+  try {
+    screenStream = await navigator.mediaDevices.getDisplayMedia({
+      video: true,
+    });
+    originalStream = currentStream; // Store the original stream
 
-  if (!videoElement) {
-    // 如果沒有該使用者的視訊元素，則創建一個新的
-    videoElement = document.createElement("video");
-    videoElement.setAttribute("data-peer-id", `${peerId}-sharing`);
-    videoElement.autoplay = true;
-    videoElement.playsInline = true;
+    // Create a new video element for the screen share
+    const screenVideoElement = document.createElement("video");
+    screenVideoElement.srcObject = screenStream;
+    screenVideoElement.autoplay = true;
+    screenVideoElement.classList.add("screen-share");
+    screenVideoElement.setAttribute("data-peer-id", myPeerId);
+    screenVideoElement.setAttribute("video-share-peer-id", myPeerId);
 
-    // 將新創建的視訊元素插入到指定的容器中
+    // Add the new video element to the page
     const videoContainer = document.querySelector(".video-stream");
-    videoContainer.appendChild(videoElement);
+    videoContainer.appendChild(screenVideoElement);
+
+    // Emit event to inform other users about screen sharing
+    socket.emit("start-screen-share", roomId, myPeerId);
+
+    // Replace all existing peer connections with the screen stream
+    const calls = peerInstance.connections;
+    Object.values(calls).forEach((connections) => {
+      connections.forEach((call) => {
+        call.peerConnection.getSenders().forEach((sender) => {
+          if (sender.track.kind === "video") {
+            sender.replaceTrack(screenStream.getVideoTracks()[0]);
+          }
+        });
+      });
+    });
+
+    // Handle the end of screen sharing
+    screenStream.getVideoTracks()[0].onended = () => {
+      stopScreenShare();
+    };
+  } catch (err) {
+    console.error("Error starting screen share:", err);
   }
+}
 
-  // 將新的視訊流賦值給視訊元素
-  videoElement.srcObject = userVideoStream;
+export function stopScreenShare() {
+  if (screenStream) {
+    screenStream.getTracks().forEach((track) => track.stop());
 
-  // 處理播放錯誤
-  videoElement.addEventListener("loadedmetadata", () => {
-    videoElement.play().catch((error) => {
-      console.error("Error playing video stream: ", error);
+    // Remove the screen share video element
+    const screenVideoElement = document.querySelector(".screen-share");
+    if (screenVideoElement) {
+      screenVideoElement.remove();
+    }
+
+    // Emit event to inform other users about stopping screen sharing
+    socket.emit("stop-screen-share", roomId, myPeerId);
+
+    // Replace screen share stream with original stream in all peer connections
+    const calls = peerInstance.connections;
+    Object.values(calls).forEach((connections) => {
+      connections.forEach((call) => {
+        call.peerConnection.getSenders().forEach((sender) => {
+          if (sender.track.kind === "video") {
+            sender.replaceTrack(originalStream.getVideoTracks()[0]);
+          }
+        });
+      });
+    });
+
+    screenStream = null;
+
+    // Update the local video element to show the original stream
+    const localVideo = document.querySelector(".local-stream");
+    if (localVideo) {
+      localVideo.srcObject = originalStream;
+    }
+  }
+}
+
+export function handleIncomingScreenShare(call) {
+  call.answer(); // Answer the call without sending a stream back
+  call.on("stream", (remoteStream) => {
+    // Create a new video element for the remote screen share
+    const remoteScreenVideo = document.createElement("video");
+    remoteScreenVideo.srcObject = remoteStream;
+    remoteScreenVideo.autoplay = true;
+    remoteScreenVideo.classList.add("screen-share");
+    remoteScreenVideo.setAttribute("data-peer-id", call.peer);
+    remoteScreenVideo.setAttribute("video-share-peer-id", call.peer);
+
+    // Add the new video element to the page
+    const videoContainer = document.querySelector(".video-stream");
+    videoContainer.appendChild(remoteScreenVideo);
+
+    // Remove the video element when the call ends
+    call.on("close", () => {
+      remoteScreenVideo.remove();
     });
   });
 }
-
-function connectToNewSharing(peerId, stream) {
-  const call = peerInstance.call(peerId, stream);
-
-  call.on("stream", (userVideoStream) => {
-    updateRemoteSharingVideos(peerId, userVideoStream); // 更新視訊流
-  });
-
-  call.on("close", () => {
-    // 清理關閉後的資源
-    console.log(`Call with ${peerId}-sharing ended`);
-    removeSharingVideoElement(peerId);
-  });
-}
-
-function removeSharingVideoElement(peerId) {
-  const videoElement = document.querySelector(
-    `video[data-peer-id="${peerId}-sharing"]`
-  );
-  if (videoElement) {
-    videoElement.remove();
-  }
-}
-
-// 當按下分享螢幕按鈕時觸發
-document.querySelector(".share-screen").addEventListener("click", async () => {
-  if (!isSharingScreen) {
-    try {
-      // 開始分享螢幕
-      screenStream = await navigator.mediaDevices.getDisplayMedia({
-        video: true,
-      });
-
-      // 標記為已在分享螢幕
-      isSharingScreen = true;
-
-      // 通知其他參與者顯示分享的視訊
-      socket.emit("start-screen-share", roomId, myPeerId);
-
-      // 呼叫連線的其他使用者，傳遞螢幕分享流
-      socket.emit("request-screen-share", roomId, myPeerId, screenStream);
-
-      // 當本地螢幕分享結束時自動觸發停止分享
-      screenStream.getTracks()[0].addEventListener("ended", stopScreenShare);
-    } catch (error) {
-      if (error.name === "NotFoundError") {
-        console.error("Error: No display media device found.");
-      } else if (error.name === "NotAllowedError") {
-        console.error("Error: Permission to capture screen denied.");
-      } else if (error.name === "AbortError") {
-        console.error("Error: Screen share aborted.");
-      } else {
-        console.error("Error sharing screen:", error);
-      }
-    }
-  } else {
-    // 停止分享
-    stopScreenShare();
-  }
-});
-
-// 停止分享螢幕
-function stopScreenShare() {
-  if (isSharingScreen) {
-    // 停止螢幕分享流
-    screenStream.getTracks().forEach((track) => track.stop());
-    isSharingScreen = false;
-
-    // 通知其他參與者移除共享視窗
-    socket.emit("stop-screen-share", roomId, myPeerId);
-  }
-}
-
-// 監聽來自其他使用者的螢幕分享開始事件
-socket.on("user-started-screen-share", (peerId) => {
-  // 呼叫該使用者，要求接收螢幕分享流
-  connectToNewSharing(peerId, screenStream);
-});
-
-// 監聽來自其他使用者的螢幕分享停止事件
-socket.on("user-stopped-screen-share", (peerId) => {
-  // 移除分享視窗的視訊元素
-  removeSharingVideoElement(peerId);
-});

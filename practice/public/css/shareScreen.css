@@ -1,0 +1,38 @@
+.video-stream {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .video-container,
+  .shared-screen-container {
+    flex: 1 1 calc(50% - 5px);
+    max-width: calc(50% - 5px);
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+  }
+  
+  .video-container video,
+  .shared-screen-container video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  /* Adjust layout when screen is shared */
+  .shared-screen-container {
+    order: 1; /* Push shared screens to the end */
+  }
+  
+  .video-container {
+    order: 0; /* Keep regular videos at the beginning */
+  }
+  
+  /* For smaller screens, stack vertically */
+  @media (max-width: 768px) {
+    .video-container,
+    .shared-screen-container {
+      flex: 1 1 100%;
+      max-width: 100%;
+    }
+  }
