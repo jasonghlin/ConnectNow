@@ -446,7 +446,6 @@ io.on("connection", (socket) => {
   });
 
   // 投票
-
   socket.on("start-poll", ({ question, options }, roomName) => {
     console.log(`start-poll: ${roomName}`, { question, options });
     if (!roomName) return;
@@ -496,6 +495,13 @@ io.on("connection", (socket) => {
       return { option, percentage };
     });
   }
+
+  // emoji
+  socket.on("emoji-selected", (emoji, roomName) => {
+    // 廣播給所有其他使用者
+    console.log("emoji-selected: ", roomName);
+    io.to(roomName).emit("emoji-selected", emoji);
+  });
 });
 
 //

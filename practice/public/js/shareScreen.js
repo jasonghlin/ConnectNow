@@ -1,3 +1,4 @@
+import { updateVideoLayout } from "./videoLayout.js";
 let screenStream = null;
 let originalStream = null;
 
@@ -97,7 +98,7 @@ export function handleIncomingScreenShare(call) {
     // Add the new video element to the page
     const videoContainer = document.querySelector(".video-stream");
     videoContainer.appendChild(remoteScreenVideo);
-
+    updateVideoLayout();
     // Remove the video element when the call ends
     call.on("close", () => {
       remoteScreenVideo.remove();

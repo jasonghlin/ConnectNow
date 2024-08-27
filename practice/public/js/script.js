@@ -6,6 +6,7 @@ import {
   stopScreenShare,
   handleIncomingScreenShare,
 } from "./shareScreen.js";
+import { updateVideoLayout } from "./videoLayout.js";
 
 // 獲取房間 ID
 const pathSegments = window.location.pathname.split("/");
@@ -532,7 +533,7 @@ function updateRemoteVideos(peerId, userVideoStream) {
 
   // 将新的视频流赋值给视频元素
   videoElement.srcObject = userVideoStream;
-
+  updateVideoLayout();
   // 处理播放错误
   videoElement.addEventListener("loadedmetadata", () => {
     videoElement.play().catch((error) => {
@@ -569,6 +570,7 @@ function removeVideoElement(peerId) {
   );
   if (videoElement) {
     videoElement.remove();
+    updateVideoLayout();
   }
 }
 
@@ -714,6 +716,7 @@ document.querySelector(".share-screen").addEventListener("click", () => {
   if (!isScreenSharing) {
     startScreenShare();
     isScreenSharing = true;
+    updateVideoLayout();
   } else {
     stopScreenShare();
     isScreenSharing = false;

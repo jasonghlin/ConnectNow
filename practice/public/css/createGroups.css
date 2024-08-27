@@ -21,11 +21,6 @@
     right: 0
 }
 
-body.panel-open .video-stream,
-body.panel-open footer {
-    transform: translateX(-40rem);
-}
-
 #close-breakout-room {
     position:absolute;
     top: 1rem;

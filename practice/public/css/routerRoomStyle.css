@@ -32,8 +32,7 @@ header {
 }
 
 .logo {
-    font-weight: 700;
-    font-size: 3rem;
+    width: 7rem;
     line-height: 3.4rem;
     cursor: pointer;
 }
@@ -287,7 +286,7 @@ nav {
 }
 
 .logo {
-    width: 5rem;
+    width: 7rem;
     margin-right: 1rem;
 }
 

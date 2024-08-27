@@ -13,6 +13,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
         crossorigin="anonymous" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="/static/css/createGroups.css">
     <link rel="stylesheet" href="/static/css/poll.css">
@@ -23,6 +26,7 @@
     <link rel="stylesheet" href="/static/css/activitiesPanel.css">
     <link rel="stylesheet" href="/static/css/videoBackground.css">
     <link rel="stylesheet" href="/static/css/shareScreen.css">
+    <link rel="stylesheet" href="/static/css/emoji.css">
 </head>
 
 <body>
@@ -40,6 +44,19 @@
             </div>
         </div>
     </div>
+    <div id="emoji-picker" style="display: none;">
+        <span class="emoji">💖</span>
+        <span class="emoji">👍</span>
+        <span class="emoji">🎉</span>
+        <span class="emoji">👏</span>
+        <span class="emoji">😂</span>
+        <span class="emoji">😮</span>
+        <span class="emoji">😢</span>
+        <span class="emoji">🤔</span>
+        <span class="emoji">👎</span>
+
+        <!-- 可以根據需求添加更多 emoji -->
+    </div>
     <footer>
         <div class="left-corner">
             <div class="time-container">
@@ -50,7 +67,7 @@
             <p class="meet-id">Meet-id: <span id="currentRoomId"></span></p>
         </div>
         <div class="controller">
-            <div>
+            <div class="mic-icon-wrapper">
                 <select class="mic-list hidden"></select>
                 <button class="mic-icon">
                     <div class="choose-icon choose-mic">^</div>
@@ -64,6 +81,11 @@
                     <i class="fas fa-video"></i>
                 </button>
             </div>
+
+            <button class="emoji-icon">
+                <i class="fas fa-face-smile"></i>
+            </button>
+
             <button class="share-screen">
                 <img src="/static/images/shareScreen.png" />
             </button>
@@ -265,7 +287,7 @@
     <script type="module" src="/static/js/usersPanel.js"></script>
     <!-- <script type="module" src="/static/js/chatPanel.js"></script> -->
     <!-- <script type="module" src="/static/js/whiteboard.js"></script> -->
-    <!-- <script type="module" src="/static/js/videoLayout.js"></script> -->
+    <script type="module" src="/static/js/videoLayout.js"></script>
     <script type="module" src="/static/js/createGroups.js"></script>
     <script type="module" src="/static/js/groupHandler.js"></script>
     <script type="module" src="/static/js/pollPanel.js"></script>
@@ -278,6 +300,7 @@
     <script type="module" src="/static/js/muteMic.js"></script>
     <script type="module" src="/static/js/shareScreen.js"></script>
     <script type="module" src="/static/js/adminFeature.js"></script>
+    <script type="module" src="/static/js/emoji.js"></script>
 
 
     <script>

@@ -1,0 +1,49 @@
+.emoji-icon {
+    width: 4.8rem;
+    height: 4.8rem;
+    background-color: #aaaaaa4c;
+    border-radius: 1rem;
+    border: none;
+    cursor: pointer;
+    margin-right: 1rem;
+    transition: all 0.3s;
+}
+
+.emoji-icon:hover {
+    transform: translateY(-0.3rem);
+}
+
+.emoji-icon > i {
+    font-size: 2.4rem;
+    color: white;
+    text-align: center;
+}
+
+#emoji-picker {
+    position: absolute;
+    display: none;
+    bottom: 30px; /* 設置在按鈕上方 */
+    left: 50%;
+    transform: translateX(-50%); /* 讓選擇器水平居中於按鈕 */
+    background-color: #aaaaaa4c;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+  }
+  
+  /* 顯示 emoji 的樣式 */
+  .emoji {
+    font-size: 24px;
+    margin: 5px;
+    cursor: pointer;
+  }
+
+.floating-emoji {
+    position: fixed;
+    left: 20px;
+    bottom: 20px;
+    font-size: 2rem;
+    z-index: 1000;
+    pointer-events: none; /* 確保動畫不影響其他操作 */
+  }
