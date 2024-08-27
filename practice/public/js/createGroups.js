@@ -1,6 +1,5 @@
 import { handleFinishGrouping } from "./groupHandler.js";
-import { roomId } from "./script.js";
-import { socket } from "./script.js";
+import { roomId, socket } from "./script.js";
 
 document
   .getElementById("createGroups")

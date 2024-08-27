@@ -1,16 +1,12 @@
-import {
-  socket,
-  roomId,
-  peerInstance,
-  myPeerId,
-  currentStream,
-} from "./script.js";
-
 let screenStream = null;
 let originalStream = null;
 
 export async function startScreenShare() {
   try {
+    // 動態載入 script.js 中的變數和函數
+    const { socket, roomId, peerInstance, myPeerId, currentStream } =
+      await import("./script.js");
+
     screenStream = await navigator.mediaDevices.getDisplayMedia({
       video: true,
     });

@@ -1,10 +1,7 @@
-import {
-  socket,
-  updateCurrentRoom,
-  currentRoom,
-  peerInstance,
-} from "./script.js";
 async function handleFinishGrouping(groupsData, timerInputValue) {
+  const { socket, updateCurrentRoom, currentRoom, peerInstance } = await import(
+    "./script.js"
+  );
   const currentUrl = window.location.href;
   const mainRoomName = localStorage.getItem("mainRoom");
   // 獲取用戶認證信息

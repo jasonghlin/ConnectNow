@@ -1,8 +1,11 @@
-import { socket, roomId } from "./script.js";
-let userId = localStorage.getItem("userId");
-document.querySelector(".mic-icon").setAttribute(`data-user-id`, userId);
+// mutemic.js
+async function loadSocketAndRoom() {
+  const { socket, roomId } = await import("../utils/shared.js");
+  return { socket, roomId };
+}
 
-function handleMuteMicToggle() {
+async function handleMuteMicToggle() {
+  const { socket, roomId } = await loadSocketAndRoom();
   const userMicButtons = document.querySelectorAll(".usersPanel-mic");
 
   userMicButtons.forEach((button) => {
@@ -14,8 +17,7 @@ function handleMuteMicToggle() {
       const isMuted = micIcon.classList.contains("fa-microphone-slash");
       micIcon.classList.toggle("fa-microphone", isMuted);
       micIcon.classList.toggle("fa-microphone-slash", !isMuted);
-      console.log(socket);
-      // 發送事件給後端，同步靜音狀態
+
       socket.emit("toggle-user-mic", { roomId, userId, isMuted: !isMuted });
     });
   });

@@ -33,7 +33,7 @@ localVideo.muted = true;
 localVideo.srcObject = stream;
 localVideo.play();
 
-export const initializeSegmenter = async () => {
+const initializeSegmenter = async () => {
   await createImageSegmenter();
   startBackgroundEffects();
 };
@@ -160,7 +160,7 @@ function callbackForVideo(result) {
   }
 }
 
-export async function startBackgroundEffects() {
+async function startBackgroundEffects() {
   if (!canvasElement.parentNode) {
     const videoContainer = document.querySelector(".video-stream");
     videoContainer.appendChild(canvasElement);
@@ -191,7 +191,7 @@ function applyBlurEffect(pixels, mask, width, height) {
   }
 }
 
-export async function convertCanvasToStream(canvas, isMicMuted = false) {
+async function convertCanvasToStream(canvas, isMicMuted = false) {
   try {
     const videoOutput = await canvas.captureStream();
     if (!videoOutput.getTracks) {
@@ -250,4 +250,9 @@ function backgroundPanelDisplay() {
   });
 }
 backgroundPanelDisplay();
-export { myStream };
+export {
+  initializeSegmenter,
+  myStream,
+  startBackgroundEffects,
+  convertCanvasToStream,
+};
