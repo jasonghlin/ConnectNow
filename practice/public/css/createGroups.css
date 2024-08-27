@@ -8,12 +8,13 @@
     right: -40rem;
     width: 30rem;
     height: 95vh;
-    background-color: #202124;
+    background-color: white;
     transition: right 0.3s ease-in-out;
     z-index: 1000;
     box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
     border: .1rem solid white;
     overflow: scroll;
+    border-radius: .5rem;
 }
 
 .breakout-room-panel.show {
@@ -31,7 +32,7 @@ body.panel-open footer {
     right: 1rem;
     background: none;
     border: none;
-    color: #fff;
+    color: black;
     font-size: 1.6rem;
     cursor: pointer;
 }
@@ -42,6 +43,35 @@ body.panel-open footer {
     gap: 10px;
     flex-wrap: wrap;
     justify-content: center;
+}
+
+.group-number-wrapper, .timer-wrapper{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 2rem;
+}
+
+#groupCount {
+    padding: 1rem;
+    width: 19rem
+
+}
+
+#createGroups, #finishGrouping {
+    margin-left: .5rem;
+    padding: .5rem;
+    border: none;
+    background-color: #4285f4;
+    color: white;
+    border-radius: .5rem;
+    cursor: pointer;
+}
+
+#timerInput {
+    padding: 1rem;
+    width: 20rem
+
 }
 
 #roomsContainer {
@@ -64,6 +94,7 @@ body.panel-open footer {
 .groupLabel {
     font-weight: bold;
     margin-bottom: 5px; /* 更小的间距 */
+    color: black;
 }
 
 .member-container {
@@ -91,6 +122,7 @@ body.panel-open footer {
 #timerDisplay {
     margin-top: 20px;
     font-size: 1.2em;
+    color: black;
 }
 
 .hidden {

@@ -30,10 +30,14 @@ try {
                 </div> `;
     activitiesWrapper.insertAdjacentHTML("beforeend", activitiesWrapperHtml);
 
-    const breakoutRoomControlsHTML = `<input type="number" id="groupCount" placeholder="Enter number of groups">
-              <button id="createGroups">Create Groups</button>
-              <input type="number" id="timerInput" placeholder="Enter timer in seconds">
-              <button id="finishGrouping">Finish Grouping</button>`;
+    const breakoutRoomControlsHTML = `<div class="group-number-wrapper">
+                <input type="number" id="groupCount" placeholder="Enter number of groups">
+                <button id="createGroups">Create Groups</button>
+            </div>
+            <div class="timer-wrapper">
+                <input type="number" id="timerInput" placeholder="Enter timer in seconds">
+                <button id="finishGrouping">Finish Grouping</button>
+            </div>`;
     breakoutRoomControls.insertAdjacentHTML(
       "beforeend",
       breakoutRoomControlsHTML

@@ -96,7 +96,7 @@ app.get("/roomId/:roomId", authenticateJWT, async (req, res) => {
   const roomExist = await checkMainRoomExist(roomName);
   console.log("roomExist: ", roomExist);
   if (!roomExist) {
-    res.status(404).json({ error: "main room not found" });
+    res.redirect("/");
   } else {
     const roomAdminId = await findMainRoomAdmin(roomName);
     if (roomAdminId.length === 0) {

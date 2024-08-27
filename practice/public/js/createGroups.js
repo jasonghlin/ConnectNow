@@ -167,12 +167,10 @@ function createGroupsPanelShow() {
 
   breakoutRoomBtn.addEventListener("click", () => {
     breakouRoomPanel.classList.add("show");
-    document.body.classList.add("panel-open");
   });
 
   closeBreakoutRoomButton.addEventListener("click", () => {
     breakouRoomPanel.classList.remove("show");
-    body.classList.remove("panel-open");
   });
 }
 createGroupsPanelShow();
