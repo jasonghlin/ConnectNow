@@ -23,7 +23,7 @@ app.add_middleware(
 )
 
 # Load the Whisper model and processor
-model_name = "openai/whisper-medium"
+model_name = "openai/whisper-large"
 processor = WhisperProcessor.from_pretrained(model_name)
 
 # Move model to GPU if available

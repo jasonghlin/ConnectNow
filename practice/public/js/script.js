@@ -7,6 +7,7 @@ import {
   handleIncomingScreenShare,
 } from "./shareScreen.js";
 import { updateVideoLayout } from "./videoLayout.js";
+import { initializeSegmenter } from "./backgroundEffects.js";
 
 // 獲取房間 ID
 const pathSegments = window.location.pathname.split("/");
@@ -335,7 +336,7 @@ async function updateVideoSource(newVideoDeviceId) {
 
     // 在本地 canvas 或 video 上更新流
     updateLocalStream(updatedStream);
-
+    initializeSegmenter();
     // 通知其他參與者視訊流已更新
     socket.emit("update-video-stream", roomId, myPeerId, myUserId);
   } catch (error) {
@@ -378,20 +379,11 @@ function updateCanvasStream(stream) {
 
 async function updateAudioSource(newAudioDeviceId) {
   try {
-    // 获取现有的 canvas stream 视频轨道
-    const currentVideoTracks = localStream.getVideoTracks();
-
     // 使用新的 audioDeviceId 获取新的音频流
-    const newAudioStream = await navigator.mediaDevices.getUserMedia({
-      video: false, // 不需要更新视频流
+    const updatedStream = await navigator.mediaDevices.getUserMedia({
+      video: true, // 不需要更新视频流
       audio: { deviceId: { exact: newAudioDeviceId } },
     });
-
-    // 将现有的视频轨道和新的音频轨道组合成一个新的 MediaStream
-    const updatedStream = new MediaStream([
-      ...currentVideoTracks,
-      ...newAudioStream.getAudioTracks(),
-    ]);
 
     // 更新 canvas stream，使其包含新的音频轨道
     localStream = updatedStream;
@@ -399,7 +391,14 @@ async function updateAudioSource(newAudioDeviceId) {
 
     // 继续使用 localStream 在 canvas 上绘制视频内容
     updateCanvasStream(localStream);
-
+    initializeSegmenter();
+    const canvasElementStream = document
+      .querySelector(".local-stream")
+      .captureStream();
+    currentStream = new MediaStream([
+      ...updatedStream.getAudioTracks(),
+      ...canvasElementStream.getVideoTracks(),
+    ]);
     // 通知其他参与者音频流已更新
     socket.emit("update-audio-source", roomId, myPeerId, myUserId);
   } catch (error) {

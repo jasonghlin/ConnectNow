@@ -9,6 +9,7 @@ import http from "http";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import userRouter from "./routers/userRouter.js";
+import multer from "multer";
 import { checkUserInMainRoom } from "../models/checkUserInMainRoom.js";
 import { authenticateJWT } from "../public/utils/authenticateJWT.js";
 import { createMainRoom } from "../models/createMainRoom.js";
@@ -19,6 +20,7 @@ import { createBreakoutRoom } from "../models/createBreakoutRoom.js";
 import { joinBreakoutRoom } from "../models/joinBreakoutRoom.js";
 import { findMainRoomAdmin } from "../models/findMainRoomAdmin.js";
 import { adminJoinMainRoom } from "../models/adminJoinMainRoom.js";
+import { convertToMovStream } from "../public/utils/converToMOV.js";
 
 dotenv.config();
 const { JWT_SECRET_KEY, ENV, AWS_ACCESS_KEY, AWS_SECRET_KEY, BUCKET_NAME } =
@@ -160,6 +162,31 @@ app.get("/api/roomAdmin/:roomId", async (req, res) => {
   const { roomId: roomName } = req.params;
   const roomAdminId = await findMainRoomAdmin(roomName);
   res.json(roomAdminId);
+});
+
+const uploadVideo = multer({ storage: multer.memoryStorage() }); // Use memory storage to avoid saving to disk
+
+app.post("/videoRecord", uploadVideo.single("recording"), (req, res) => {
+  convertToMovStream(req.file.buffer, (err, movStream) => {
+    if (err) {
+      return res.status(500).send("Error converting file.");
+    }
+
+    res.setHeader("Content-Type", "video/quicktime");
+
+    movStream.on("end", () => {
+      console.log("MOV stream sent successfully.");
+    });
+
+    movStream.on("error", (error) => {
+      console.error("Stream error:", error);
+      if (!res.headersSent) {
+        res.status(500).send("Error streaming MOV file.");
+      }
+    });
+
+    movStream.pipe(res);
+  });
 });
 
 // sockets
