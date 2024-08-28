@@ -166,6 +166,7 @@ app.get("/api/roomAdmin/:roomId", async (req, res) => {
 const rooms = new Map();
 const userMuteStatus = {}; // 儲存每個房間中使用者的靜音狀態，键为 roomId, 值为包含用户静音状态的对象
 const polls = {};
+// const roomWhiteboardStates = {};
 io.on("connection", (socket) => {
   socket.on("connect-to-server", (userId, mainRoom) => {
     if (userId && mainRoom) {
@@ -241,6 +242,20 @@ io.on("connection", (socket) => {
         console.log("user: ", user);
         socket.to(roomName).emit("user-connected-mainRoom", peerId, userId);
       });
+
+      // send white board state
+      // 从 Redis 获取当前房间的白板状态
+      const whiteboardState = await redisClient.lRange(
+        `whiteboard:${roomName}`,
+        0,
+        -1
+      );
+
+      // 将状态数据从字符串解析为对象数组
+      const parsedState = whiteboardState.map((line) => JSON.parse(line));
+
+      // 发送当前的白板状态给客户端
+      socket.emit("current-whiteboard-state", parsedState);
     } catch (error) {
       console.log(error);
     }
@@ -522,6 +537,43 @@ io.on("connection", (socket) => {
     const messages = await redisClient.lRange(`chat:${roomName}`, 0, -1);
     const parsedMessages = messages.map((msg) => JSON.parse(msg));
     callback(parsedMessages);
+  });
+
+  // whiteBoard
+
+  socket.on("request-whiteboard-state", async (roomName) => {
+    try {
+      const whiteboardState = await redisClient.lRange(
+        `whiteboard:${roomName}`,
+        0,
+        -1
+      );
+      const parsedState = whiteboardState.map((line) => JSON.parse(line));
+      socket.emit("current-whiteboard-state", parsedState);
+    } catch (error) {
+      console.error(error);
+    }
+  });
+
+  socket.on("draw", async (data) => {
+    try {
+      await redisClient.rPush(
+        `whiteboard:${data.roomId}`,
+        JSON.stringify(data)
+      );
+      socket.to(data.roomId).emit("draw", data);
+    } catch (error) {
+      console.error("Error saving whiteboard data to Redis:", error);
+    }
+  });
+
+  socket.on("clear-whiteboard", async (roomName) => {
+    try {
+      await redisClient.del(`whiteboard:${roomName}`);
+      socket.to(roomName).emit("clear-whiteboard");
+    } catch (error) {
+      console.error("Error clearing whiteboard data from Redis:", error);
+    }
   });
 });
 

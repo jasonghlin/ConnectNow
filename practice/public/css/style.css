@@ -293,7 +293,7 @@ body.panel-open .video-stream {
     max-height: 30vh;
 }
 
-.video-stream video, .video-stream canvas {
+.video-stream video, .video-stream canvas:not(#whiteboard-canvas) {
     flex: 1 1 auto;
     width: 100%;
     height: auto;
@@ -308,7 +308,7 @@ body.panel-open .video-stream {
 
 
 /* 畫面左移時變小 video */
-body.panel-open .video-stream video, body.panel-open .video-stream canvas {
+body.panel-open .video-stream video, body.panel-open .video-stream canvas:not(#whiteboard-canvas) {
     max-width: calc(48% - 200px); /* 動態調整寬度，確保縮放過程中不突變 */
     min-height: 200px;
     max-height: 600px;
