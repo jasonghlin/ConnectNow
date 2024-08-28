@@ -45,7 +45,7 @@ function displayEmoji(emoji) {
       { transform: "translateY(-500px)", opacity: 0 },
     ],
     {
-      duration: 5000,
+      duration: 3000,
       easing: "ease-out",
     }
   );

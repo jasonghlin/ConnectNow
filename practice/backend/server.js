@@ -26,15 +26,15 @@ const { JWT_SECRET_KEY, ENV, AWS_ACCESS_KEY, AWS_SECRET_KEY, BUCKET_NAME } =
 const port = 8080;
 
 let redisClient;
-// if (ENV === "production") {
-//   redisClient = createClient({
-//     url: "rediss://clustercfg.connectnow-elasticache.z2mtgi.usw2.cache.amazonaws.com:6379",
-//   });
-// } else {
-//   redisClient = createClient();
-// }
-// redisClient.on("error", (err) => console.log("Redis Client Error", err));
-// await redisClient.connect();
+if (ENV === "production") {
+  redisClient = createClient({
+    url: "rediss://clustercfg.connectnow-elasticache.z2mtgi.usw2.cache.amazonaws.com:6379",
+  });
+} else {
+  redisClient = createClient();
+}
+redisClient.on("error", (err) => console.log("Redis Client Error", err));
+await redisClient.connect();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -501,6 +501,27 @@ io.on("connection", (socket) => {
     // 廣播給所有其他使用者
     console.log("emoji-selected: ", roomName);
     io.to(roomName).emit("emoji-selected", emoji);
+  });
+
+  // chat panel
+  socket.on("send-message", async ({ roomId: roomName, message, userName }) => {
+    console.log(roomName);
+    if (message && message.trim() !== "") {
+      const chatMessage = { userName, message };
+      console.log(chatMessage);
+      // Save the message in Redis
+      await redisClient.rPush(`chat:${roomName}`, JSON.stringify(chatMessage));
+
+      // Emit the message to all users in the room
+      io.to(roomName).emit("receive-message", chatMessage);
+    }
+  });
+
+  // Load messages for a specific room
+  socket.on("load-chat", async (roomName, callback) => {
+    const messages = await redisClient.lRange(`chat:${roomName}`, 0, -1);
+    const parsedMessages = messages.map((msg) => JSON.parse(msg));
+    callback(parsedMessages);
   });
 });
 

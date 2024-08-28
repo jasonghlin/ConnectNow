@@ -1,12 +1,14 @@
 import { updateVideoLayout } from "./videoLayout.js";
+
 let screenStream = null;
 let originalStream = null;
 
 export async function startScreenShare() {
   try {
     // 動態載入 script.js 中的變數和函數
-    const { socket, roomId, peerInstance, myPeerId, currentStream } =
-      await import("./script.js");
+    const { socket, peerInstance, myPeerId, currentStream } = await import(
+      "./script.js"
+    );
 
     screenStream = await navigator.mediaDevices.getDisplayMedia({
       video: true,
@@ -24,8 +26,9 @@ export async function startScreenShare() {
     // Add the new video element to the page
     const videoContainer = document.querySelector(".video-stream");
     videoContainer.appendChild(screenVideoElement);
-
+    updateVideoLayout();
     // Emit event to inform other users about screen sharing
+    let roomId = window.location.pathname.split("/").pop();
     socket.emit("start-screen-share", roomId, myPeerId);
 
     // Replace all existing peer connections with the screen stream
@@ -49,7 +52,9 @@ export async function startScreenShare() {
   }
 }
 
-export function stopScreenShare() {
+export async function stopScreenShare() {
+  const { socket, roomId, peerInstance, myPeerId, currentStream } =
+    await import("./script.js");
   if (screenStream) {
     screenStream.getTracks().forEach((track) => track.stop());
 
@@ -98,7 +103,7 @@ export function handleIncomingScreenShare(call) {
     // Add the new video element to the page
     const videoContainer = document.querySelector(".video-stream");
     videoContainer.appendChild(remoteScreenVideo);
-    updateVideoLayout();
+
     // Remove the video element when the call ends
     call.on("close", () => {
       remoteScreenVideo.remove();

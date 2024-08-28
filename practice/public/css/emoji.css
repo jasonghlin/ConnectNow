@@ -46,4 +46,5 @@
     font-size: 2rem;
     z-index: 1000;
     pointer-events: none; /* 確保動畫不影響其他操作 */
+    font-size: 4rem;
   }

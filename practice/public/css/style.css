@@ -236,8 +236,7 @@ canvas {
     transform: scaleX(-1);
 }
 
-body.panel-open .video-stream,
-body.panel-open footer {
+body.panel-open .video-stream {
     transform: translateX(-10rem);
 }
 
