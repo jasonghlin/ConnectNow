@@ -30,7 +30,7 @@ const port = 8080;
 let redisClient;
 if (ENV === "production") {
   redisClient = createClient({
-    url: "rediss://clustercfg.connectnow-elasticache.z2mtgi.usw2.cache.amazonaws.com:6379",
+    url: "rediss://clustercfg.connectnow-redis-server.z2mtgi.usw2.cache.amazonaws.com:6379",
   });
 } else {
   redisClient = createClient();
