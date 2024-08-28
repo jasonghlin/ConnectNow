@@ -164,3 +164,7 @@ function handleLogin() {
 handleLogin();
 
 // handle logout
+
+document.querySelector(".google-login").addEventListener("click", (e) => {
+  window.location.href = "/auth/google";
+});

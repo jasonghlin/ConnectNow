@@ -268,6 +268,39 @@ nav {
     color: var(--google-blue)
 }
 
+.google-login {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px 0;
+}
+
+.google-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #34A853;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    text-decoration: none;
+    outline: none;
+}
+
+.google-btn:hover {
+    background-color: #2C8C45;
+}
+
+.google-btn i {
+    margin-right: 8px;
+    font-size: 20px;
+}
+
 /* header */
 .header {
     /* width: 120rem; */

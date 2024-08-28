@@ -26,7 +26,7 @@ async function createUser(name, email, hash_password) {
           reject(error);
         } else {
           console.log("User inserted with ID:", results.insertId);
-          resolve(results);
+          resolve(results.insertId);
         }
       });
     });

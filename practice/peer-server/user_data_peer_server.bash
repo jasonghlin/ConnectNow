@@ -36,4 +36,4 @@ sudo chown -R ubuntu:ubuntu /home/ubuntu/ConnectNow
 sudo chmod -R 755 /home/ubuntu/ConnectNow
 
 # 啟動 docker-compose
-sudo docker compose -f /home/ubuntu/ConnectNow/practice/peer-server/docker-compose.yml up --build
+sudo docker compose -f /home/ubuntu/ConnectNow/practice/peer-server/docker-compose.yml up --build -d

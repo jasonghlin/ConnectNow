@@ -17,9 +17,22 @@ import { updateUserPassword } from "../../models/updateUserPassword.js";
 import { getDbUserImg } from "../../models/getDbUserImg.js";
 import { updateDbUserImg } from "../../models/updateDbUserImg.js";
 import { getAllBreakoutRoomUsers } from "../../models/getAllBreakoutRoomUsers.js";
+import passport from "passport";
+import jwt from "jsonwebtoken";
+import pkg from "passport-google-oauth20";
+import session from "express-session";
+const { Strategy: GoogleStrategy } = pkg;
 
 dotenv.config();
-const { ENV, AWS_ACCESS_KEY, AWS_SECRET_KEY, BUCKET_NAME } = process.env;
+const {
+  ENV,
+  JWT_SECRET_KEY,
+  AWS_ACCESS_KEY,
+  AWS_SECRET_KEY,
+  BUCKET_NAME,
+  GOOGLE_AUTO_CLIENT_ID,
+  GOOGLE_AUTO_CLIENT_SECRET,
+} = process.env;
 
 const router = express.Router();
 const upload = multer();
@@ -30,6 +43,80 @@ const s3Client = new S3Client({
     secretAccessKey: AWS_SECRET_KEY,
   },
 });
+// 設置 session 中介軟體
+router.use(
+  session({
+    secret: "your-secret-key", // 建議使用強隱秘的 key
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false }, // 如果使用 HTTPS，將 `secure` 設為 true
+  })
+);
+
+passport.serializeUser((user, done) => {
+  // 序列化只保存 token
+  done(null, user.token);
+});
+
+passport.deserializeUser((token, done) => {
+  try {
+    const user = jwt.verify(token, JWT_SECRET_KEY); // 解析 token
+    done(null, user);
+  } catch (error) {
+    done(error, null);
+  }
+});
+
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: GOOGLE_AUTO_CLIENT_ID,
+      clientSecret: GOOGLE_AUTO_CLIENT_SECRET,
+      callbackURL: "/auth/google/callback",
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      const profileImage =
+        profile.photos && profile.photos.length > 0
+          ? profile.photos[0].value
+          : "/static/images/user.png";
+
+      try {
+        // 在這裡直接使用 Google 提供的用戶資訊生成 JWT
+        const email = {};
+        email.email = profile.emails[0].value;
+        let user = await getUser(email);
+        let newUser;
+        if (user.length === 0) {
+          // Create a new user if they don't exist
+          newUser = await createUser(
+            profile.displayName,
+            profile.emails[0].value,
+            ""
+          );
+        }
+        user = await getUser(email);
+        const token = jwt.sign(
+          {
+            userId: user[0].id,
+            userName: profile.displayName,
+            userEmail: profile.emails[0].value,
+          },
+          JWT_SECRET_KEY,
+          { expiresIn: "7d" }
+        );
+
+        // 將 token 傳遞給 done
+        return done(null, { token, profileImage });
+      } catch (error) {
+        return done(error, null);
+      }
+    }
+  )
+);
+
+// 初始化 passport 中介軟體
+router.use(passport.initialize());
+router.use(passport.session()); // 用於處理登入會話
 
 // Register
 router.post("/api/user", async (req, res) => {
@@ -289,4 +376,38 @@ router.post(
   }
 );
 
+// google Oauth2.0
+// 啟動 Google OAuth 流程
+router.get(
+  "/auth/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
+);
+
+// Google OAuth 回調
+router.get(
+  "/auth/google/callback",
+  passport.authenticate("google", { failureRedirect: "/" }),
+  (req, res) => {
+    // 成功驗證後，取得 token 和 profileImage
+    const token = req.user.token;
+    const profileImage = req.user.profileImage;
+
+    // 設定 JWT 在 cookie 中
+    res.cookie("token", token, {
+      httpOnly: false,
+      secure: req.protocol === "https",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 天有效期
+    });
+
+    // 使用 JS 代碼將資料儲存在 localStorage 中
+    const script = `
+      localStorage.setItem('proImg', '${profileImage}');
+      localStorage.setItem('session', '${token}');
+      window.location.href = '/'; // 重定向到您希望的頁面
+    `;
+
+    // 將這段腳本傳送給瀏覽器執行
+    res.send(`<script>${script}</script>`);
+  }
+);
 export default router;
