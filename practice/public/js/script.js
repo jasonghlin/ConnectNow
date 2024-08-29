@@ -1,5 +1,5 @@
 import { checkStatus } from "/static/utils/loginOutAndRegister.js";
-import { MainRoom } from "/static/utils/MainRoomClass.js";
+// import { MainRoom } from "/static/utils/MainRoomClass.js";
 import { convertCanvasToStream } from "./backgroundEffects.js";
 import {
   startScreenShare,
@@ -69,6 +69,13 @@ let localStream;
 let currentStream;
 let myPeerId;
 let myUserId;
+
+class MainRoom {
+  constructor(roomId) {
+    this.roomId = roomId;
+    this.breakoutRooms = new Map();
+  }
+}
 
 function updateCurrentRoom(newRoom) {
   currentRoom = newRoom;
