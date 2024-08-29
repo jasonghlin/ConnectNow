@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import { Server } from "socket.io";
 import { createClient } from "redis";
+import { createAdapter } from "@socket.io/redis-adapter";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import bodyParser from "body-parser";
@@ -74,6 +75,18 @@ const io = new Server(server, {
     allowEIO3: true,
   },
 });
+
+// 設定 redis adaptor
+const pubClient = createClient(
+  ENV === "production"
+    ? {
+        url: "rediss://clustercfg.connectnow-redis-server.z2mtgi.usw2.cache.amazonaws.com:6379",
+      }
+    : { url: "redis://localhost:6379" }
+);
+const subClient = pubClient.duplicate();
+await Promise.all([pubClient.connect(), subClient.connect()]);
+io.adapter(createAdapter(pubClient, subClient));
 
 app.use(bodyParser.json());
 app.use(cookieParser());
