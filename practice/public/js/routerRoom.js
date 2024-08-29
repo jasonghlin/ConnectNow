@@ -1,5 +1,5 @@
-import { checkStatus } from "../utils/loginOutAndRegister.js";
-import { date } from "../utils/date.js";
+import { checkStatus } from "/static/utils/loginOutAndRegister.js";
+import { date } from "/static/utils/date.js";
 
 async function routerRoom() {
   date();

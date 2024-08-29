@@ -1,5 +1,5 @@
-import { checkStatus } from "../utils/loginOutAndRegister.js";
-import { MainRoom } from "../utils/MainRoomClass.js";
+import { checkStatus } from "/static/utils/loginOutAndRegister.js";
+import { MainRoom } from "/static/utils/MainRoomClass.js";
 import { convertCanvasToStream } from "./backgroundEffects.js";
 import {
   startScreenShare,

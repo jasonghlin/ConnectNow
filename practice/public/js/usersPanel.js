@@ -1,6 +1,6 @@
 import { initializeMuteMicHandler } from "./muteMic.js";
 import { socket, roomId } from "./script.js";
-import { checkStatus } from "../utils/loginOutAndRegister.js";
+import { checkStatus } from "/static/utils/loginOutAndRegister.js";
 
 // users panel
 async function updateUsersList() {
