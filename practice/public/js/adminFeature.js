@@ -1,24 +1,26 @@
 import { checkStatus } from "../utils/loginOutAndRegister.js";
+import { socket } from "./script.js";
 
-const path = window.location.pathname.split("/");
-const roomId = path[path.length - 1];
-try {
-  const payload = await checkStatus();
-  const roomAdminResponse = await fetch(`/api/roomAdmin/${roomId}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("session")}`,
-    },
-  });
-  const roomAdmin = await roomAdminResponse.json();
-  const roomAdminId = roomAdmin[0].admin_user_id;
-  if (roomAdminId == payload.payload.userId) {
-    const activitiesWrapper = document.querySelector(".activities-wrapper");
-    const breakoutRoomControls = document.querySelector("#controls");
-    const pollForm = document.querySelector("#poll-form");
+async function adminFeature() {
+  const path = window.location.pathname.split("/");
+  const roomId = path[path.length - 1];
+  try {
+    const payload = await checkStatus();
+    const roomAdminResponse = await fetch(`/api/roomAdmin/${roomId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("session")}`,
+      },
+    });
+    const roomAdmin = await roomAdminResponse.json();
+    const roomAdminId = roomAdmin[0].admin_user_id;
+    if (roomAdminId == payload.payload.userId) {
+      const activitiesWrapper = document.querySelector(".activities-wrapper");
+      const breakoutRoomControls = document.querySelector("#controls");
+      const pollForm = document.querySelector("#poll-form");
 
-    const activitiesWrapperHtml = `
+      const activitiesWrapperHtml = `
                   <div class="video-record">
                     <div class="icon-wrapper">
                         <i class="fas fa-record-vinyl"></i>
@@ -28,9 +30,9 @@ try {
                         <p>錄下會議過程供日後隨選觀看</p>
                     </div>
                 </div> `;
-    activitiesWrapper.insertAdjacentHTML("beforeend", activitiesWrapperHtml);
+      activitiesWrapper.insertAdjacentHTML("beforeend", activitiesWrapperHtml);
 
-    const breakoutRoomControlsHTML = `<div class="group-number-wrapper">
+      const breakoutRoomControlsHTML = `<div class="group-number-wrapper">
                 <input type="number" id="groupCount" placeholder="Enter number of groups">
                 <button id="createGroups">Create Groups</button>
             </div>
@@ -38,12 +40,12 @@ try {
                 <input type="number" id="timerInput" placeholder="Enter timer in seconds">
                 <button id="finishGrouping">Finish Grouping</button>
             </div>`;
-    breakoutRoomControls.insertAdjacentHTML(
-      "beforeend",
-      breakoutRoomControlsHTML
-    );
+      breakoutRoomControls.insertAdjacentHTML(
+        "beforeend",
+        breakoutRoomControlsHTML
+      );
 
-    const pollFormHTML = `<div class="poll-question-container">
+      const pollFormHTML = `<div class="poll-question-container">
                     <label for="poll-question">問題：</label>
                     <input type="text" id="poll-question" name="poll-question" required>
                 </div>
@@ -59,8 +61,17 @@ try {
                 </div>
                 <button type="button" id="add-option">添加選項</button>
                 <button type="submit">提交投票</button>`;
-    pollForm.insertAdjacentHTML("beforeend", pollFormHTML);
+      pollForm.insertAdjacentHTML("beforeend", pollFormHTML);
+    }
+  } catch (error) {
+    console.error(error);
   }
-} catch (error) {
-  console.error(error);
 }
+
+adminFeature();
+
+socket.on("room-admin-update", (newAdminId) => {
+  if (newAdminId == localStorage.getItem("userId")) {
+    adminFeature();
+  }
+});

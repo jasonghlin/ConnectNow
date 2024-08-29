@@ -10,6 +10,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import userRouter from "./routers/userRouter.js";
 import multer from "multer";
+import jwt from "jsonwebtoken";
 import { checkUserInMainRoom } from "../models/checkUserInMainRoom.js";
 import { authenticateJWT } from "../public/utils/authenticateJWT.js";
 import { createMainRoom } from "../models/createMainRoom.js";
@@ -21,7 +22,8 @@ import { joinBreakoutRoom } from "../models/joinBreakoutRoom.js";
 import { findMainRoomAdmin } from "../models/findMainRoomAdmin.js";
 import { adminJoinMainRoom } from "../models/adminJoinMainRoom.js";
 import { convertToMovStream } from "../public/utils/converToMOV.js";
-import jwt from "jsonwebtoken";
+import { getAllUsers } from "../models/getAllUsers.js";
+import { updateMainRoomAdmin } from "../models/updateMainRoomAdmin.js";
 
 dotenv.config();
 const { JWT_SECRET_KEY, ENV, AWS_ACCESS_KEY, AWS_SECRET_KEY, BUCKET_NAME } =
@@ -358,19 +360,35 @@ io.on("connection", (socket) => {
   });
 
   //   disconnect
-  socket.on("disconnect", () => {
-    console.log("Disconnecting socket data:", socket.data);
-    const roomName = socket.data.roomName;
-    const roomUsers = rooms.get(roomName);
-    console.log("User disconnected");
-    handleUserLeave(socket);
-    if (roomUsers) {
-      console.log(
-        `2Room ${roomName} after leaving users:`,
-        [...roomUsers.values()].map((u) => `${u.userId} (${u.peerId})`)
-      );
-    } else {
-      console.log(`roomUsers with roomName ${roomName} does not exist`);
+  socket.on("disconnect", async () => {
+    try {
+      console.log("Disconnecting socket data:", socket.data);
+      const roomName = socket.data.roomName.roomId;
+      const roomUsers = rooms.get(roomName);
+      const userId = socket.data.userId;
+      console.log("roomName: ", roomName);
+      const roomAdmin = await findMainRoomAdmin(roomName);
+      console.log("User disconnected");
+      handleUserLeave(socket);
+      if (roomUsers) {
+        console.log(
+          `2Room ${roomName} after leaving users:`,
+          [...roomUsers.values()].map((u) => `${u.userId} (${u.peerId})`)
+        );
+      } else {
+        console.log(`roomUsers with roomName ${roomName} does not exist`);
+      }
+
+      if (userId == roomAdmin[0].user_id) {
+        const users = await getAllUsers(roomName);
+        const randomAdminIndex = Math.floor(Math.random() * users.length);
+        const newAdminId = users[randomAdminIndex].id;
+        console.log("newAdminId: ", newAdminId);
+        await updateMainRoomAdmin(newAdminId, roomName);
+        io.to(roomName).emit("room-admin-update", newAdminId);
+      }
+    } catch (error) {
+      console.error(error);
     }
   });
 
