@@ -205,12 +205,12 @@ app.post("/videoRecord", uploadVideo.single("recording"), (req, res) => {
   });
 });
 
-// app.use((req, res, next) => {
-//   if (req.path === "/") {
-//     return next(); // 避免對首頁的進一步處理，避免迴圈
-//   }
-//   res.redirect("/");
-// });
+app.use((req, res, next) => {
+  if (req.path === "/") {
+    return next(); // 避免對首頁的進一步處理，避免迴圈
+  }
+  res.redirect("/");
+});
 // sockets
 
 io.use((socket, next) => {
