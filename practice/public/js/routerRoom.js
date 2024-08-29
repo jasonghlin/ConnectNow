@@ -1,6 +1,8 @@
 import { checkStatus } from "../utils/loginOutAndRegister.js";
+import { date } from "../utils/date.js";
 
 async function routerRoom() {
+  date();
   const payload = await checkStatus();
   let userImgUrl = localStorage.getItem("proImg");
   if (payload && !userImgUrl) {
@@ -50,7 +52,7 @@ async function routerRoom() {
   createRoomBtn.addEventListener("click", async () => {
     const payload = await checkStatus();
     if (!payload) {
-      alert("請先登入");
+      Swal.fire("請先登入");
       return;
     }
 
@@ -75,7 +77,7 @@ async function routerRoom() {
       window.location.href = `/roomId/${roomId.roomId}`;
     } catch (error) {
       console.error("Error:", error);
-      alert("Failed to create room. Please try again.");
+      Swal.fire("Failed to create room. Please try again.");
     }
   });
 
@@ -83,13 +85,13 @@ async function routerRoom() {
     const roomId = document.getElementById("room-number").value;
     const payload = await checkStatus();
     if (!payload) {
-      alert("請先登入");
+      Swal.fire("請先登入");
       return;
     }
 
     const token = localStorage.getItem("session");
     if (!token) {
-      alert("請先登入");
+      Swal.fire("請先登入");
       return;
     }
 
@@ -97,11 +99,11 @@ async function routerRoom() {
       if (roomId) {
         window.location.href = `/roomId/${roomId}`;
       } else {
-        alert("請輸入正確的會議代碼或連結");
+        Swal.fire("請輸入正確的會議代碼或連結");
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("請輸入正確的會議代碼或連結");
+      Swal.fire("請輸入正確的會議代碼或連結");
     }
   });
 }

@@ -7,9 +7,13 @@ function date() {
   const date = document.querySelector(".date");
   const day = document.querySelector(".day");
   console.log(now.getDate());
-  noon.textContent = now.getHours() > 12 ? "下午" : "上午";
+  noon.textContent = now.getHours() >= 12 ? "下午" : "上午";
   hour.textContent =
-    now.getHours() > 12 ? `0${now.getHours() - 12}` : now.getHours();
+    now.getHours() > 12
+      ? now.getHours() - 12 < 10
+        ? `0${now.getHours() - 12}`
+        : now.getHours() - 12
+      : now.getHours();
   minutes.textContent =
     now.getMinutes() < 9 ? `0${now.getMinutes()}` : now.getMinutes();
   month.textContent = now.getMonth();

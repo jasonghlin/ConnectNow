@@ -43,7 +43,7 @@ addOptionButton?.addEventListener("click", () => {
 pollForm.addEventListener("submit", (event) => {
   event.preventDefault();
   if (pollActive) {
-    alert("目前有一個投票正在進行，請稍後再試。");
+    Swal.fire("目前有一個投票正在進行，請稍後再試。");
     return;
   }
 

@@ -189,6 +189,12 @@ app.post("/videoRecord", uploadVideo.single("recording"), (req, res) => {
   });
 });
 
+app.use((req, res, next) => {
+  if (req.path === "/") {
+    return next(); // 避免對首頁的進一步處理，避免迴圈
+  }
+  res.redirect("/");
+});
 // sockets
 const rooms = new Map();
 const userMuteStatus = {}; // 儲存每個房間中使用者的靜音狀態，键为 roomId, 值为包含用户静音状态的对象
@@ -407,12 +413,16 @@ io.on("connection", (socket) => {
   });
 
   //   從 usersPanel 面板 toggle mic
-  socket.on("toggle-user-mic", ({ roomName, userId, isMuted }) => {
+  socket.on("toggle-user-mic", ({ roomId: roomName, userId, isMuted }) => {
     if (!userMuteStatus[roomName]) {
       userMuteStatus[roomName] = {};
     }
     userMuteStatus[roomName][userId] = isMuted;
-
+    console.log(
+      "userMuteStatus[roomName]: ",
+      roomName,
+      userMuteStatus[roomName]
+    );
     // 將變更通知給同個房間內的其他用戶
     io.to(roomName).emit("user-mic-status-changed-by-usersPanel", {
       userId,
@@ -420,7 +430,7 @@ io.on("connection", (socket) => {
     });
   });
 
-  socket.on("sync-mic-icons", ({ roomName, userId, isMuted }) => {
+  socket.on("sync-mic-icons", ({ roomId: roomName, userId, isMuted }) => {
     io.to(roomName).emit("sync-mic-icons", { userId, isMuted });
   });
 

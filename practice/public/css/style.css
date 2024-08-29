@@ -38,6 +38,7 @@ footer {
 .time-separater {
     margin-left: 1rem;
     margin-right: 1rem;
+    margin-bottom: 0 !important;
 }
 
 .controller {
@@ -49,7 +50,7 @@ footer {
 
 .choose-icon {
     position: fixed;
-    transform: translateY(20%);
+    transform: translateY(7%);
     background: none;
     color: #aaa;
     border: none;
@@ -119,7 +120,7 @@ footer {
 
 .video-icon > i {
     position: absolute;
-    right: 1.9rem;
+    right: 1.4rem;
 }
 
 .video-icon.video-muted {
@@ -333,12 +334,16 @@ body.panel-open .video-stream video, body.panel-open .video-stream canvas:not(#w
     margin-bottom: 2rem;
 }
 
-.video-stream.small-layout video, .video-stream.small-layout canvas {
+.video-stream.small-layout video, .video-stream.small-layout canvas:not(#whiteboard-canvas) {
     max-width: 33%; /* 或根據需要調整 */
     height: auto;
     object-fit: cover;
     min-height: 150px;
     max-height: 300px;
+}
+
+.meet-id {
+    margin-bottom: 0 !important;
 }
 
 

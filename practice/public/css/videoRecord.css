@@ -1,3 +1,32 @@
 .is-recording > i {
     color: red !important
 }
+
+.swal2-toast-custom {
+    font-size: 10rem; /* 調整字體大小 */
+    padding: 30px 50px; /* 增加內邊距 */
+    width: 500px; /* 調整寬度 */
+    height: auto; /* 讓高度自動調整 */
+  }
+  
+  .swal2-popup.swal2-toast .swal2-title {
+    font-size: 3rem !important /* 調整標題的字體大小 */
+
+  }
+  
+  .swal2-icon-custom {
+    font-size: 3rem; /* 調整圖標的大小 */
+    margin-right: 20px; /* 增加圖標與文字之間的距離 */
+  }
+  
+  .swal2-progress-bar-custom {
+    height: 10px; /* 調整進度條的高度 */
+  }
+
+  .swal2-title {
+    font-size: 2.8rem !important;
+  }
+
+  .swal2-content {
+    font-size: 1.6rem !important;
+  }

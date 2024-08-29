@@ -141,7 +141,7 @@ function handleLogin() {
     if (!response.ok) {
       const errorData = await response.json();
       loginErrorDiv.style.color = "red";
-      loginErrorDiv.textContent = errorData.message;
+      loginErrorDiv.textContent = errorData.details;
     } else {
       const data = await response.json();
       // Set the localStorage items here

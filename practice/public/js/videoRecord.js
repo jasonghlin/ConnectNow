@@ -3,9 +3,41 @@
 let mediaRecorder;
 let recordedChunks = [];
 let movBlob;
-let isRecording = true;
+let isRecording = false;
 
-function handleVideoRecordClick() {
+async function handleVideoRecordClick() {
+  if (!mediaRecorder || mediaRecorder.state === "inactive") {
+    const result = await Swal.fire({
+      title: "確定要開始錄影嗎？",
+      text: "請確認大家都準備好後再開始錄影",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "開始錄影",
+    });
+
+    if (result.isConfirmed) {
+      isRecording = true;
+      startRecording();
+    }
+  } else if (mediaRecorder.state === "recording") {
+    const result = await Swal.fire({
+      title: "是否要結束錄影？",
+      text: "確認結束錄影後會開始下載影片以及生成字幕",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "結束錄影",
+    });
+
+    if (result.isConfirmed) {
+      isRecording = false;
+      stopRecording();
+    }
+  }
+
   if (isRecording) {
     document.querySelector(
       ".video-record"
@@ -26,16 +58,6 @@ function handleVideoRecordClick() {
                         <p>錄製</p>
                         <p>錄下會議過程供日後隨選觀看</p>
                     </div>`;
-  }
-  if (
-    (!mediaRecorder || mediaRecorder.state === "inactive") &&
-    confirm("是否要開始錄影")
-  ) {
-    isRecording = !isRecording;
-    startRecording();
-  } else if (mediaRecorder.state === "recording") {
-    isRecording = !isRecording;
-    stopRecording();
   }
 }
 
@@ -71,7 +93,27 @@ async function startRecording() {
       },
     });
 
-    alert("錄影設定中...");
+    const Toast = Swal.mixin({
+      toast: true,
+      position: "center",
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+      customClass: {
+        popup: "swal2-toast-custom", // 使用自訂樣式類別
+        title: "swal2-title-custom", // 自訂標題樣式
+        icon: "swal2-icon-custom", // 自訂圖標樣式
+        timerProgressBar: "swal2-progress-bar-custom", // 自訂進度條樣式
+      },
+      onOpen: (toast) => {
+        toast.addEventListener("mouseenter", Swal.stopTimer);
+        toast.addEventListener("mouseleave", Swal.resumeTimer);
+      },
+    });
+    Toast.fire({
+      icon: "success",
+      title: "錄影準備中",
+    });
 
     // 捕获麦克风音频流
     const audioStream = await navigator.mediaDevices.getUserMedia({
@@ -98,7 +140,7 @@ async function startRecording() {
     mediaRecorder.start();
 
     console.log("Recording started");
-    alert("開始錄影");
+    Swal.fire("開始錄影");
   } catch (err) {
     console.error("Error: " + err);
   }
@@ -146,7 +188,7 @@ async function convertToMov(webmBlob) {
     window.URL.revokeObjectURL(url);
 
     // Notify user that subtitles are being generated
-    alert("影片已開始下載，字幕正在產生中...");
+    Swal.fire("影片已開始下載，字幕正在產生中...");
 
     // Send MOV file to FastAPI for subtitle processing
     await sendToFastAPI(blob);
@@ -184,9 +226,29 @@ async function sendToFastAPI(movBlob) {
     a.click();
     window.URL.revokeObjectURL(url);
 
-    alert("字幕已產生完成");
+    const Toast = Swal.mixin({
+      toast: true,
+      position: "center",
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+      customClass: {
+        popup: "swal2-toast-custom", // 使用自訂樣式類別
+        title: "swal2-title-custom", // 自訂標題樣式
+        icon: "swal2-icon-custom", // 自訂圖標樣式
+        timerProgressBar: "swal2-progress-bar-custom", // 自訂進度條樣式
+      },
+      onOpen: (toast) => {
+        toast.addEventListener("mouseenter", Swal.stopTimer);
+        toast.addEventListener("mouseleave", Swal.resumeTimer);
+      },
+    });
+    Toast.fire({
+      icon: "success",
+      title: "字幕已生產完成",
+    });
   } catch (error) {
-    alert(`字幕產生錯誤 ${error}`);
+    Swal.fire(`字幕產生錯誤 ${error}`);
     console.error("Error during subtitle processing:", error);
   }
 }

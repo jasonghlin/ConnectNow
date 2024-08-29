@@ -43,7 +43,7 @@ async function getUserInfo() {
 // update name
 async function saveName(newName) {
   if (!newName.trim()) {
-    alert("新姓名不能為空值!");
+    Swal.fire("新姓名不能為空值!");
     return;
   }
 
@@ -131,7 +131,7 @@ function validateEmail(email) {
 
 async function saveEmail(newEmail) {
   if (!newEmail.trim()) {
-    alert("新 Email 不能為空值!");
+    Swal.fire("新 Email 不能為空值!");
     return;
   }
   if (validateEmail(newEmail)) {
@@ -147,12 +147,12 @@ async function saveEmail(newEmail) {
     token = await response.json();
     console.log(token);
     if (token.error) {
-      alert(token.message);
+      Swal.fire(token.message);
       return false;
     }
     return token;
   } else {
-    alert("請輸入有效的電子郵件");
+    Swal.fire("請輸入有效的電子郵件");
   }
 }
 
@@ -220,7 +220,7 @@ async function updateEmail() {
 // update password
 function validatePassword(password, passwordValidate) {
   if (!password.trim() || !passwordValidate.trim()) {
-    alert("新密碼不能為空值!");
+    Swal.fire("新密碼不能為空值!");
     return;
   }
   return password === passwordValidate;
@@ -252,11 +252,11 @@ async function savePassword() {
     let fetchStatus = await response.json();
     console.log(fetchStatus);
     if (fetchStatus.ok) {
-      alert("密碼更新成功");
+      Swal.fire("密碼更新成功");
       return true;
     }
   } else {
-    alert("兩次密碼輸入不相同");
+    Swal.fire("兩次密碼輸入不相同");
     return false;
   }
 }
@@ -320,7 +320,7 @@ async function uploadImage(event) {
   let file = event.target.files[0];
   let token = localStorage.getItem("session");
   if (!file) {
-    alert("No file selected.");
+    Swal.fire("No file selected.");
     return;
   }
 
@@ -331,7 +331,7 @@ async function uploadImage(event) {
     fileType !== "image/jpg" &&
     fileType !== "image/png"
   ) {
-    alert("只能上傳 JPG 或 PNG 檔案圖片!");
+    Swal.fire("只能上傳 JPG 或 PNG 檔案圖片!");
     return;
   }
 
@@ -350,18 +350,18 @@ async function uploadImage(event) {
     if (!response.ok) {
       console.error("HTTP error", response.status);
 
-      alert(getUploadInfo.message);
+      Swal.fire(getUploadInfo.message);
       return;
     } else {
       console.log("getUploadInfo: ", getUploadInfo);
-      alert(getUploadInfo.message);
+      Swal.fire(getUploadInfo.message);
       localStorage.setItem("proImg", getUploadInfo.url);
       //   修改
       window.location.href = `/member`;
     }
   } catch (err) {
     console.error("Error:", err);
-    alert("Failed to upload file.");
+    Swal.fire("Failed to upload file.");
   }
 }
 

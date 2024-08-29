@@ -1,5 +1,5 @@
 import { checkStatus } from "../utils/loginOutAndRegister.js";
-import { MainRoom } from "../utils/mainRoomClass.js";
+import { MainRoom } from "../utils/MainRoomClass.js";
 import { convertCanvasToStream } from "./backgroundEffects.js";
 import {
   startScreenShare,
@@ -229,7 +229,7 @@ function initializeMainRoom() {
 
           socket.on("reject-join-request", (response) => {
             if (response.reject) {
-              alert("你被拒絕加入房間");
+              Swal.fire("你被拒絕加入房間");
               socket.off("accept-join-request").off("reject-join-request");
               window.location.href = "/";
             }
@@ -487,10 +487,16 @@ document
       ]);
 
       localStream = updatedStream;
-      currentStream = localStream;
+      initializeSegmenter();
       updateCanvasStream(localStream); // 更新畫布為新視訊內容
-
       // 通知其他參與者視訊流已更新
+      const canvasElementStream = document
+        .querySelector(".local-stream")
+        .captureStream();
+      currentStream = new MediaStream([
+        ...updatedStream.getAudioTracks(),
+        ...canvasElementStream.getVideoTracks(),
+      ]);
       socket.emit(
         "toggle-video-status",
         roomId,
@@ -605,6 +611,7 @@ socket.on("user-mic-status-changed", (peerId, isMicMuted) => {
 
 // toggle mic by users panel
 socket.on("user-mic-status-changed-by-usersPanel", ({ userId, isMuted }) => {
+  console.log(userId, isMicMuted);
   const micButton = document.querySelector(
     `.usersPanel-mic[data-user-id="${userId}"]`
   );
@@ -626,6 +633,7 @@ socket.on("user-mic-status-changed-by-usersPanel", ({ userId, isMuted }) => {
     const userMic = document.querySelector(
       `.mic-icon[data-user-id="${userId}"] > i`
     );
+    console.log(userMic);
     userMic.click();
   }
 });
