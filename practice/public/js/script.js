@@ -18,8 +18,16 @@ document.getElementById("currentRoomId").textContent = roomId;
 let peerInstance = null;
 const socket =
   window.location.protocol == "https:"
-    ? io("https://www.connectnow.website")
-    : io("http://localhost:8080");
+    ? io("https://www.connectnow.website", {
+        auth: {
+          token: localStorage.getItem("session"),
+        },
+      })
+    : io("http://localhost:8080", {
+        auth: {
+          token: localStorage.getItem("session"),
+        },
+      });
 
 export const getPeer =
   window.location.protocol == "https:"
@@ -130,6 +138,11 @@ function initializeMainRoom() {
     socket.on("connect", () => {
       console.log("Connected to server");
       socket.emit("connect-to-server", userId, mainRoom);
+    });
+
+    socket.on("connect_error", (err) => {
+      console.error("Connection Error:", err.message);
+      alert("Connection Error: " + err.message);
     });
     initializeMainRoom();
     console.log("mainRoom: ", mainRoom, "currentRoom: ", currentRoom);
