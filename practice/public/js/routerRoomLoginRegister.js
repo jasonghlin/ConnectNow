@@ -166,5 +166,5 @@ handleLogin();
 // handle logout
 
 document.querySelector(".google-login").addEventListener("click", (e) => {
-  window.location.href = "https://www.connectnow.website/auth/google";
+  window.location.href = "/auth/google";
 });
