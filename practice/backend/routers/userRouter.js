@@ -43,6 +43,15 @@ const s3Client = new S3Client({
     secretAccessKey: AWS_SECRET_KEY,
   },
 });
+
+// 強制 HTTPS 的中介軟體
+router.use((req, res, next) => {
+  if (req.headers["x-forwarded-proto"] !== "https") {
+    return res.redirect("https://" + req.headers.host + req.url);
+  }
+  next();
+});
+
 // 設置 session 中介軟體
 router.use(
   session({
