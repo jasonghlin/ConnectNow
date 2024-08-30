@@ -1,8 +1,10 @@
-import { socket } from "./script";
+import { socket } from "./script.js";
 
+console.log("Script loaded");
 function hangOutEvent() {
+  console.log("hangOutEvent function executed");
   document.querySelector(".hangout").addEventListener("click", (e) => {
-    // 發送 'user-hangout' 事件給伺服器，並附帶 userId
+    console.log("hangout");
     socket.emit("user-leaving");
     window.location.href = "/";
   });
