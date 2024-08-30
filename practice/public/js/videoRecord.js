@@ -12,8 +12,8 @@ async function handleVideoRecordClick() {
       text: "請確認大家都準備好後再開始錄影",
       icon: "question",
       showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
+      confirmButtonColor: "#4285F4",
+      cancelButtonColor: "#DB4437",
       confirmButtonText: "開始錄影",
     });
 
@@ -27,8 +27,8 @@ async function handleVideoRecordClick() {
       text: "確認結束錄影後會開始下載影片以及生成字幕",
       icon: "question",
       showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
+      confirmButtonColor: "#4285F4",
+      cancelButtonColor: "#DB4437",
       confirmButtonText: "結束錄影",
     });
 
@@ -36,28 +36,6 @@ async function handleVideoRecordClick() {
       isRecording = false;
       stopRecording();
     }
-  }
-
-  if (isRecording) {
-    document.querySelector(
-      ".video-record"
-    ).innerHTML = `<div class="icon-wrapper is-recording">
-                        <i class="fas fa-record-vinyl"></i>
-                    </div>
-                    <div class="activities-description">
-                        <p>停止錄製</p>
-                        <p>再次按下來停止錄製</p>
-                    </div>`;
-  } else {
-    document.querySelector(
-      ".video-record"
-    ).innerHTML = `<div class="icon-wrapper">
-                        <i class="fas fa-record-vinyl"></i>
-                    </div>
-                    <div class="activities-description">
-                        <p>錄製</p>
-                        <p>錄下會議過程供日後隨選觀看</p>
-                    </div>`;
   }
 }
 
@@ -93,6 +71,33 @@ async function startRecording() {
       },
     });
 
+    if (displayStream) {
+      isRecording = true;
+    } else {
+      isRecording = false;
+    }
+
+    if (isRecording) {
+      document.querySelector(
+        ".video-record"
+      ).innerHTML = `<div class="icon-wrapper is-recording">
+                          <i class="fas fa-record-vinyl"></i>
+                      </div>
+                      <div class="activities-description">
+                          <p>停止錄製</p>
+                          <p>再次按下來停止錄製</p>
+                      </div>`;
+    } else {
+      document.querySelector(
+        ".video-record"
+      ).innerHTML = `<div class="icon-wrapper">
+                          <i class="fas fa-record-vinyl"></i>
+                      </div>
+                      <div class="activities-description">
+                          <p>錄製</p>
+                          <p>錄下會議過程供日後隨選觀看</p>
+                      </div>`;
+    }
     const Toast = Swal.mixin({
       toast: true,
       position: "center",
