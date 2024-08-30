@@ -49,7 +49,7 @@ router.use(
     secret: "your-secret-key", // 建議使用強隱秘的 key
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: false }, // 如果使用 HTTPS，將 `secure` 設為 true
+    cookie: { secure: true }, // 如果使用 HTTPS，將 `secure` 設為 true
   })
 );
 
