@@ -1,6 +1,36 @@
 import { handleFinishGrouping } from "./groupHandler.js";
 import { roomId, socket } from "./script.js";
 
+// 使用 MutationObserver 監聽 DOM 變化
+const breakoutRoomObserver = new MutationObserver((mutations) => {
+  mutations.forEach((mutation) => {
+    mutation.addedNodes.forEach((node) => {
+      if (node.nodeType === 1) {
+        // 為新增的 createGroups 按鈕添加事件監聽器
+        const createGroupsButton = node.querySelector("#createGroups");
+        if (createGroupsButton) {
+          createGroupsButton.addEventListener("click", createGroups);
+        }
+
+        // 為新增的 finishGrouping 按鈕添加事件監聽器
+        const finishGroupingButton = node.querySelector("#finishGrouping");
+        if (finishGroupingButton) {
+          finishGroupingButton.addEventListener("click", finishGrouping);
+        }
+      }
+    });
+  });
+});
+
+// 開始監聽 breakoutRoomControls 的子節點變化
+const breakoutRoomControls = document.querySelector("#controls");
+if (breakoutRoomControls) {
+  breakoutRoomObserver.observe(breakoutRoomControls, {
+    childList: true,
+    subtree: true,
+  });
+}
+
 document
   .getElementById("createGroups")
   ?.addEventListener("click", createGroups);

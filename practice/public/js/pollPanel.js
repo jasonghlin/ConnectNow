@@ -28,6 +28,41 @@ closePollButton.addEventListener("click", () => {
   pollPanel.classList.remove("show");
 });
 
+// Create a Mutation Observer to monitor the poll-options container
+// 定義 MutationObserver 的回調函數
+const pollOptionObserverCallback = function (mutationsList, observer) {
+  for (let mutation of mutationsList) {
+    if (mutation.type === "childList") {
+      // 檢查是否有 'add-option' 按鈕被加入
+      const addedNodes = mutation.addedNodes;
+      addedNodes.forEach((node) => {
+        if (node.nodeType === Node.ELEMENT_NODE && node.id === "add-option") {
+          // 為 'add-option' 按鈕添加 event listener
+          node.addEventListener("click", () => {
+            optionCount++;
+            const newOption = document.createElement("div");
+            newOption.classList.add("option-container");
+            newOption.classList.add(`option-${optionCount}-container`);
+            newOption.innerHTML = `
+                  <label for="option-${optionCount}">選項 ${optionCount}：</label>
+                  <input type="text" id="option-${optionCount}" name="options" required>
+              `;
+            document.getElementById("poll-options").appendChild(newOption);
+          });
+        }
+      });
+    }
+  }
+};
+
+// 創建 MutationObserver 例項
+const pollOptionObserver = new MutationObserver(pollOptionObserverCallback);
+// 開始監聽 pollForm 內的變動
+pollOptionObserver.observe(pollForm, {
+  childList: true,
+  subtree: true, // 如果表單內有多層結構，這個參數允許監聽到子元素的變動
+});
+
 addOptionButton?.addEventListener("click", () => {
   optionCount++;
   const newOption = document.createElement("div");
