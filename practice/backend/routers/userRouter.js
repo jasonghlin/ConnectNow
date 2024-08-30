@@ -81,7 +81,7 @@ passport.use(
     {
       clientID: GOOGLE_AUTO_CLIENT_ID,
       clientSecret: GOOGLE_AUTO_CLIENT_SECRET,
-      callbackURL: "/auth/google/callback",
+      callbackURL: "https://www.connectnow.website/auth/google/callback",
     },
     async (accessToken, refreshToken, profile, done) => {
       const profileImage =
