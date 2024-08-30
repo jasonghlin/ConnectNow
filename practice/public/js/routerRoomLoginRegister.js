@@ -166,5 +166,7 @@ handleLogin();
 // handle logout
 
 document.querySelector(".google-login").addEventListener("click", (e) => {
-  window.location.href = "/auth/google";
+  const protocol =
+    window.location.protocol === "https:" ? "https://" : "http://";
+  window.location.href = `${protocol}www.connectnow.website/auth/google`;
 });
