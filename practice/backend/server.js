@@ -12,6 +12,9 @@ import cookieParser from "cookie-parser";
 import userRouter from "./routers/userRouter.js";
 import multer from "multer";
 import jwt from "jsonwebtoken";
+import AWS from "aws-sdk";
+import multer from "multer";
+import { PassThrough } from "stream";
 import { checkUserInMainRoom } from "../models/checkUserInMainRoom.js";
 import { authenticateJWT } from "../public/utils/authenticateJWT.js";
 import { createMainRoom } from "../models/createMainRoom.js";
@@ -27,8 +30,14 @@ import { getAllUsers } from "../models/getAllUsers.js";
 import { updateMainRoomAdmin } from "../models/updateMainRoomAdmin.js";
 
 dotenv.config();
-const { JWT_SECRET_KEY, ENV, AWS_ACCESS_KEY, AWS_SECRET_KEY, BUCKET_NAME } =
-  process.env;
+const {
+  JWT_SECRET_KEY,
+  ENV,
+  AWS_ACCESS_KEY,
+  AWS_SECRET_KEY,
+  BUCKET_NAME,
+  SQS_URL,
+} = process.env;
 const port = 8080;
 
 let redisClient;
@@ -47,6 +56,12 @@ const __dirname = dirname(__filename);
 const workingDirectory = dirname(__dirname);
 
 const app = express();
+
+AWS.config.update({
+  accessKeyId: AWS_ACCESS_KEY,
+  secretAccessKey: AWS_SECRET_KEY,
+  region: "us-west-2",
+});
 
 let server;
 if (ENV === "production") {
@@ -181,29 +196,52 @@ app.get("/api/roomAdmin/:roomId", async (req, res) => {
 });
 
 const uploadVideo = multer({ storage: multer.memoryStorage() }); // Use memory storage to avoid saving to disk
+const s3 = new AWS.S3();
+const sqs = new AWS.SQS({ region: "us-west-2" });
 
-app.post("/videoRecord", uploadVideo.single("recording"), (req, res) => {
-  convertToMovStream(req.file.buffer, (err, movStream) => {
+app.get("/generate-presigned-url", authenticateJWT, async (req, res) => {
+  const { fileName, fileType } = req.query;
+
+  const params = {
+    Bucket: BUCKET_NAME,
+    Key: `videoRecord/raw-videos/${fileName}`,
+    Expires: 60, // URL 有效期（秒）
+    ContentType: fileType,
+    ACL: "private", // 可選，根據需求設置
+  };
+
+  s3.getSignedUrl("putObject", params, (err, url) => {
     if (err) {
-      return res.status(500).send("Error converting file.");
+      return res
+        .status(500)
+        .json({ error: "Error generating signed URL", details: err });
     }
-
-    res.setHeader("Content-Type", "video/quicktime");
-
-    movStream.on("end", () => {
-      console.log("MOV stream sent successfully.");
-    });
-
-    movStream.on("error", (error) => {
-      console.error("Stream error:", error);
-      if (!res.headersSent) {
-        res.status(500).send("Error streaming MOV file.");
-      }
-    });
-
-    movStream.pipe(res);
+    res.json({ url });
   });
 });
+
+app.post("/upload-complete", authenticateJWT, async (req, res) => {
+  const { fileName } = req.body;
+
+  const sqsParams = {
+    QueueUrl: SQS_URL,
+    MessageBody: JSON.stringify({
+      s3Key: `videoRecord/raw-videos/${fileName}`,
+      s3Bucket: BUCKET_NAME,
+    }),
+  };
+
+  try {
+    await sqs.sendMessage(sqsParams).promise();
+    res.status(200).json({ message: "File uploaded and task added to SQS" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: "Error sending message to SQS", details: error });
+  }
+});
+
+app.post("/videoRecord", uploadVideo.single("recording"), (req, res) => {});
 
 app.use((req, res, next) => {
   if (req.path === "/") {

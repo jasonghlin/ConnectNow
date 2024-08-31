@@ -1,8 +1,5 @@
-// videoRecording.js
-
 let mediaRecorder;
 let recordedChunks = [];
-let movBlob;
 let isRecording = false;
 
 async function handleVideoRecordClick() {
@@ -24,7 +21,7 @@ async function handleVideoRecordClick() {
   } else if (mediaRecorder.state === "recording") {
     const result = await Swal.fire({
       title: "是否要結束錄影？",
-      text: "確認結束錄影後會開始下載影片以及生成字幕",
+      text: "確認結束錄影後會開始上傳影片並生成字幕",
       icon: "question",
       showCancelButton: true,
       confirmButtonColor: "#4285F4",
@@ -38,10 +35,6 @@ async function handleVideoRecordClick() {
     }
   }
 }
-
-// document
-//   .querySelector(".video-record")
-//   .addEventListener("click", handleVideoRecordClick);
 
 // 使用 MutationObserver 監聽 DOM 變化
 const observer = new MutationObserver((mutations) => {
@@ -105,10 +98,10 @@ async function startRecording() {
       timer: 3000,
       timerProgressBar: true,
       customClass: {
-        popup: "swal2-toast-custom", // 使用自訂樣式類別
-        title: "swal2-title-custom", // 自訂標題樣式
-        icon: "swal2-icon-custom", // 自訂圖標樣式
-        timerProgressBar: "swal2-progress-bar-custom", // 自訂進度條樣式
+        popup: "swal2-toast-custom",
+        title: "swal2-title-custom",
+        icon: "swal2-icon-custom",
+        timerProgressBar: "swal2-progress-bar-custom",
       },
       onOpen: (toast) => {
         toast.addEventListener("mouseenter", Swal.stopTimer);
@@ -120,24 +113,14 @@ async function startRecording() {
       title: "錄影準備中",
     });
 
-    // 捕获麦克风音频流
     const audioStream = await navigator.mediaDevices.getUserMedia({
       audio: true,
     });
 
-    // 合并屏幕流和麦克风音频流
     const combinedStream = new MediaStream([
       ...displayStream.getVideoTracks(),
       ...audioStream.getAudioTracks(),
     ]);
-
-    // 检查合并后的音频轨道
-    const audioTracks = combinedStream.getAudioTracks();
-    if (audioTracks.length > 0) {
-      console.log("Audio track found for recording:", audioTracks[0]);
-    } else {
-      console.log("No audio track found for recording.");
-    }
 
     mediaRecorder = new MediaRecorder(combinedStream);
     mediaRecorder.ondataavailable = handleDataAvailable;
@@ -162,98 +145,59 @@ function handleDataAvailable(event) {
   }
 }
 
-function handleStop() {
+async function handleStop() {
   const webmBlob = new Blob(recordedChunks, { type: "video/webm" });
-  convertToMov(webmBlob);
-}
-
-async function convertToMov(webmBlob) {
-  const formData = new FormData();
-  formData.append("recording", webmBlob, "video.webm");
 
   try {
-    const response = await fetch("/videoRecord", {
-      method: "POST",
-      body: formData,
-    });
+    // 請求預簽名的 S3 URL
+    const pathSegments = window.location.pathname.split("/");
+    const roomId = pathSegments[pathSegments.length - 1];
+    const fileName = `video_${roomId}_${Date.now()}.webm`;
+    const response = await fetch(
+      `/generate-presigned-url?fileName=${encodeURIComponent(
+        fileName
+      )}&fileType=${encodeURIComponent("video/webm")}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("session")}`,
+        },
+      }
+    );
+    const { url } = await response.json();
 
-    if (!response.ok) throw new Error("Failed to convert video.");
-
-    const blob = await response.blob();
-    movBlob = blob;
-
-    // Allow user to download the MOV file
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    document.body.appendChild(a);
-    a.style = "display: none";
-    a.href = url;
-    a.download = "video.mov";
-    a.click();
-    window.URL.revokeObjectURL(url);
-
-    // Notify user that subtitles are being generated
-    Swal.fire("影片已開始下載，字幕正在產生中...");
-
-    // Send MOV file to FastAPI for subtitle processing
-    await sendToFastAPI(blob);
-  } catch (error) {
-    console.error("Error during MOV conversion:", error);
-  }
-}
-
-async function sendToFastAPI(movBlob) {
-  const formData = new FormData();
-  formData.append("file", movBlob, "video.mov");
-
-  try {
-    const response =
-      window.location.protocol == "https:"
-        ? await fetch("https://srt-generate.connectnow.website/videoSrt", {
-            method: "POST",
-            body: formData,
-          })
-        : await fetch("http://localhost:8000/videoSrt", {
-            method: "POST",
-            body: formData,
-          });
-
-    if (!response.ok) throw new Error("Failed to process subtitles.");
-
-    // Download the SRT file
-    const srtBlob = await response.blob();
-    const url = URL.createObjectURL(srtBlob);
-    const a = document.createElement("a");
-    document.body.appendChild(a);
-    a.style = "display: none";
-    a.href = url;
-    a.download = "subtitles.srt";
-    a.click();
-    window.URL.revokeObjectURL(url);
-
-    const Toast = Swal.mixin({
-      toast: true,
-      position: "center",
-      showConfirmButton: false,
-      timer: 3000,
-      timerProgressBar: true,
-      customClass: {
-        popup: "swal2-toast-custom", // 使用自訂樣式類別
-        title: "swal2-title-custom", // 自訂標題樣式
-        icon: "swal2-icon-custom", // 自訂圖標樣式
-        timerProgressBar: "swal2-progress-bar-custom", // 自訂進度條樣式
+    // 使用預簽名 URL 上傳影片
+    const uploadResponse = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "video/webm",
       },
-      onOpen: (toast) => {
-        toast.addEventListener("mouseenter", Swal.stopTimer);
-        toast.addEventListener("mouseleave", Swal.resumeTimer);
-      },
+      body: webmBlob,
     });
-    Toast.fire({
-      icon: "success",
-      title: "字幕已生產完成",
-    });
+
+    if (uploadResponse.ok) {
+      console.log("影片成功上傳到 S3");
+      Swal.fire("影片上傳成功，正在進行轉黨與字幕生成", "", "success");
+      await fetch("/upload-complete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("session")}`,
+        },
+        body: JSON.stringify({ fileName: file.name }),
+      });
+
+      console.log("File uploaded and task added to SQS");
+    } else {
+      throw new Error("影片上傳失敗");
+    }
+
+    // 如果需要在上傳後生成字幕，可以在這裡發送通知到後端
+    // 例如： await sendToFastAPI(fileName); 來觸發字幕生成
   } catch (error) {
-    Swal.fire(`字幕產生錯誤 ${error}`);
-    console.error("Error during subtitle processing:", error);
+    console.error("影片上傳時發生錯誤:", error);
+    Swal.fire("上傳影片時發生錯誤", error.message, "error");
   }
+
+  recordedChunks = []; // 清空錄製數據
 }
