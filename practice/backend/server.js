@@ -12,8 +12,12 @@ import cookieParser from "cookie-parser";
 import userRouter from "./routers/userRouter.js";
 import multer from "multer";
 import jwt from "jsonwebtoken";
-import AWS from "aws-sdk";
-import { PassThrough } from "stream";
+import {
+  S3Client,
+  GetObjectCommand,
+  PutObjectCommand,
+} from "@aws-sdk/client-s3";
+import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
 import { checkUserInMainRoom } from "../models/checkUserInMainRoom.js";
 import { authenticateJWT } from "../public/utils/authenticateJWT.js";
 import { createMainRoom } from "../models/createMainRoom.js";
@@ -56,10 +60,9 @@ const workingDirectory = dirname(__dirname);
 
 const app = express();
 
-AWS.config.update({
-  accessKeyId: AWS_ACCESS_KEY,
-  secretAccessKey: AWS_SECRET_KEY,
+const s3Client = new S3Client({
   region: "us-west-2",
+  credentials: { accessKeyId: AWS_ACCESS_KEY, secretAccessKey: AWS_SECRET_KEY },
 });
 
 let server;
@@ -195,28 +198,24 @@ app.get("/api/roomAdmin/:roomId", async (req, res) => {
 });
 
 const uploadVideo = multer({ storage: multer.memoryStorage() }); // Use memory storage to avoid saving to disk
-const s3 = new AWS.S3();
-const sqs = new AWS.SQS({ region: "us-west-2" });
 
 app.get("/generate-presigned-url", authenticateJWT, async (req, res) => {
   const { fileName, fileType } = req.query;
 
-  const params = {
+  const command = new PutObjectCommand({
     Bucket: BUCKET_NAME,
     Key: `videoRecord/raw-videos/${fileName}`,
-    Expires: 60, // URL 有效期（秒）
     ContentType: fileType,
-    ACL: "private", // 可選，根據需求設置
-  };
-
-  s3.getSignedUrl("putObject", params, (err, url) => {
-    if (err) {
-      return res
-        .status(500)
-        .json({ error: "Error generating signed URL", details: err });
-    }
-    res.json({ url });
+    ACL: "private",
   });
+
+  const url = await s3Client.getSignedUrl(command, { expiresIn: 60 });
+  res.json({ url });
+});
+
+const sqsClient = new SQSClient({
+  region: "us-west-2",
+  credentials: { accessKeyId: AWS_ACCESS_KEY, secretAccessKey: AWS_SECRET_KEY },
 });
 
 app.post("/upload-complete", authenticateJWT, async (req, res) => {
@@ -231,8 +230,10 @@ app.post("/upload-complete", authenticateJWT, async (req, res) => {
   };
 
   try {
-    await sqs.sendMessage(sqsParams).promise();
-    res.status(200).json({ message: "File uploaded and task added to SQS" });
+    const data = await sqsClient.send(new SendMessageCommand(sqsParams));
+    res
+      .status(200)
+      .json({ message: "File uploaded and task added to SQS", data });
   } catch (error) {
     res
       .status(500)
