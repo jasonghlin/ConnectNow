@@ -17,6 +17,7 @@ import {
   GetObjectCommand,
   PutObjectCommand,
 } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
 import { checkUserInMainRoom } from "../models/checkUserInMainRoom.js";
 import { authenticateJWT } from "../public/utils/authenticateJWT.js";
@@ -209,7 +210,7 @@ app.get("/generate-presigned-url", authenticateJWT, async (req, res) => {
     ACL: "private",
   });
 
-  const url = await s3Client.getSignedUrl(command, { expiresIn: 60 });
+  const url = await getSignedUrl(s3Client, command, { expiresIn: 60 });
   res.json({ url });
 });
 
