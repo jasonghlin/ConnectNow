@@ -13,7 +13,6 @@ import userRouter from "./routers/userRouter.js";
 import multer from "multer";
 import jwt from "jsonwebtoken";
 import AWS from "aws-sdk";
-import multer from "multer";
 import { PassThrough } from "stream";
 import { checkUserInMainRoom } from "../models/checkUserInMainRoom.js";
 import { authenticateJWT } from "../public/utils/authenticateJWT.js";
