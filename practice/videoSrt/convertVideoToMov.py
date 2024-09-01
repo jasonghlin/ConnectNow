@@ -18,7 +18,7 @@ AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY", "")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_KEY", "")
 JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "")
 CDN_URL = os.environ.get("CDN_URL", "")
-
+ENV = os.environ.get("INSTANCE_ID", "")
 
 # Generate the JWT token
 def generate_token():
