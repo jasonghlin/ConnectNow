@@ -7,8 +7,6 @@ import time
 import socketio
 import jwt
 
-sqs = boto3.client('sqs', region_name='us-west-2')
-s3 = boto3.client('s3')
 
 
 load_dotenv(dotenv_path='../.env')
@@ -19,6 +17,12 @@ AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_KEY", "")
 JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "")
 CDN_URL = os.environ.get("CDN_URL", "")
 ENV = os.environ.get("INSTANCE_ID", "")
+
+
+sqs = boto3.client('sqs', region_name='us-west-2',
+                   aws_access_key_id=AWS_ACCESS_KEY_ID,
+                   aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
+s3 = boto3.client('s3')
 
 # Generate the JWT token
 def generate_token():
