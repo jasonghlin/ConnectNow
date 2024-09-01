@@ -1,4 +1,6 @@
 # sudo vim /etc/systemd/system/docker-compose@.service
+# sudo systemctl restart docker-compose@convert_video_service
+# sudo systemctl restart docker-compose@video_srt_service
 [Unit]
 Description=%i service with docker compose
 Requires=docker.service

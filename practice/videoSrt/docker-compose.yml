@@ -6,9 +6,18 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-videoSrt
+      runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
     restart: always # Auto-restart on failure
     environment:
       - PYTHONUNBUFFERED=1
+      - NVIDIA_VISIBLE_DEVICES=all
     stdin_open: true # Keep stdin open to accept Y/N inputs
     tty: true # Allocate a pseudo-TTY
     env_file:
