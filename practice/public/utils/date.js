@@ -16,9 +16,12 @@ function date() {
       : now.getHours();
   minutes.textContent =
     now.getMinutes() < 9 ? `0${now.getMinutes()}` : now.getMinutes();
-  month.textContent = now.getMonth();
+  month.textContent = now.getMonth() + 1;
   date.textContent = now.getDate();
   switch (now.getDay()) {
+    case 0:
+      day.textContent = "週日";
+      break;
     case 1:
       day.textContent = "週一";
       break;
@@ -36,9 +39,6 @@ function date() {
       break;
     case 6:
       day.textContent = "週六";
-      break;
-    case 7:
-      day.textContent = "週日";
       break;
   }
 }

@@ -9,6 +9,7 @@ async function init() {
     await updateEmail();
     updatePassword();
     await userImg();
+    await videoRecords();
     logOutUser();
     date();
   }
@@ -381,9 +382,53 @@ async function userImg() {
     });
     let url = await response.json();
     console.log(url);
-    if (url.message !== "File not found" && !url.url) {
+    console.log(url.url);
+    if (url.message !== "File not found" && url.url) {
       localStorage.setItem("proImg", url.url);
       document.querySelector(".photo > img").src = url.url;
     }
   }
+}
+
+// 將資料加入表格的函式
+function populateTable(data) {
+  const tableBody = document.querySelector("#videoTable tbody");
+
+  data?.forEach((item) => {
+    const row = document.createElement("tr");
+
+    const roomNameCell = document.createElement("td");
+    roomNameCell.textContent = item.main_room_name;
+    row.appendChild(roomNameCell);
+
+    const videoUrlCell = document.createElement("td");
+    const videoLink = document.createElement("a");
+    videoLink.href = item.video_url;
+    videoLink.textContent = "Video";
+    videoLink.target = "_blank";
+    videoUrlCell.appendChild(videoLink);
+    row.appendChild(videoUrlCell);
+
+    const srtUrlCell = document.createElement("td");
+    const srtLink = document.createElement("a");
+    srtLink.href = item.srt_url;
+    srtLink.textContent = "Subtitles";
+    srtLink.target = "_blank";
+    srtUrlCell.appendChild(srtLink);
+    row.appendChild(srtUrlCell);
+
+    tableBody.appendChild(row);
+  });
+}
+
+async function videoRecords() {
+  let response = await fetch("/api/roomVideoRecords", {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("session")}`,
+    },
+  });
+  const roomVideoRecords = await response.json();
+  console.log(roomVideoRecords);
+  populateTable(roomVideoRecords);
 }

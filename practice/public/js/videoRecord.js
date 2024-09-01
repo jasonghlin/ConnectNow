@@ -2,6 +2,30 @@ let mediaRecorder;
 let recordedChunks = [];
 let isRecording = false;
 
+function isRecordingOrNot(isRecording) {
+  if (isRecording) {
+    document.querySelector(
+      ".video-record"
+    ).innerHTML = `<div class="icon-wrapper is-recording">
+                        <i class="fas fa-record-vinyl"></i>
+                    </div>
+                    <div class="activities-description">
+                        <p>停止錄製</p>
+                        <p>再次按下來停止錄製</p>
+                    </div>`;
+  } else {
+    document.querySelector(
+      ".video-record"
+    ).innerHTML = `<div class="icon-wrapper">
+                        <i class="fas fa-record-vinyl"></i>
+                    </div>
+                    <div class="activities-description">
+                        <p>錄製</p>
+                        <p>錄下會議過程供日後隨選觀看</p>
+                    </div>`;
+  }
+}
+
 async function handleVideoRecordClick() {
   if (!mediaRecorder || mediaRecorder.state === "inactive") {
     const result = await Swal.fire({
@@ -70,27 +94,8 @@ async function startRecording() {
       isRecording = false;
     }
 
-    if (isRecording) {
-      document.querySelector(
-        ".video-record"
-      ).innerHTML = `<div class="icon-wrapper is-recording">
-                          <i class="fas fa-record-vinyl"></i>
-                      </div>
-                      <div class="activities-description">
-                          <p>停止錄製</p>
-                          <p>再次按下來停止錄製</p>
-                      </div>`;
-    } else {
-      document.querySelector(
-        ".video-record"
-      ).innerHTML = `<div class="icon-wrapper">
-                          <i class="fas fa-record-vinyl"></i>
-                      </div>
-                      <div class="activities-description">
-                          <p>錄製</p>
-                          <p>錄下會議過程供日後隨選觀看</p>
-                      </div>`;
-    }
+    isRecordingOrNot(isRecording);
+
     const Toast = Swal.mixin({
       toast: true,
       position: "center",
@@ -136,6 +141,7 @@ async function startRecording() {
 
 function stopRecording() {
   mediaRecorder.stop();
+  isRecordingOrNot(isRecording);
   console.log("錄影結束");
 }
 
@@ -177,14 +183,14 @@ async function handleStop() {
 
     if (uploadResponse.ok) {
       console.log("影片成功上傳到 S3");
-      Swal.fire("影片上傳成功，正在進行轉黨與字幕生成", "", "success");
+      Swal.fire("影片上傳成功，正在進行轉檔與字幕生成", "", "success");
       await fetch("/upload-complete", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("session")}`,
         },
-        body: JSON.stringify({ fileName: file.name }),
+        body: JSON.stringify({ fileName, roomId }),
       });
 
       console.log("File uploaded and task added to SQS");

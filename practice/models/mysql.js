@@ -150,6 +150,32 @@ function createUsersRoomsRelationTable() {
   });
 }
 
+function createRoomVideoSrtUrlTable() {
+  return new Promise((resolve, reject) => {
+    pool.getConnection((err, connection) => {
+      if (err) return reject(err);
+      const createTableQuery = `
+          CREATE TABLE IF NOT EXISTS room_video_srt (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            admin_user_id INT NOT NULL,
+            main_room_id INT NOT NULL,
+            video_url VARCHAR(255) DEFAULT 'Pending',
+            srt_url VARCHAR(255) DEFAULT 'Pending',
+            start_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (admin_user_id) REFERENCES users(id),
+            FOREIGN KEY (main_room_id) REFERENCES main_room(id)
+          )
+        `;
+      connection.query(createTableQuery, (error, results) => {
+        connection.release();
+        if (error) return reject(error);
+        console.log("users_rooms_relation table created");
+        resolve();
+      });
+    });
+  });
+}
+
 // function createUserGroupsTable() {
 //   return new Promise((resolve, reject) => {
 //     pool.getConnection((err, connection) => {
@@ -179,5 +205,6 @@ export {
   createMainRoomTable,
   createBreakoutRoomTable,
   createUsersRoomsRelationTable,
+  createRoomVideoSrtUrlTable,
   // createUserGroupsTable,
 };

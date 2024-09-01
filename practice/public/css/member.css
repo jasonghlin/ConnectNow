@@ -272,7 +272,7 @@ nav {
 }
 
 .logo {
-    width: 5rem;
+    width: 7rem;
     margin-right: 1rem;
 }
 
@@ -340,7 +340,7 @@ main {
     margin-top: 5.4rem;
 }
 
-.content-container {
+.content-container, .table-container {
     width: 120rem;
     margin: auto;
     display: flex;
@@ -432,6 +432,56 @@ main {
     font-size: 1.6rem;
 }
 
+/* Table container */
+.table-container {
+    margin-top: 4rem
+}
+
+/* Google-style table */
+.google-style-table {
+    width: 100%;
+    border-collapse: collapse;
+    
+    font-size: 18px;
+    text-align: left;
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.google-style-table th, .google-style-table td {
+    padding: 12px 15px;
+}
+
+.google-style-table thead th {
+    background-color: #4285F4;
+    color: white;
+    font-weight: bold;
+}
+
+.google-style-table tbody tr {
+    border-bottom: 1px solid #ddd;
+}
+
+.google-style-table tbody tr:nth-of-type(even) {
+    background-color: #f9f9f9;
+}
+
+/* Hover effect */
+.google-style-table tbody tr:hover {
+    background-color: #f1f1f1;
+    cursor: pointer;
+}
+
+.google-style-table tbody tr td a {
+    color: #4285F4;
+    text-decoration: none;
+}
+
+.google-style-table tbody tr td a:hover {
+    text-decoration: underline;
+}
 
 
 

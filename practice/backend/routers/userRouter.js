@@ -45,12 +45,12 @@ const s3Client = new S3Client({
 });
 
 // 強制 HTTPS 的中介軟體
-router.use((req, res, next) => {
-  if (req.headers["x-forwarded-proto"] !== "https") {
-    return res.redirect("https://" + req.headers.host + req.url);
-  }
-  next();
-});
+// router.use((req, res, next) => {
+//   if (req.headers["x-forwarded-proto"] !== "https") {
+//     return res.redirect("https://" + req.headers.host + req.url);
+//   }
+//   next();
+// });
 
 // 設置 session 中介軟體
 router.use(
@@ -58,7 +58,7 @@ router.use(
     secret: "your-secret-key", // 建議使用強隱秘的 key
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: true }, // 如果使用 HTTPS，將 `secure` 設為 true
+    cookie: { secure: false }, // 如果使用 HTTPS，將 `secure` 設為 true
   })
 );
 

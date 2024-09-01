@@ -30,7 +30,13 @@ async function updateUsersList() {
     const usersList = await usersResponse.json();
 
     // 获取当前房间的用户静音状态
-    const muteStatusResponse = await fetch(`/api/muteStatus/${roomId}`);
+    const muteStatusResponse = await fetch(`/api/muteStatus/${roomId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("session")}`,
+      },
+    });
     const muteStatus = await muteStatusResponse.json();
 
     usersList.forEach((user) => {

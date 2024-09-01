@@ -69,6 +69,7 @@ let localStream;
 let currentStream;
 let myPeerId;
 let myUserId;
+const waitingApprovalElement = document.getElementById("waiting-for-approval");
 
 class MainRoom {
   constructor(roomId) {
@@ -126,13 +127,13 @@ function initializeMainRoom() {
 (async function () {
   try {
     const payload = await checkStatus();
-    console.log("Payload received:", payload);
+
     if (!payload) {
       localStorage.clear();
       window.location.href = "/";
       return;
     }
-
+    waitingApprovalElement.classList.remove("hidden"); // 顯示等待核可提示
     let userId = payload.payload.userId;
 
     let currentUrl = window.location.href;
@@ -201,6 +202,7 @@ function initializeMainRoom() {
 
       if (userId && peerId && !roomUrl.startsWith("breakout-")) {
         if (!roomAdminId || payload.payload.userId == roomAdminId) {
+          waitingApprovalElement.classList.add("hidden");
           console.log("Emitting join-room event");
           socket.emit(
             "join-main-room",
@@ -219,6 +221,7 @@ function initializeMainRoom() {
             } else {
               socket.emit("accept-join-request", roomId);
             }
+            waitingApprovalElement.classList.add("hidden"); // 核可完畢後隱藏提示
           });
         } else if (
           usersList.some((user) => user.id == payload.payload.userId)
@@ -234,6 +237,7 @@ function initializeMainRoom() {
         } else if (userId && peerId && payload.payload.userId != roomAdminId) {
           socket.emit("user-join-request", payload, roomId);
           socket.on("accept-join-request", (response) => {
+            waitingApprovalElement.classList.add("hidden"); // 隱藏等待核可提示
             if (response.accept) {
               console.log("Emitting join-room event");
               socket.emit(
@@ -248,6 +252,7 @@ function initializeMainRoom() {
           });
 
           socket.on("reject-join-request", (response) => {
+            waitingApprovalElement.classList.add("hidden");
             if (response.reject) {
               Swal.fire("你被拒絕加入房間");
               socket.off("accept-join-request").off("reject-join-request");

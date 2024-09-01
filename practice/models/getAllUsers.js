@@ -68,7 +68,7 @@ async function getAllUsers(url_param) {
     });
 
     if (userIdsResult.length === 0) {
-      throw new Error(`No users found for main room id: ${mainRoomId}`);
+      console.log(`No users found for main room id: ${mainRoomId}`);
     }
 
     const userIds = userIdsResult.map((row) => row.user_id);

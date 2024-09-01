@@ -1,26 +1,62 @@
-from fastapi import FastAPI, UploadFile, File
-from fastapi.responses import StreamingResponse
-from transformers import WhisperProcessor, WhisperForConditionalGeneration
-from moviepy.editor import VideoFileClip
-from io import BytesIO
+import boto3
 import torch
 import soundfile as sf
 import torchaudio.transforms as T
+from transformers import WhisperProcessor, WhisperForConditionalGeneration
+from io import BytesIO
+from moviepy.editor import VideoFileClip
 from datetime import timedelta
+from dotenv import load_dotenv
 import os
 import tempfile
-from fastapi.middleware.cors import CORSMiddleware
-import ssl
+import socketio
+import asyncio
+import time
+import json
+import jwt
 
-app = FastAPI()
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://127.0.0.1:8080", "https://www.connectnow.website", "https://localhost:8080"],  # Specify the origin explicitly
-    allow_credentials=True,
-    allow_methods=["*"],  # Allows all methods
-    allow_headers=["*"],  # Allows all headers
+load_dotenv(dotenv_path='../.env')
+BUCKET_NAME = os.environ.get("BUCKET_NAME", "")
+SQS_URL = os.environ.get("SQS_URL_2", "")
+AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY", "")
+AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_KEY", "")
+JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "")
+CDN_URL = os.environ.get("CDN_URL", "")
+INSTANCE_ID = os.environ.get("INSTANCE_ID", "")
+# Ensure boto3 uses these credentials
+boto3.setup_default_session(
+    aws_access_key_id=AWS_ACCESS_KEY_ID,
+    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+    region_name='us-west-2'
 )
+
+# Generate the JWT token
+def generate_token():
+    payload = {
+        'user_id': 'srt-convert',  # Example payload
+        'exp': time.time() + 60 * 20  # Token expires in 10 minutes
+    }
+    token = jwt.encode(payload, JWT_SECRET_KEY, algorithm='HS256')
+    return token
+
+# Initialize S3 client and Socket.IO
+s3_client = boto3.client('s3')
+
+# Initialize EC2 client
+ec2_client = boto3.client('ec2', region_name='us-west-2')
+INSTANCE_ID = os.environ.get("INSTANCE_ID", "")
+
+sio = socketio.Client()
+token = generate_token()
+# Connect to a Socket.IO server
+sio.connect('http://127.0.0.1:8080', auth={'token': token})
+# Define event handlers
+
+
+# Initialize SQS client
+sqs_client = boto3.client('sqs', region_name='us-west-2')
+# Your SQS Queue URL
+sqs_queue_url = SQS_URL
 
 # Load the Whisper model and processor
 model_name = "openai/whisper-large"
@@ -51,16 +87,19 @@ def create_srt(transcriptions, timestamps):
 
     return "\n".join(srt_content)
 
-@app.get("/health")
-async def health_check():
-    return {"status": "ok"}
+async def process_video_from_s3(bucket_name, file_key, file_a):
+    # Check if the file is in file_a
+    if file_key in file_a:
+        return
 
-# processing video srt file
-@app.post("/videoSrt")
-async def process_video(file: UploadFile = File(...)):
-    # Write the uploaded MOV file to a temporary file
+    # Download the video file from S3
+    video_stream = BytesIO()
+    s3_client.download_fileobj(bucket_name, file_key, video_stream)
+    video_stream.seek(0)
+
+    # Write the video to a temporary file
     with tempfile.NamedTemporaryFile(delete=False, suffix=".mov") as temp_file:
-        temp_file.write(await file.read())
+        temp_file.write(video_stream.read())
         temp_file_path = temp_file.name
 
     # Load the MOV file and extract audio
@@ -113,26 +152,97 @@ async def process_video(file: UploadFile = File(...)):
     # Generate SRT content
     srt_content = create_srt(final_transcriptions, timestamps)
 
-    # Write SRT content to a temporary file
-    srt_path = temp_file_path.replace(".mov", ".srt")
-    with open(srt_path, "w") as srt_file:
-        srt_file.write(srt_content)
+    # Upload the SRT file to S3
+    srt_file_key = file_key.replace("converted-videos", "videoSrt").replace(".mov", ".srt")
+    srt_stream = BytesIO(srt_content.encode('utf-8'))
+    s3_client.upload_fileobj(srt_stream, bucket_name, srt_file_key, ExtraArgs={'ContentType': 'text/plain'})
 
-    # Stream the SRT file to the client
-    srt_stream = BytesIO()
-    with open(srt_path, "rb") as srt_file:
-        srt_stream.write(srt_file.read())
-    srt_stream.seek(0)
+    # Generate the S3 CDN URL
+    s3_cdn_url = f"{CDN_URL}{srt_file_key}"
+
+    # Notify the frontend via Socket.IO
+    sio.emit('srt_ready', {'url': s3_cdn_url})
 
     # Clean up temporary files
     os.remove(temp_file_path)
     os.remove(audio_path)
-    os.remove(srt_path)
 
-    return StreamingResponse(srt_stream, media_type="text/plain", headers={
-        "Content-Disposition": f"attachment; filename={os.path.splitext(file.filename)[0]}.srt"
-    })
+# Last message time
+last_message_time = time.time()
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+async def check_sqs_and_shutdown():
+    global last_message_time
+    while True:
+        current_time = time.time()
+
+        # Check if 10 minutes have passed since the last message
+        if current_time - last_message_time > 60:  # 600 seconds = 10 minutes
+            print("No SQS messages received in the last 10 minutes. Shutting down EC2 instance.")
+            ec2_client.stop_instances(InstanceIds=[INSTANCE_ID])
+            break  # Exit the loop to stop the script
+
+        await asyncio.sleep(30)  # Check every 30 seconds
+
+async def listen_to_sqs():
+    global last_message_time  # 添加這一行以使用全局變數
+    while True:
+        # Poll SQS for new messages
+        print("Polling SQS...")
+        response = sqs_client.receive_message(
+            QueueUrl=sqs_queue_url,
+            MaxNumberOfMessages=1,  # Process one message at a time
+            WaitTimeSeconds=20  # Long polling for 20 seconds
+        )
+
+        if 'Messages' in response:
+            print("Message received")
+            last_message_time = time.time()  # Reset the timer when a message is received
+            for message in response['Messages']:
+                message_body = json.loads(message['Body'])
+                bucket_name = message_body['bucket']
+                file_key = message_body['file']
+
+                # Check if the file is in file_a
+                file_a_bucket = BUCKET_NAME
+                file_a_key = 'videoRecord/converted-videos/transcribed-videos.json'
+                # 下載 file_a.json 檔案
+                response = s3_client.get_object(Bucket=file_a_bucket, Key=file_a_key)
+                # 讀取並解析 JSON 檔案
+                file_a_content = json.loads(response['Body'].read().decode('utf-8'))
+                processed_files = set(file_a_content.get('processed_files', []))
+                
+                if file_key not in processed_files:
+                    # Process the video to generate SRT
+                    await process_video_from_s3(bucket_name, file_key, processed_files)
+                    
+                    # Add the file to processed_files after processing
+                    processed_files.add(file_key)
+                    
+                    # Update the file_a_content with the new processed files list
+                    file_a_content['processed_files'] = list(processed_files)
+                    
+                    # Convert updated file_a_content to JSON and upload back to S3
+                    updated_file_a_content = json.dumps(file_a_content)
+                    s3_client.put_object(Bucket=BUCKET_NAME, Key='videoRecord/converted-videos/transcribed-videos.json', Body=updated_file_a_content)
+
+                     # 刪除本地 file_a 檔案
+                    if os.path.exists('transcribed-videos.json'):
+                        os.remove('transcribed-videos.json')
+
+                    # Delete the message from the queue after processing
+                    sqs_client.delete_message(
+                        QueueUrl=sqs_queue_url,
+                        ReceiptHandle=message['ReceiptHandle']
+                    )
+        else:
+            # No messages, wait before next poll
+            await asyncio.sleep(5)
+
+async def main():
+    await asyncio.gather(
+        listen_to_sqs(),
+        check_sqs_and_shutdown()
+    )
+
+# Start listening to SQS and monitoring the shutdown condition
+asyncio.run(main())

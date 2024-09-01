@@ -1,3 +1,5 @@
+import { checkStatus } from "/static/utils/loginOutAndRegister.js";
+
 const logo = document.querySelector(".logo-container");
 const login = document.querySelector(".login-register");
 const modalContainer = document.querySelector(".modal-container");
@@ -36,8 +38,6 @@ function modalControl(param) {
 function loginEvent() {
   modalControl("block");
 }
-
-login.addEventListener("click", loginEvent);
 
 toRegisterLink.addEventListener("click", () => {
   loginForm.classList.add("hidden");
@@ -120,6 +120,8 @@ function logoutEvent() {
   login.textContent = "登入/註冊";
   login.addEventListener("click", loginEvent);
   localStorage.clear();
+  document.querySelector(".modal-container").classList.remove("hidden");
+  document.querySelector(".overlay").classList.remove("hidden");
   window.location.reload();
 }
 
@@ -148,7 +150,8 @@ function handleLogin() {
       localStorage.setItem("session", data.token);
       localStorage.setItem("username", data.username);
       localStorage.setItem("userId", data.userId); // Assuming data contains userId
-
+      document.querySelector(".modal-container").classList.add("hidden");
+      document.querySelector(".overlay").classList.add("hidden");
       // Then reload the page
       window.location.reload();
       return data;
@@ -161,7 +164,11 @@ function handleLogin() {
   });
 }
 
-handleLogin();
+if (checkStatus().payload) {
+} else {
+  login.addEventListener("click", loginEvent);
+  handleLogin();
+}
 
 // handle logout
 

@@ -32,6 +32,10 @@ import { adminJoinMainRoom } from "../models/adminJoinMainRoom.js";
 import { convertToMovStream } from "../public/utils/converToMOV.js";
 import { getAllUsers } from "../models/getAllUsers.js";
 import { updateMainRoomAdmin } from "../models/updateMainRoomAdmin.js";
+import { createRoomVideoSrtUrl } from "../models/createRoomVideoSrtUrl.js";
+import { updateRoomSrtUrl } from "../models/updateRoomSrtUrl.js";
+import { updateRoomConvertedVideoUrl } from "../models/updateRoomConvertedVideoUrl.js";
+import { getRoomVideoRecords } from "../models/getRoomVideoRecords.js";
 
 dotenv.config();
 const {
@@ -121,7 +125,7 @@ app.get("/health", (req, res) => {
   res.status(200).send("OK");
 });
 
-app.get("/member", (req, res) => {
+app.get("/member", authenticateJWT, (req, res) => {
   res.sendFile(join(workingDirectory, "public", "member.html"));
 });
 
@@ -186,19 +190,24 @@ app.get(
   }
 );
 
-app.get("/api/muteStatus/:roomId", (req, res) => {
+app.get("/api/muteStatus/:roomId", authenticateJWT, (req, res) => {
   const { roomId: roomName } = req.params;
   const muteStatus = userMuteStatus[roomName] || {};
   res.json(muteStatus);
 });
 
-app.get("/api/roomAdmin/:roomId", async (req, res) => {
+app.get("/api/roomAdmin/:roomId", authenticateJWT, async (req, res) => {
   const { roomId: roomName } = req.params;
   const roomAdminId = await findMainRoomAdmin(roomName);
   res.json(roomAdminId);
 });
 
-const uploadVideo = multer({ storage: multer.memoryStorage() }); // Use memory storage to avoid saving to disk
+app.get("/api/roomVideoRecords", authenticateJWT, async (req, res) => {
+  const videoRecords = await getRoomVideoRecords(req.payload.userId);
+  console.log("videoRecords: ", videoRecords);
+  res.json(videoRecords);
+});
+// const uploadVideo = multer({ storage: multer.memoryStorage() }); // Use memory storage to avoid saving to disk
 
 app.get("/generate-presigned-url", authenticateJWT, async (req, res) => {
   const { fileName, fileType } = req.query;
@@ -220,7 +229,7 @@ const sqsClient = new SQSClient({
 });
 
 app.post("/upload-complete", authenticateJWT, async (req, res) => {
-  const { fileName } = req.body;
+  const { fileName, roomId: roomName } = req.body;
 
   const sqsParams = {
     QueueUrl: SQS_URL,
@@ -228,21 +237,27 @@ app.post("/upload-complete", authenticateJWT, async (req, res) => {
       s3Key: `videoRecord/raw-videos/${fileName}`,
       s3Bucket: BUCKET_NAME,
     }),
+    MessageGroupId: "default",
   };
 
   try {
+    const roomSrtresult = await createRoomVideoSrtUrl(
+      roomName,
+      req.payload.userId
+    );
     const data = await sqsClient.send(new SendMessageCommand(sqsParams));
     res
       .status(200)
       .json({ message: "File uploaded and task added to SQS", data });
   } catch (error) {
+    console.log(error);
     res
       .status(500)
       .json({ error: "Error sending message to SQS", details: error });
   }
 });
 
-app.post("/videoRecord", uploadVideo.single("recording"), (req, res) => {});
+// app.post("/videoRecord", uploadVideo.single("recording"), (req, res) => {});
 
 app.use((req, res, next) => {
   if (req.path === "/") {
@@ -706,6 +721,30 @@ io.on("connection", (socket) => {
       socket.to(roomName).emit("clear-whiteboard");
     } catch (error) {
       console.error("Error clearing whiteboard data from Redis:", error);
+    }
+  });
+
+  socket.on("video_ready", async (urlObj) => {
+    try {
+      const roomId = urlObj.url.split("_")[1];
+      console.log("video ready url: ", urlObj.url, "roomId", roomId);
+      const updateRoomSrtResponse = await updateRoomConvertedVideoUrl(
+        roomId,
+        urlObj.url
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  });
+
+  // srt ready
+  socket.on("srt_ready", async (urlObj) => {
+    try {
+      const roomId = urlObj.url.split("_")[1];
+      console.log("srt ready url: ", urlObj.url, "roomId", roomId);
+      const updateRoomSrtResponse = await updateRoomSrtUrl(roomId, urlObj.url);
+    } catch (error) {
+      console.error(error);
     }
   });
 });
