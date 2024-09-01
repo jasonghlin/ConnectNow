@@ -34,7 +34,7 @@ s3_client = boto3.client('s3')
 sio = socketio.Client(logger=True )
 token = generate_token()
 # Connect to a Socket.IO server
-sio.connect('http://127.0.0.1:8080',auth={'token': token})
+sio.connect('https://www.connectnow.website' if ENV == 'production' else 'http://127.0.0.1:8080', auth={'token': token})
 # Define event handlers
 @sio.event
 def connect():

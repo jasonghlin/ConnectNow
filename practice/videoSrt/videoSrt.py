@@ -23,6 +23,7 @@ AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_KEY", "")
 JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "")
 CDN_URL = os.environ.get("CDN_URL", "")
 INSTANCE_ID = os.environ.get("INSTANCE_ID", "")
+ENV = os.environ.get("INSTANCE_ID", "")
 # Ensure boto3 uses these credentials
 boto3.setup_default_session(
     aws_access_key_id=AWS_ACCESS_KEY_ID,
@@ -49,7 +50,7 @@ INSTANCE_ID = os.environ.get("INSTANCE_ID", "")
 sio = socketio.Client()
 token = generate_token()
 # Connect to a Socket.IO server
-sio.connect('http://127.0.0.1:8080', auth={'token': token})
+sio.connect('https://www.connectnow.website' if ENV == 'production' else 'http://127.0.0.1:8080', auth={'token': token})
 # Define event handlers
 
 
