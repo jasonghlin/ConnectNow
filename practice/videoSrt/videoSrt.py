@@ -177,7 +177,7 @@ async def check_sqs_and_shutdown():
         current_time = time.time()
 
         # Check if 10 minutes have passed since the last message
-        if current_time - last_message_time > 60:  # 600 seconds = 10 minutes
+        if current_time - last_message_time > 60 * 10:  # 600 seconds = 10 minutes
             print("No SQS messages received in the last 10 minutes. Shutting down EC2 instance.")
             ec2_client.stop_instances(InstanceIds=[INSTANCE_ID])
             break  # Exit the loop to stop the script
