@@ -15,7 +15,7 @@ import time
 import json
 import jwt
 
-load_dotenv(dotenv_path='../.env')
+load_dotenv(dotenv_path='./.env')
 BUCKET_NAME = os.environ.get("BUCKET_NAME", "")
 SQS_URL = os.environ.get("SQS_URL_2", "")
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY", "")
@@ -31,6 +31,7 @@ boto3.setup_default_session(
     region_name='us-west-2'
 )
 
+print("AWS_ACCESS_KEY_ID: ", AWS_ACCESS_KEY_ID)
 # Generate the JWT token
 def generate_token():
     payload = {
