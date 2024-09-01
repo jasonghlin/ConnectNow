@@ -5,7 +5,7 @@ services:
   video_srt_service:
     build:
       context: .
-      dockerfile: videoSrt.Dockerfile
+      dockerfile: Dockerfile-videoSrt
     restart: always # Auto-restart on failure
     environment:
       - PYTHONUNBUFFERED=1
@@ -17,7 +17,7 @@ services:
   convert_video_service:
     build:
       context: .
-      dockerfile: convertVideoToMov.Dockerfile
+      dockerfile: Dockerfile-convertVideoToMov
     restart: always # Auto-restart on failure
     environment:
       - PYTHONUNBUFFERED=1
