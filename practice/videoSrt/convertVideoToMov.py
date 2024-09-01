@@ -35,7 +35,7 @@ def generate_token():
 
 # Initialize S3 client and Socket.IO
 s3_client = boto3.client('s3')
-sio = socketio.Client(logger=True )
+sio = socketio.Client(logger=True, engineio_logger=True)
 token = generate_token()
 # Connect to a Socket.IO server
 sio.connect('https://www.connectnow.website', auth={'token': token})
@@ -61,6 +61,7 @@ def monitor_sqs():
         )
 
         if 'Messages' in response:
+            print(f"Message received: {response['Messages'][0]['MessageId']}")
             message = response['Messages'][0]
             process_message(message)
         else:
@@ -175,8 +176,14 @@ def mark_as_processed(file_name):
 def notify_user(cdn_url):
     # Notify frontend user the file is ready for download
     # You can use WebSocket or any other real-time communication method
-    print("video_ready event emit")
-    sio.emit('video_ready', {'url': cdn_url})
+    try:
+        if sio.connected:
+            print("video_ready event emit")
+            sio.emit('video_ready', {'url': cdn_url})
+        else:
+            print("Socket.IO connection not established")
+    except Exception as e:
+        print(f"Error in notify_user: {e}")
 
 if __name__ == '__main__':
     monitor_sqs()
