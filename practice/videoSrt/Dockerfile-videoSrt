@@ -1,0 +1,21 @@
+# 使用最新的 Python 版本
+FROM python:latest
+
+# Set environment variables
+ENV PYTHONUNBUFFERED 1
+
+# Set working directory
+WORKDIR /app
+
+# Install dependencies
+COPY requirements.txt /app/
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the Python script into the container
+COPY videoSrt.py /app/
+
+# Copy the dotenv file into the container
+COPY ../.env /app/.env
+
+# Run the script
+CMD ["python", "videoSrt.py"]

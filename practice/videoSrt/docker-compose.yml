@@ -1,10 +1,27 @@
+# docker-compose.yml
 version: "3.8"
 
 services:
-  fastapi:
+  video_srt_service:
     build:
       context: .
-      dockerfile: Dockerfile-fastapi
-    ports:
-      - "8000:8000"
-    container_name: fastapi-app
+      dockerfile: videoSrt.Dockerfile
+    restart: always # Auto-restart on failure
+    environment:
+      - PYTHONUNBUFFERED=1
+    stdin_open: true # Keep stdin open to accept Y/N inputs
+    tty: true # Allocate a pseudo-TTY
+    env_file:
+      - ../.env
+
+  convert_video_service:
+    build:
+      context: .
+      dockerfile: convertVideoToMov.Dockerfile
+    restart: always # Auto-restart on failure
+    environment:
+      - PYTHONUNBUFFERED=1
+    stdin_open: true # Keep stdin open to accept Y/N inputs
+    tty: true # Allocate a pseudo-TTY
+    env_file:
+      - ../.env
