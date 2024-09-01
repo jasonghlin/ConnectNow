@@ -94,6 +94,7 @@ async def process_video_from_s3(bucket_name, file_key, file_a):
         return
 
     # Download the video file from S3
+    print("downloading video file from S3")
     video_stream = BytesIO()
     s3_client.download_fileobj(bucket_name, file_key, video_stream)
     video_stream.seek(0)
@@ -109,6 +110,7 @@ async def process_video_from_s3(bucket_name, file_key, file_a):
     video_clip.audio.write_audiofile(audio_path, codec='pcm_s16le')
 
     # Load audio and prepare for processing
+    print("load audio and prepare for processing")
     speech_array, sampling_rate = sf.read(audio_path)
     speech_array = torch.tensor(speech_array, dtype=torch.float32).to(device)
 
@@ -125,6 +127,7 @@ async def process_video_from_s3(bucket_name, file_key, file_a):
     timestamps = [(i * segment_length / sampling_rate, min((i + 1) * segment_length, len(speech_array)) / sampling_rate) for i in range(len(segments))]
 
     # Transcribe each segment
+    print("transcribe each segment")
     transcriptions = []
     for segment in segments:
         inputs = processor(segment.cpu(), sampling_rate=sampling_rate, return_tensors="pt").to(device)
@@ -154,6 +157,7 @@ async def process_video_from_s3(bucket_name, file_key, file_a):
     srt_content = create_srt(final_transcriptions, timestamps)
 
     # Upload the SRT file to S3
+    print("Upload the SRT file to S3")
     srt_file_key = file_key.replace("converted-videos", "videoSrt").replace(".mov", ".srt")
     srt_stream = BytesIO(srt_content.encode('utf-8'))
     s3_client.upload_fileobj(srt_stream, bucket_name, srt_file_key, ExtraArgs={'ContentType': 'text/plain'})
@@ -161,7 +165,8 @@ async def process_video_from_s3(bucket_name, file_key, file_a):
     # Generate the S3 CDN URL
     s3_cdn_url = f"{CDN_URL}{srt_file_key}"
 
-    # Notify the frontend via Socket.IO
+    # Notify server via Socket.IO
+    print("Notify server")
     sio.emit('srt_ready', {'url': s3_cdn_url})
 
     # Clean up temporary files
