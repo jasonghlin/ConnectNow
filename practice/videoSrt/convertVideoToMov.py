@@ -35,7 +35,8 @@ def generate_token():
 
 # Initialize S3 client and Socket.IO
 s3_client = boto3.client('s3')
-sio = socketio.Client(logger=True, engineio_logger=True)
+# sio = socketio.Client(logger=True, engineio_logger=True)
+sio = socketio.Client()
 token = generate_token()
 # Connect to a Socket.IO server
 sio.connect('https://www.connectnow.website', auth={'token': token})
@@ -53,21 +54,23 @@ boto3.setup_default_session(
 
 def monitor_sqs():
     while True:
-        print("process start:")
-        response = sqs.receive_message(
-            QueueUrl=SQS_URL,
-            MaxNumberOfMessages=1,
-            WaitTimeSeconds=20  # Long polling
-        )
-
-        if 'Messages' in response:
-            print(f"Message received: {response['Messages'][0]['MessageId']}")
-            message = response['Messages'][0]
-            process_message(message)
-        else:
-            print("No new messages. Waiting...")
-            time.sleep(10)  # Wait for 10 seconds before checking again
-
+        try:
+            print("process start:")
+            response = sqs.receive_message(
+                QueueUrl=SQS_URL,
+                MaxNumberOfMessages=1,
+                WaitTimeSeconds=20  # Long polling
+            )
+            print(f"SQS Response: {response}")
+            if 'Messages' in response:
+                print(f"Message received: {response['Messages'][0]['MessageId']}")
+                message = response['Messages'][0]
+                process_message(message)
+            else:
+                print("No new messages. Waiting...")
+                time.sleep(10)  # Wait for 10 seconds before checking again
+        except Exception as e:
+            print(f"Error in monitor_sqs: {e}")
 def check_file_in_file_a(file_key):
     # Read File A from S3
     file_a_bucket = BUCKET_NAME
@@ -177,9 +180,11 @@ def notify_user(cdn_url):
     # Notify frontend user the file is ready for download
     # You can use WebSocket or any other real-time communication method
     try:
+        print(f"Attempting to send notification for {cdn_url}")
         if sio.connected:
-            print("video_ready event emit")
+            print("Socket.IO connection is active, sending event...")
             sio.emit('video_ready', {'url': cdn_url})
+            print("Event sent successfully")
         else:
             print("Socket.IO connection not established")
     except Exception as e:

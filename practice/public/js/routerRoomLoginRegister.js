@@ -64,7 +64,7 @@ formExit.forEach((el) => {
     document.querySelector("#register-password").value = "";
     document.querySelector("#login-email").value = "";
     document.querySelector("#login-password").value = "";
-    document.querySelector("#loginErrorDiv").textContent = "";
+    document.querySelector(".login-error-message").textContent = "";
     document.querySelector("#registerErrorDiv").textContent = "";
   });
 });

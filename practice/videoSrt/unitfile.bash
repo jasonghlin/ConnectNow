@@ -1,6 +1,7 @@
 # sudo vim /etc/systemd/system/docker-compose@.service
 # sudo systemctl restart docker-compose@convert_video_service
 # sudo systemctl restart docker-compose@video_srt_service
+# https://pytorch.org/get-started/locally/#linux-pip
 # https://medium.com/@solanki.kishan007/docker-how-to-use-nvidia-gpu-in-docker-ubuntu-57353894c3af
 [Unit]
 Description=%i service with docker compose
