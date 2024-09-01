@@ -15,8 +15,5 @@ RUN apt-get update && apt-get install -y ffmpeg
 # Copy the Python script into the container
 COPY convertVideoToMov.py /app/
 
-# Copy the dotenv file into the container
-COPY ../.env /app/.env
-
 # Run the script
 CMD ["python", "convertVideoToMov.py"]
