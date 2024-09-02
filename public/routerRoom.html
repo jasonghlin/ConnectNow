@@ -53,9 +53,9 @@
                         </div>
                         <h3>登入會員帳號</h3>
                         <input id="login-email" class="form-input" type="email" placeholder="輸入電子信箱" name="login-email"
-                            required>
+                            autocomplete="email" required>
                         <input id="login-password" class="form-input" type="password" placeholder="輸入密碼"
-                            name="login-password" required>
+                            name="login-password" autocomplete="current-password" required>
                         <div class="login-error-message"></div>
                         <button>登入帳戶</button>
                         <div class="to-register-wrapper">
@@ -78,11 +78,11 @@
                         </div>
                         <h3>註冊會員帳號</h3>
                         <input id="register-name" class="form-input" type="text" placeholder="輸入姓名" name="register-name"
-                            required>
-                        <input id="register-email" class="form-input" type="email" placeholder="輸入電子郵件"
-                            name="register-email" required>
+                            autocomplete="given-"name required>
+                        <input id=" register-email" class="form-input" type="email" placeholder="輸入電子郵件"
+                            name="register-email" autocomplete="email" required>
                         <input id="register-password" class="form-input" type="password" placeholder="輸入密碼"
-                            name="register-password" required>
+                            name="register-password" autocomplete="current-password" required>
                         <div class="register-error-message"></div>
                         <button class="register-btn" type="submit">註冊新帳戶</button>
                         <div class="to-login-wrapper">

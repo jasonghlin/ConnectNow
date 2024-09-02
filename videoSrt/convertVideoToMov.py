@@ -51,8 +51,6 @@ def connect():
     print("Connection established")
 
 # Ensure boto3 uses these credentials
-
-print("AWS_ACCESS_KEY_ID: ", AWS_ACCESS_KEY_ID)
 def monitor_sqs():
     while True:
         try:

@@ -164,7 +164,9 @@ function handleLogin() {
   });
 }
 
-if (checkStatus().payload) {
+let loginStatus = await checkStatus();
+
+if (loginStatus.payload) {
 } else {
   login.addEventListener("click", loginEvent);
   handleLogin();

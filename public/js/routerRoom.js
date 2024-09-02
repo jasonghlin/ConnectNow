@@ -30,7 +30,7 @@ async function routerRoom() {
     ).innerHTML = `<div class="userInfo-img-container">
                     <div class="user-welcome">
                         <div class="user-name">${payload.payload.userName}</div>
-                        <div class="welcome">歡迎使用 ConnectNow</div>
+                        <div class="welcome">歡迎使用 Connect Now</div>
                     </div>
                     <div class="user-img">
                         <img src="${userImgUrl}" alt="user-img">

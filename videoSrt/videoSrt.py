@@ -31,7 +31,7 @@ boto3.setup_default_session(
     region_name='us-west-2'
 )
 
-print("AWS_ACCESS_KEY_ID: ", AWS_ACCESS_KEY_ID)
+
 # Generate the JWT token
 def generate_token():
     payload = {
