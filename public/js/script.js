@@ -556,9 +556,14 @@ function updateRemoteVideos(peerId, userVideoStream) {
     // 可选：如果你希望远程视频静音，可以设置 muted
     videoElement.muted = false; // 远程视频通常不需要静音
 
+    // add wrapper
+    const videoWrapper = document.createElement("div");
+    videoWrapper.setAttribute("data-peer-id", peerId);
+    videoWrapper.classList.add(`video-wrapper`);
+    videoWrapper.appendChild(videoElement);
     // 将新创建的视频元素插入到指定的容器中
     const videoContainer = document.querySelector(".video-stream"); // 假设你有一个视频容器
-    videoContainer.appendChild(videoElement);
+    videoContainer.appendChild(videoWrapper);
   }
 
   // 将新的视频流赋值给视频元素
@@ -590,6 +595,7 @@ function connectToNewUser(peerId, stream) {
 socket.on("user-connected-mainRoom", (peerId, userId) => {
   console.log("New user connected to room:", peerId, userId);
   connectToNewUser(peerId, currentStream);
+  updateVideoLayout();
 });
 
 // leave event

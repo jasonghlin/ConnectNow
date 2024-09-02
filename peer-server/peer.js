@@ -34,5 +34,13 @@ const peerServer = ExpressPeerServer(server, {
   path: "/myapp",
 });
 
+server.on("error", (err) => {
+  console.error("Server error:", err);
+});
+
+peerServer.on("error", (err) => {
+  console.error("PeerServer error:", err);
+});
+
 // 讓 Express 使用 PeerJS server
 app.use(peerServer);

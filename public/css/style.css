@@ -49,7 +49,7 @@ footer {
 }
 
 .choose-icon {
-    position: fixed;
+    position: absolute;
     transform: translateY(7%);
     background: none;
     color: #aaa;
@@ -213,12 +213,7 @@ footer {
     transition: transform 0.3s ease-in-out;
 }
 
-video {
-    width: 64rem; /* 設定寬度 */
-    height: 36rem; /* 設定高度 */
-    /* object-fit: cover; 設定適應模式，防止變形 */
-    transform: none;
-}
+
 
 canvas {
     width: 52rem; /* 設定寬度 */
@@ -227,11 +222,6 @@ canvas {
     transform: none;
 }
 
-.video-line-up {
-    width: 32rem;
-    height: 18rem;
-    /* object-fit: cover; */
-}
 
 .invert-screen {
     transform: scaleX(-1);
@@ -294,7 +284,7 @@ body.panel-open .video-stream {
     max-height: 30vh;
 }
 
-.video-stream video, .video-stream canvas:not(#whiteboard-canvas) {
+.video-stream canvas:not(#whiteboard-canvas) {
     flex: 1 1 auto;
     width: 100%;
     height: auto;
@@ -306,10 +296,26 @@ body.panel-open .video-stream {
     transition: all 0.3s ease; /* 增加過渡效果 */
 }
 
+.video-stream > .video-wrapper {
+    flex: 1 1 auto;
+    width: 100%;
+    height: auto;
+    max-width: 48%;
+    min-height: 200px; /* 限制最小高度 */
+    max-height: 600px; /* 限制最大高度 */; /* 限制最大高度 */
+    object-fit: cover;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease; /* 增加過渡效果 */
+    display: flex;
+}
 
+.video-wrapper > video {
+    width: 100%;
+    border-radius: 0.5rem;
+}
 
 /* 畫面左移時變小 video */
-body.panel-open .video-stream video, body.panel-open .video-stream canvas:not(#whiteboard-canvas) {
+body.panel-open .video-stream .video-wrapper, body.panel-open .video-stream canvas:not(#whiteboard-canvas) {
     max-width: calc(48% - 200px); /* 動態調整寬度，確保縮放過程中不突變 */
     min-height: 200px;
     max-height: 600px;
@@ -317,7 +323,7 @@ body.panel-open .video-stream video, body.panel-open .video-stream canvas:not(#w
 }
 
 /* 當有更多參與者時，縮小每個 video 的大小 */
-.video-stream.many-participants video, .video-stream.many-participants canvas {
+.video-stream.many-participants .video-wrapper, .video-stream.many-participants canvas {
     flex: 1 1 auto;
     max-width: 30%;
     height: auto;
@@ -341,6 +347,15 @@ body.panel-open .video-stream video, body.panel-open .video-stream canvas:not(#w
     min-height: 150px;
     max-height: 300px;
 }
+
+.video-wrapper > video {
+    width: 100%
+}
+/*  */
+
+
+
+/*  */
 
 .meet-id {
     margin-bottom: 0 !important;

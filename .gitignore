@@ -4,3 +4,4 @@ node_modules/
 user_data*.bash
 code.bash
 .DS_Store
+*.bash

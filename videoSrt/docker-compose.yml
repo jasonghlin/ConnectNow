@@ -1,6 +1,3 @@
-# docker-compose.yml
-version: "3.8"
-
 services:
   video_srt_service:
     build:

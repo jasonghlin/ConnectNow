@@ -166,7 +166,7 @@ function handleLogin() {
 
 let loginStatus = await checkStatus();
 
-if (loginStatus.payload) {
+if (loginStatus?.payload) {
 } else {
   login.addEventListener("click", loginEvent);
   handleLogin();
