@@ -23,14 +23,44 @@ export async function startScreenShare() {
     screenVideoElement.setAttribute("data-peer-id", myPeerId);
     screenVideoElement.setAttribute("video-share-peer-id", myPeerId);
 
+    const screenWrapper = document.createElement("div");
+    screenWrapper.classList.add("video-wrapper");
+    screenWrapper.setAttribute("data-peer-id", myPeerId);
+    screenWrapper.setAttribute("video-share-peer-id", myPeerId);
+    screenWrapper.appendChild(screenVideoElement);
+
+    const maximizeButton = document.createElement("button");
+    maximizeButton.classList.add("maximize-button");
+    maximizeButton.setAttribute("data-peer-id", myPeerId);
+    maximizeButton.innerText = "⤢";
+    maximizeButton.addEventListener("click", () => {
+      const isMainVideo =
+        maximizeButton.parentElement.classList.toggle("main-video");
+      updateVideoLayout();
+
+      if (!isMainVideo) {
+        // 如果 `main-video` 類別已被移除，執行額外的函式
+        const localStream = document.querySelector(".local-stream");
+        const videosElement = document.querySelectorAll(".video-wrapper");
+        const videos = Array.from(videosElement);
+        videos.unshift(localStream);
+        videos.forEach((video) => {
+          video.classList.remove("small-video");
+          video.style = "";
+        });
+        updateVideoLayout();
+      }
+    });
+    screenWrapper.appendChild(maximizeButton);
+
     // Add the new video element to the page
     const videoContainer = document.querySelector(".video-stream");
-    videoContainer.appendChild(screenVideoElement);
-    updateVideoLayout();
+    videoContainer.appendChild(screenWrapper);
+
     // Emit event to inform other users about screen sharing
     let roomId = window.location.pathname.split("/").pop();
     socket.emit("start-screen-share", roomId, myPeerId);
-
+    updateVideoLayout();
     // Replace all existing peer connections with the screen stream
     const calls = peerInstance.connections;
     Object.values(calls).forEach((connections) => {

@@ -71,7 +71,22 @@ async function adminFeature() {
 adminFeature();
 
 socket.on("room-admin-update", (newAdminId) => {
+  const waitingApprovalElement = document.getElementById(
+    "waiting-for-approval"
+  );
   if (newAdminId == localStorage.getItem("userId")) {
     adminFeature();
+    socket.on("user-join-request", (payload, roomId) => {
+      console.log("有人想加入房間");
+      let joinRequestConfirm = confirm(
+        ` ${payload.payload.userName} 想加入此會議`
+      );
+      if (!joinRequestConfirm) {
+        socket.emit("reject-join-request", roomId);
+      } else {
+        socket.emit("accept-join-request", roomId);
+      }
+      waitingApprovalElement.classList.add("hidden"); // 核可完畢後隱藏提示
+    });
   }
 });

@@ -561,6 +561,39 @@ function updateRemoteVideos(peerId, userVideoStream) {
     videoWrapper.setAttribute("data-peer-id", peerId);
     videoWrapper.classList.add(`video-wrapper`);
     videoWrapper.appendChild(videoElement);
+
+    const maximizeButton = document.createElement("button");
+    maximizeButton.classList.add("maximize-button");
+    maximizeButton.setAttribute("data-peer-id", peerId);
+    maximizeButton.innerText = "⤢";
+    maximizeButton.addEventListener("click", () => {
+      const whiteBoard = document.querySelector(".whiteboard-content");
+      whiteBoard.classList.add("hidden");
+      document.querySelector(".local-stream").classList.remove("main-video");
+      document.querySelectorAll(".video-wrapper").forEach((wrapper) => {
+        wrapper.classList.remove("small-video");
+        wrapper.style = "";
+      });
+
+      const isMainVideo =
+        maximizeButton.parentElement.classList.toggle("main-video");
+
+      if (!isMainVideo) {
+        // 如果 `main-video` 類別已被移除，執行額外的函式
+        const localStream = document.querySelector(".local-stream");
+        const videosElement = document.querySelectorAll(".video-wrapper");
+        const videos = Array.from(videosElement);
+        videos.unshift(localStream);
+        videos.forEach((video) => {
+          video.classList.remove("small-video");
+          video.style = "";
+        });
+      }
+      updateVideoLayout();
+    });
+    videoWrapper.appendChild(maximizeButton);
+    videoWrapper.appendChild(videoElement);
+
     // 将新创建的视频元素插入到指定的容器中
     const videoContainer = document.querySelector(".video-stream"); // 假设你有一个视频容器
     videoContainer.appendChild(videoWrapper);
@@ -595,7 +628,6 @@ function connectToNewUser(peerId, stream) {
 socket.on("user-connected-mainRoom", (peerId, userId) => {
   console.log("New user connected to room:", peerId, userId);
   connectToNewUser(peerId, currentStream);
-  updateVideoLayout();
 });
 
 // leave event
@@ -764,6 +796,7 @@ document.querySelector(".share-screen").addEventListener("click", () => {
 // Add new socket listeners for screen sharing events
 socket.on("user-started-screen-share", (peerId) => {
   console.log(`User ${peerId} started screen sharing`);
+  updateVideoLayout();
 });
 
 socket.on("user-stopped-screen-share", (peerId) => {

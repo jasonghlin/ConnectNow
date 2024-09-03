@@ -1,4 +1,5 @@
 import { socket } from "./script.js";
+import { updateVideoLayout } from "./videoLayout.js";
 
 const canvas = document.getElementById("whiteboard-canvas");
 const context = canvas.getContext("2d");
@@ -168,7 +169,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 const whiteBoardBtn = document.querySelector(".white-board");
 whiteBoardBtn.addEventListener("click", (e) => {
   const videoStream = document.querySelector(".video-stream");
-  const videos = Array.from(videoStream.querySelectorAll("video"));
+  const videos = Array.from(videoStream.querySelectorAll(".video-wrapper"));
   const localStream = document.querySelector(".local-stream");
   videos.unshift(localStream);
   const whiteBoardCanvas = document.querySelector(".whiteboard-content");
@@ -206,8 +207,11 @@ document.querySelector(".close-whiteboard").addEventListener("click", (e) => {
 
   if (smallVideosContainer) {
     // 逐一將視訊移回 video-stream 並恢復樣式
-    const videos = Array.from(smallVideosContainer.querySelectorAll("video"));
+    const videos = Array.from(
+      smallVideosContainer.querySelectorAll(".video-wrapper")
+    );
     const localStream = document.querySelector(".local-stream");
+    localStream.classList.remove("main-video");
     videos.unshift(localStream);
     videos.forEach((video) => {
       video.classList.remove("small-video");
@@ -219,6 +223,7 @@ document.querySelector(".close-whiteboard").addEventListener("click", (e) => {
 
     // 移除小視訊容器
     smallVideosContainer.remove();
+    updateVideoLayout();
   }
 
   // 恢復排版
