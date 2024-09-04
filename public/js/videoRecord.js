@@ -160,7 +160,7 @@ async function handleStop() {
     const roomId = pathSegments[pathSegments.length - 1];
     const fileName = `video_${roomId}_${Date.now()}.webm`;
     const response = await fetch(
-      `/generate-presigned-url?fileName=${encodeURIComponent(
+      `/presignedUrl?fileName=${encodeURIComponent(
         fileName
       )}&fileType=${encodeURIComponent("video/webm")}`,
       {
@@ -184,7 +184,7 @@ async function handleStop() {
     if (uploadResponse.ok) {
       console.log("影片成功上傳到 S3");
       Swal.fire("影片上傳成功，正在進行轉檔與字幕生成", "", "success");
-      await fetch("/upload-complete", {
+      await fetch("/videoRecord", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

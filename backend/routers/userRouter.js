@@ -4,6 +4,10 @@ import bcrypt from "bcrypt";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import multer from "multer";
 import dotenv from "dotenv";
+import passport from "passport";
+import jwt from "jsonwebtoken";
+import pkg from "passport-google-oauth20";
+import session from "express-session";
 import { getUser } from "../../models/registerAndLoginGetUser.js";
 import { createUser } from "../../models/createUser.js";
 import { createAccessToken } from "../../public/utils/createAccessToken.js";
@@ -17,10 +21,7 @@ import { updateUserPassword } from "../../models/updateUserPassword.js";
 import { getDbUserImg } from "../../models/getDbUserImg.js";
 import { updateDbUserImg } from "../../models/updateDbUserImg.js";
 import { getAllBreakoutRoomUsers } from "../../models/getAllBreakoutRoomUsers.js";
-import passport from "passport";
-import jwt from "jsonwebtoken";
-import pkg from "passport-google-oauth20";
-import session from "express-session";
+
 const { Strategy: GoogleStrategy } = pkg;
 
 dotenv.config();

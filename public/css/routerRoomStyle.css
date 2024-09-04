@@ -648,9 +648,6 @@ svg#freepik_stories-www.animated #freepik--Character--inject-228 {
 }
 
 /* figure 2 */
-.feature-3 > svg {
-    width: 80%
-}
 
 svg#freepik_stories-secure-server:not(.animated) .animable {
     opacity: 0;
@@ -732,8 +729,15 @@ svg#freepik_stories-secure-server.animated #freepik--Server--inject-78 {
 }
 
 /* figure 3 */
-.feature-3 > .carousel-caption {
-    margin-bottom: -4rem !important;
+.feature-3 > svg {
+    width: 80%;
+    height: 130%;
+    margin: 0 auto;
+}
+
+.feature-3  .carousel-caption {
+    margin-top: 0rem !important;
+    padding: 0rem !important
 }
 
 svg#freepik_stories-recording:not(.animated) .animable {

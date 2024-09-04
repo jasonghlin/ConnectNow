@@ -308,6 +308,7 @@ body.panel-open .video-stream {
     transition: all 0.3s ease; /* 增加過渡效果 */
     display: flex;
     position: relative;
+    box-sizing: border-box;
 }
 
 .video-wrapper > video {
@@ -316,8 +317,8 @@ body.panel-open .video-stream {
 }
 
 /* 畫面左移時變小 video */
-body.panel-open .video-stream .video-wrapper, body.panel-open .video-stream canvas:not(#whiteboard-canvas) {
-    max-width: calc(48% - 200px); /* 動態調整寬度，確保縮放過程中不突變 */
+body.panel-open .small-layout .video-wrapper, body.panel-open .small-layout canvas:not(#whiteboard-canvas) {
+    max-width: calc(50% - 200px); /* 動態調整寬度，確保縮放過程中不突變 */
     min-height: 200px;
     max-height: 600px;
     transition: all 0.3s ease; /* 平滑過渡效果 */
@@ -326,10 +327,10 @@ body.panel-open .video-stream .video-wrapper, body.panel-open .video-stream canv
 /* 當有更多參與者時，縮小每個 video 的大小 */
 .video-stream.many-participants .video-wrapper, .video-stream.many-participants canvas:not(#whiteboard-canvas) {
     flex: 1 1 auto;
-    max-width: 30%;
+    max-width: 30vw;
     height: auto;
     min-height: 150px; /* 當參與者多時縮小 video 的高度 */
-    max-height: 300px; /* 限制最大高度 */
+    max-height: 40vh; /* 限制最大高度 */
 }
 
 .video-stream .main-video {
@@ -342,12 +343,17 @@ body.panel-open .video-stream .video-wrapper, body.panel-open .video-stream canv
     position: relative;
 }
 
+.video-stream.small-layout {
+    overflow-y: auto;
+}
+
 .video-stream.small-layout .video-wrapper, .video-stream.small-layout canvas:not(#whiteboard-canvas) {
-    max-width: 33%; /* 或根據需要調整 */
+    max-width: 40vw; /* 或根據需要調整 */
     height: auto;
     object-fit: cover;
-    min-height: 150px;
-    max-height: 300px;
+    /* min-height: 150px;
+    max-height: 300px; */
+    max-height: 40vh;
 }
 
 .video-wrapper > video {
@@ -361,9 +367,11 @@ body.panel-open .video-stream .video-wrapper, body.panel-open .video-stream canv
     display: grid;
     grid-template-rows: auto 1fr; /* 第一行自動高度，第二行主視訊 */
     grid-template-columns: 1fr auto 1fr; /* 三欄設計，兩邊留白 */
+    white-space: nowrap;
     grid-gap: 10px; /* 行間距，可以根據需要調整 */
     height: 100%; /* 滿屏高度 */
     width: 100%; /* 滿屏寬度 */
+   
 }
 
 .small-videos-container {
@@ -437,8 +445,8 @@ body.panel-open .video-stream .video-wrapper, body.panel-open .video-stream canv
     min-width: 600px
 }
 
-body.panel-open .small-layout .video-wrapper, body.panel-open .video-stream canvas:not(#whiteboard-canvas) {
-    max-width: calc(30% - 200px); /* 動態調整寬度，確保縮放過程中不突變 */
+body.panel-open .many-participants .video-wrapper, body.panel-open .many-participants canvas:not(#whiteboard-canvas) {
+    max-width: calc(30vw - 200px); /* 動態調整寬度，確保縮放過程中不突變 */
     min-height: 200px;
     max-height: 600px;
     transition: all 0.3s ease; /* 平滑過渡效果 */

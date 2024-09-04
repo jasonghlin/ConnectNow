@@ -49,6 +49,9 @@ export async function startScreenShare() {
           video.style = "";
         });
         updateVideoLayout();
+      } else {
+        maximizeButton.parentElement.classList.remove("small-video");
+        maximizeButton.parentElement.style = "";
       }
     });
     screenWrapper.appendChild(maximizeButton);

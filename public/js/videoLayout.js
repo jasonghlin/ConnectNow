@@ -107,7 +107,7 @@ function updateVideoLayout() {
     smallVideosContainer.insertAdjacentElement("afterend", mainVideoContainer);
 
     videoStream.classList.add("too-many-participants");
-    const videos = Array.from(videoStream.querySelectorAll("video"));
+    const videos = Array.from(videoStream.querySelectorAll(".video-wrapper"));
     const localStream = document.querySelector(".local-stream");
     localStream.classList.add("main-video");
     videos.forEach((video, index) => {

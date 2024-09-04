@@ -8,6 +8,7 @@ import {
 } from "./shareScreen.js";
 import { updateVideoLayout } from "./videoLayout.js";
 import { initializeSegmenter } from "./backgroundEffects.js";
+import { MainRoom } from "../utils/MainRoomClass.js";
 
 // 獲取房間 ID
 const pathSegments = window.location.pathname.split("/");
@@ -70,13 +71,6 @@ let currentStream;
 let myPeerId;
 let myUserId;
 const waitingApprovalElement = document.getElementById("waiting-for-approval");
-
-class MainRoom {
-  constructor(roomId) {
-    this.roomId = roomId;
-    this.breakoutRooms = new Map();
-  }
-}
 
 function updateCurrentRoom(newRoom) {
   currentRoom = newRoom;
@@ -633,9 +627,7 @@ socket.on("user-connected-mainRoom", (peerId, userId) => {
 // leave event
 // 移除對應的 video 元素
 function removeVideoElement(peerId) {
-  const videoElement = document.querySelector(
-    `video[data-peer-id="${peerId}"]`
-  );
+  const videoElement = document.querySelector(`div[data-peer-id="${peerId}"]`);
   if (videoElement) {
     videoElement.remove();
     updateVideoLayout();
@@ -790,6 +782,7 @@ document.querySelector(".share-screen").addEventListener("click", () => {
   } else {
     stopScreenShare();
     isScreenSharing = false;
+    updateVideoLayout();
   }
 });
 
