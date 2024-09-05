@@ -36,6 +36,7 @@ export async function startScreenShare() {
     maximizeButton.addEventListener("click", () => {
       const isMainVideo =
         maximizeButton.parentElement.classList.toggle("main-video");
+      console.log("startScreenShare function 1");
       updateVideoLayout();
 
       if (!isMainVideo) {
@@ -48,6 +49,7 @@ export async function startScreenShare() {
           video.classList.remove("small-video");
           video.style = "";
         });
+        console.log("startScreenShare function 2");
         updateVideoLayout();
       } else {
         maximizeButton.parentElement.classList.remove("small-video");
@@ -63,6 +65,7 @@ export async function startScreenShare() {
     // Emit event to inform other users about screen sharing
     let roomId = window.location.pathname.split("/").pop();
     socket.emit("start-screen-share", roomId, myPeerId);
+    console.log("startScreenShare function 2");
     updateVideoLayout();
     // Replace all existing peer connections with the screen stream
     const calls = peerInstance.connections;

@@ -583,6 +583,7 @@ function updateRemoteVideos(peerId, userVideoStream) {
           video.style = "";
         });
       }
+      console.log("updateRemoteVideo function 1");
       updateVideoLayout();
     });
     videoWrapper.appendChild(maximizeButton);
@@ -595,6 +596,7 @@ function updateRemoteVideos(peerId, userVideoStream) {
 
   // 将新的视频流赋值给视频元素
   videoElement.srcObject = userVideoStream;
+  console.log("updateRemoteVideo function 1");
   updateVideoLayout();
   // 处理播放错误
   videoElement.addEventListener("loadedmetadata", () => {
@@ -630,6 +632,7 @@ function removeVideoElement(peerId) {
   const videoElement = document.querySelector(`div[data-peer-id="${peerId}"]`);
   if (videoElement) {
     videoElement.remove();
+    console.log("removeVideoElement function");
     updateVideoLayout();
   }
 }
@@ -778,10 +781,12 @@ document.querySelector(".share-screen").addEventListener("click", () => {
   if (!isScreenSharing) {
     startScreenShare();
     isScreenSharing = true;
+    console.log("share-screen function 1");
     updateVideoLayout();
   } else {
     stopScreenShare();
     isScreenSharing = false;
+    console.log("share-screen function 1");
     updateVideoLayout();
   }
 });
@@ -789,6 +794,7 @@ document.querySelector(".share-screen").addEventListener("click", () => {
 // Add new socket listeners for screen sharing events
 socket.on("user-started-screen-share", (peerId) => {
   console.log(`User ${peerId} started screen sharing`);
+  console.log("user-started-screen-share socket");
   updateVideoLayout();
 });
 

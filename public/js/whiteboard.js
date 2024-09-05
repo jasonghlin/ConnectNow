@@ -223,6 +223,7 @@ document.querySelector(".close-whiteboard").addEventListener("click", (e) => {
 
     // 移除小視訊容器
     smallVideosContainer.remove();
+    console.log("white board event listener");
     updateVideoLayout();
   }
 

@@ -2,8 +2,9 @@ function updateVideoLayout() {
   const videoElements = document.querySelectorAll(
     ".video-stream > .video-wrapper"
   );
-  const participantsCount = videoElements.length;
+  // const participantsCount = videoElements.length;
   const videoStreamContainer = document.querySelector(".video-stream");
+  const participantsCount = videoStreamContainer.children.length - 1;
   const mainVideo = document.querySelector(".main-video");
   videoStreamContainer.classList.remove("small-layout");
   videoStreamContainer.classList.remove("many-participants");
@@ -57,7 +58,7 @@ function updateVideoLayout() {
         mainVideoContainer.appendChild(mainVideo);
       }
     });
-  } else if (participantsCount <= 3) {
+  } else if (participantsCount <= 4) {
     console.log("update video layout with small-layout");
     videoStreamContainer.classList.add("small-layout");
     const localStream = document.querySelector(".local-stream");
@@ -82,7 +83,7 @@ function updateVideoLayout() {
     if (mainVideoContainer) {
       mainVideoContainer.remove(); // 移除 main-video-container
     }
-  } else if (participantsCount <= 5) {
+  } else if (participantsCount <= 6) {
     videoStreamContainer.classList.remove("small-layout");
     videoStreamContainer.classList.add("many-participants");
   } else {

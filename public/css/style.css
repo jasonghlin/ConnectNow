@@ -389,6 +389,7 @@ body.panel-open .small-layout .video-wrapper, body.panel-open .small-layout canv
     display: flex;
     justify-content: center;
     align-items: center;
+    max-width: 50vw;
 }
 
 .small-video {
