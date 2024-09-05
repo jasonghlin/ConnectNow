@@ -230,7 +230,7 @@ document.querySelectorAll(".bg-img").forEach((el, index) => {
   el.addEventListener("click", () => {
     applyForegroundReplacement = true;
     applyForegroundBlur = false;
-    foregroundImage.src = `/static/images/bgs/bg-${index + 1}.jpeg`;
+    foregroundImage.src = `/static/images/bgs/flip/bg-${index + 1}.jpeg`;
   });
 });
 

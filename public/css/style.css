@@ -330,7 +330,7 @@ body.panel-open .small-layout .video-wrapper, body.panel-open .small-layout canv
     max-width: 30vw;
     height: auto;
     min-height: 150px; /* 當參與者多時縮小 video 的高度 */
-    max-height: 40vh; /* 限制最大高度 */
+    max-height: 50vh; /* 限制最大高度 */
 }
 
 .video-stream .main-video {
@@ -353,7 +353,7 @@ body.panel-open .small-layout .video-wrapper, body.panel-open .small-layout canv
     object-fit: cover;
     /* min-height: 150px;
     max-height: 300px; */
-    max-height: 40vh;
+    max-height: 50vh;
 }
 
 .video-wrapper > video {

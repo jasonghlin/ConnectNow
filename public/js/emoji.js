@@ -7,7 +7,7 @@ document.querySelector(".emoji-icon").addEventListener("click", function () {
   // 設置 emoji-picker 的位置
   const rect = emojiButton.getBoundingClientRect();
   emojiPicker.style.left = `${rect.left + rect.width / 2}px`;
-  emojiPicker.style.bottom = `${window.innerHeight - rect.top + 10}px`; // 顯示在按鈕上方
+  emojiPicker.style.bottom = `${window.innerHeight - rect.top}px`; // 顯示在按鈕上方
 
   // 切換顯示狀態
   emojiPicker.style.display =
