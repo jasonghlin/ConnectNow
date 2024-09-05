@@ -97,7 +97,11 @@ async function routerRoom() {
 
     try {
       if (roomId) {
-        window.location.href = `/roomId/${roomId}`;
+        if (roomId.startsWith("https://") || roomId.startsWith("http://")) {
+          window.location.href = roomId;
+        } else {
+          window.location.href = `/roomId/${roomId}`;
+        }
       } else {
         Swal.fire("請輸入正確的會議代碼或連結");
       }
