@@ -25,6 +25,7 @@ export async function startScreenShare() {
 
     const screenWrapper = document.createElement("div");
     screenWrapper.classList.add("video-wrapper");
+    screenWrapper.classList.add("screen-share");
     screenWrapper.setAttribute("data-peer-id", myPeerId);
     screenWrapper.setAttribute("video-share-peer-id", myPeerId);
     screenWrapper.appendChild(screenVideoElement);
@@ -95,7 +96,9 @@ export async function stopScreenShare() {
     screenStream.getTracks().forEach((track) => track.stop());
 
     // Remove the screen share video element
-    const screenVideoElement = document.querySelector(".screen-share");
+    const screenVideoElement = document.querySelector(
+      ".video-wrapper.screen-share"
+    );
     if (screenVideoElement) {
       screenVideoElement.remove();
     }

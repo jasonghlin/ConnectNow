@@ -753,7 +753,7 @@ socket.on("return-to-main-room", (roomId) => {
 
   // 清除所有遠端視訊
   document
-    .querySelectorAll("video:not(.local-stream)")
+    .querySelectorAll(".video-wrapper:not(.local-stream)")
     .forEach((video) => video.remove());
 
   history.pushState(null, "", newUrl);
