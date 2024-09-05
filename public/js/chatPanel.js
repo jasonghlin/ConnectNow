@@ -55,31 +55,37 @@ async function chatLogic() {
   });
 
   function appendMessage(userName, message) {
-    const html = `<div class="message-wrapper">
-        <div class="name-time">
-            <div class="message-name">${userName}</div>
-            <div class="message-time">${
-              new Date().getHours() >= 12
-                ? "下午"
-                : new Date().getHours() >= 18
-                ? "晚上"
-                : "早上"
-            } ${
-      new Date().getHours() < 12
-        ? new Date().getHours() < 10
-          ? `0${new Date().getHours()}`
-          : new Date().getHours()
-        : new Date().getHours() - 12
-    }:${
-      new Date().getMinutes() < 10
-        ? `0${new Date().getMinutes()}`
-        : new Date().getMinutes()
-    }</div>
-        </div>
-        <div class="message-info">${message}</div>
-    </div>`;
+    const messageWrapper = document.createElement("div");
+    messageWrapper.classList.add("message-wrapper");
 
-    messageContainer.insertAdjacentHTML("beforeend", html);
+    const nameTime = document.createElement("div");
+    nameTime.classList.add("name-time");
+
+    const messageName = document.createElement("div");
+    messageName.classList.add("message-name");
+    messageName.textContent = userName;
+
+    const messageTime = document.createElement("div");
+    messageTime.classList.add("message-time");
+    const currentHours = new Date().getHours();
+    const timeOfDay = currentHours >= 12 ? "下午" : "早上";
+    const formattedHours = currentHours > 12 ? currentHours - 12 : currentHours;
+    const formattedMinutes = new Date()
+      .getMinutes()
+      .toString()
+      .padStart(2, "0");
+    messageTime.textContent = `${timeOfDay} ${formattedHours}:${formattedMinutes}`;
+
+    const messageInfo = document.createElement("div");
+    messageInfo.classList.add("message-info");
+    messageInfo.textContent = message; // Use textContent to prevent XSS
+
+    nameTime.appendChild(messageName);
+    nameTime.appendChild(messageTime);
+    messageWrapper.appendChild(nameTime);
+    messageWrapper.appendChild(messageInfo);
+
+    messageContainer.appendChild(messageWrapper);
   }
 
   // Handle room switch (e.g., moving to a breakout room)
