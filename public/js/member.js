@@ -392,6 +392,7 @@ async function userImg() {
 
 // 將資料加入表格的函式
 function populateTable(data) {
+  console.log(data);
   const tableBody = document.querySelector("#videoTable tbody");
 
   data?.forEach((item) => {
@@ -402,19 +403,28 @@ function populateTable(data) {
     row.appendChild(roomNameCell);
 
     const videoUrlCell = document.createElement("td");
-    const videoLink = document.createElement("a");
-    videoLink.href = item.video_url;
-    videoLink.textContent = "Video";
-    videoLink.target = "_blank";
-    videoUrlCell.appendChild(videoLink);
+    if (item.video_url !== "Pending") {
+      const videoLink = document.createElement("a");
+      videoLink.href = item.video_url;
+      videoLink.textContent = "Video";
+      videoLink.target = "_blank";
+      videoUrlCell.appendChild(videoLink);
+    } else {
+      videoUrlCell.textContent = "Pending";
+    }
+
     row.appendChild(videoUrlCell);
 
     const srtUrlCell = document.createElement("td");
-    const srtLink = document.createElement("a");
-    srtLink.href = item.srt_url;
-    srtLink.textContent = "Subtitles";
-    srtLink.target = "_blank";
-    srtUrlCell.appendChild(srtLink);
+    if (item.video_url !== "Pending") {
+      const srtLink = document.createElement("a");
+      srtLink.href = item.srt_url;
+      srtLink.textContent = "Subtitles";
+      srtLink.target = "_blank";
+      srtUrlCell.appendChild(srtLink);
+    } else {
+      srtUrlCell.textContent = "Pending";
+    }
     row.appendChild(srtUrlCell);
 
     tableBody.appendChild(row);
