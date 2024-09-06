@@ -199,6 +199,31 @@ async function convertCanvasToStream(canvas, isMicMuted = false) {
         "Canvas captureStream did not return a valid MediaStream"
       );
     }
+
+    // 創建一個翻轉的 canvas，用於發送視頻流
+    const flippedCanvas = document.createElement("canvas");
+    flippedCanvas.width = canvas.width;
+    flippedCanvas.height = canvas.height;
+    const flippedCtx = flippedCanvas.getContext("2d");
+
+    // 每次繪製時將內容水平翻轉
+    function flipCanvas() {
+      flippedCtx.save();
+      flippedCtx.scale(-1, 1); // 水平翻轉
+      flippedCtx.drawImage(
+        canvas,
+        -canvas.width,
+        0,
+        canvas.width,
+        canvas.height
+      );
+      flippedCtx.restore();
+      requestAnimationFrame(flipCanvas); // 持續翻轉畫布
+    }
+    flipCanvas();
+
+    const flippedStream = flippedCanvas.captureStream(); // 捕獲翻轉後的流
+
     const mic = await navigator.mediaDevices.getUserMedia({
       audio: true,
       video: false,
@@ -207,7 +232,7 @@ async function convertCanvasToStream(canvas, isMicMuted = false) {
     mic.getAudioTracks()[0].enabled = !isMicMuted;
 
     const combine = new MediaStream([
-      ...videoOutput.getTracks(),
+      ...flippedStream.getTracks(),
       ...mic.getTracks(),
     ]);
     return combine;
@@ -230,7 +255,7 @@ document.querySelectorAll(".bg-img").forEach((el, index) => {
   el.addEventListener("click", () => {
     applyForegroundReplacement = true;
     applyForegroundBlur = false;
-    foregroundImage.src = `/static/images/bgs/bg-${index + 1}.jpeg`;
+    foregroundImage.src = `/static/images/bgs/flip/bg-${index + 1}.jpeg`;
   });
 });
 
