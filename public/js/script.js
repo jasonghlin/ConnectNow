@@ -338,6 +338,7 @@ function updateLocalStream(updatedStream) {
 
 async function updateVideoSource(newVideoDeviceId) {
   try {
+    console.log(newVideoDeviceId);
     // 取得現有音訊流
     const currentAudioTracks = localStream.getAudioTracks();
 
@@ -354,8 +355,22 @@ async function updateVideoSource(newVideoDeviceId) {
     ]);
 
     // 在本地 canvas 或 video 上更新流
+    currentStream = updatedStream;
     updateLocalStream(updatedStream);
-    initializeSegmenter();
+    // 檢查新視訊流的裝置是否為內建鏡頭
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const videoTrack = newVideoStream.getVideoTracks()[0];
+    const videoDeviceInfo = devices.find(
+      (device) => device.deviceId === videoTrack.getSettings().deviceId
+    );
+
+    if (
+      videoDeviceInfo &&
+      videoDeviceInfo.label.toLowerCase().includes("integrated")
+    ) {
+      // 僅當裝置是內建鏡頭時啟動背景分割
+      initializeSegmenter();
+    }
     // 通知其他參與者視訊流已更新
     socket.emit("update-video-stream", roomId, myPeerId, myUserId);
   } catch (error) {
