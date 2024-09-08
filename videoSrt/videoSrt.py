@@ -122,25 +122,28 @@ async def process_video_from_s3(bucket_name, file_key, file_a):
     speech_array = resampler(speech_array)
     sampling_rate = 16000
 
-    # Segment the audio into 30-second segments for finer detail
-    segment_length = sampling_rate * 30
-    segments = [speech_array[i:i + segment_length] for i in range(0, len(speech_array), segment_length)]
-    timestamps = [(i * segment_length / sampling_rate, min((i + 1) * segment_length, len(speech_array)) / sampling_rate) for i in range(len(segments))]
+    # Segment the audio based on 10 seconds duration
+    segment_length = sampling_rate * 10  # 每個音頻片段為 10 秒
+    total_duration = video_clip.duration  # 獲取影片的總時長
+    num_segments = int(len(speech_array) / segment_length)  # 計算音頻段數
+    timestamps = [(i * 10, min((i + 1) * 10, total_duration)) for i in range(num_segments)]  # 生成每段對應的時間戳
 
-    # Transcribe each segment
-    print("transcribe each segment")
+    # Transcribe each 10-second segment
+    print("transcribe each 10-second segment")
     transcriptions = []
-    for segment in segments:
-        inputs = processor(segment.cpu(), sampling_rate=sampling_rate, return_tensors="pt").to(device)
+    for i in range(num_segments):
+        # 提取當前片段的音頻
+        audio_segment = speech_array[i * segment_length:(i + 1) * segment_length]
+        inputs = processor(audio_segment.cpu(), sampling_rate=sampling_rate, return_tensors="pt").to(device)
         attention_mask = torch.ones_like(inputs.input_features)
 
         with torch.no_grad():
             predicted_ids = model.generate(
                 inputs.input_features.to(device),
-                num_beams=5,  # Increased beam width for better transcription quality
+                num_beams=5,  # 提高 beam width 以增加轉錄質量
                 early_stopping=True,
-                max_length=250,  # Increased max length to capture more content
-                min_length=20,  # Increased min length to avoid short incomplete sentences
+                max_length=250,  # 增加最大長度以捕捉更多內容
+                min_length=20,  # 增加最小長度以避免過短的片段
                 attention_mask=attention_mask.to(device)
             )
 
