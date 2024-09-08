@@ -119,6 +119,7 @@ def process_message(message):
     # Check if the file has already been processed (exists in File A)
     if check_file_in_file_a(key):
         print(f"File already processed: {key}")
+        sqs.delete_message(QueueUrl=SQS_URL, ReceiptHandle=message['ReceiptHandle'])
         return
 
     # Process the message (convert the file and upload to S3)
