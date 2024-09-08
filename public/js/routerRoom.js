@@ -113,3 +113,10 @@ async function routerRoom() {
 }
 
 routerRoom();
+
+function copyRightYear() {
+  document.querySelector(".current-year").textContent =
+    new Date().getFullYear();
+}
+
+copyRightYear();

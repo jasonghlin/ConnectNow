@@ -353,7 +353,7 @@ body.panel-open .small-layout .video-wrapper, body.panel-open .small-layout canv
     object-fit: cover;
     /* min-height: 150px;
     max-height: 300px; */
-    max-height: 50vh;
+    max-height: 50%;
 }
 
 .video-wrapper > video {

@@ -839,3 +839,24 @@ svg#freepik_stories-recording.animated #freepik--device-1--inject-246 {
         transform: translate3d(0, 0, 0);
     }
 }
+
+/* footer */
+footer {
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    display: flex !important;
+    justify-content: space-between;
+    padding-right: 2rem;
+    padding-left: 2rem;
+    margin-bottom: .5rem;
+    color: #aaa
+}
+
+.contact {
+    width: 10%;
+    display: flex;
+    font-size: 3rem;
+    justify-content: space-evenly;
+    cursor: pointer;
+}
