@@ -7,10 +7,38 @@ ENV PYTHONUNBUFFERED 1
 # Set working directory
 WORKDIR /app
 
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    pkg-config \
+    yasm \
+    wget \
+    git \
+    nvidia-cuda-toolkit \
+    libnvidia-encode1 \
+    libavcodec-dev \
+    libavformat-dev \
+    libavdevice-dev \
+    libavfilter-dev \
+    libv4l-dev \
+    libx264-dev \
+    libx265-dev \
+    libnuma-dev \
+    libfdk-aac-dev \
+    libmp3lame-dev \
+    && apt-get clean
+
+# 從源碼編譯 FFmpeg 支持 CUDA
+RUN git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg && \
+    cd ffmpeg && \
+    ./configure --enable-nonfree --enable-cuda --enable-nvenc --enable-libnpp \
+    --extra-cflags=-I/usr/local/cuda/include --extra-ldflags=-L/usr/local/cuda/lib64 && \
+    make -j$(nproc) && \
+    make install && \
+    cd .. && rm -rf ffmpeg
+
 # Install dependencies
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
-RUN apt-get update && apt-get install -y ffmpeg
 
 # Copy the Python script into the container
 COPY convertVideoToMov.py /app/

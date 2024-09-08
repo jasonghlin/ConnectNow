@@ -126,13 +126,15 @@ async def process_video_from_s3(bucket_name, file_key, file_a):
     # Segment the audio based on 10 seconds duration
     segment_length = sampling_rate * 10  # 每個音頻片段為 10 秒
     total_duration = video_clip.duration  # 獲取影片的總時長
-    num_segments = int(len(speech_array) / segment_length)  # 計算音頻段數
-    timestamps = [(i * 10, min((i + 1) * 10, total_duration)) for i in range(num_segments)]  # 生成每段對應的時間戳
+    num_full_segments = len(speech_array) // segment_length  # 完整的10秒片段數
+    remaining_samples = len(speech_array) % segment_length  # 剩下不足10秒的樣本數
+
+    timestamps = [(i * 10, min((i + 1) * 10, total_duration)) for i in range(num_full_segments)]  # 生成每段對應的時間戳
 
     # Transcribe each 10-second segment
     print("transcribe each 10-second segment")
     transcriptions = []
-    for i in range(num_segments):
+    for i in range(num_full_segments):
         # 提取當前片段的音頻
         audio_segment = speech_array[i * segment_length:(i + 1) * segment_length]
         inputs = processor(audio_segment.cpu(), sampling_rate=sampling_rate, return_tensors="pt").to(device)
@@ -145,6 +147,32 @@ async def process_video_from_s3(bucket_name, file_key, file_a):
                 early_stopping=True,
                 max_length=250,  # 增加最大長度以捕捉更多內容
                 min_length=20,  # 增加最小長度以避免過短的片段
+                attention_mask=attention_mask.to(device)
+            )
+
+        transcription = processor.batch_decode(predicted_ids, skip_special_tokens=True)
+        transcriptions.append(transcription[0] if transcription else "")
+
+    # 處理剩下不足10秒的片段
+    if remaining_samples > 0:
+        remaining_segment = speech_array[-remaining_samples:]
+        remaining_start_time = num_full_segments * 10
+        remaining_end_time = total_duration  # 剩下的片段結束時間就是影片總時長
+
+        # 增加對應的時間戳
+        timestamps.append((remaining_start_time, remaining_end_time))
+
+        # 轉錄剩下的片段
+        inputs = processor(remaining_segment.cpu(), sampling_rate=sampling_rate, return_tensors="pt").to(device)
+        attention_mask = torch.ones_like(inputs.input_features)
+
+        with torch.no_grad():
+            predicted_ids = model.generate(
+                inputs.input_features.to(device),
+                num_beams=5,
+                early_stopping=True,
+                max_length=250,
+                min_length=20,
                 attention_mask=attention_mask.to(device)
             )
 
