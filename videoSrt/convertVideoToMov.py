@@ -40,8 +40,8 @@ def generate_token():
 
 # Initialize S3 client and Socket.IO
 s3_client = boto3.client('s3')
-# sio = socketio.Client(logger=True, engineio_logger=True)
-sio = socketio.Client()
+sio = socketio.Client(logger=True, engineio_logger=True)
+# sio = socketio.Client()
 token = generate_token()
 # Connect to a Socket.IO server
 sio.connect('https://www.connectnow.website', auth={'token': token})

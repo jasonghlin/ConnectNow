@@ -48,7 +48,8 @@ s3_client = boto3.client('s3')
 ec2_client = boto3.client('ec2', region_name='us-west-2')
 INSTANCE_ID = os.environ.get("INSTANCE_ID", "")
 
-sio = socketio.Client()
+sio = socketio.Client(logger=True, engineio_logger=True)
+# sio = socketio.Client()
 token = generate_token()
 # Connect to a Socket.IO server
 sio.connect('https://www.connectnow.website', auth={'token': token})
