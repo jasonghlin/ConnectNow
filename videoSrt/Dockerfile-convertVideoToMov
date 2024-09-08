@@ -1,5 +1,5 @@
 # 使用最新的 Python 版本
-FROM python:latest
+FROM nvidia/cuda:12.0-runtime-ubuntu20.04
 
 # Set environment variables
 ENV PYTHONUNBUFFERED 1
