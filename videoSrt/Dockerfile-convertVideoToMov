@@ -13,8 +13,6 @@ RUN apt-get update && apt-get install -y \
     yasm \
     wget \
     git \
-    nvidia-cuda-toolkit \
-    libnvidia-encode1 \
     libavcodec-dev \
     libavformat-dev \
     libavdevice-dev \
@@ -23,8 +21,6 @@ RUN apt-get update && apt-get install -y \
     libx264-dev \
     libx265-dev \
     libnuma-dev \
-    libfdk-aac-dev \
-    libmp3lame-dev \
     && apt-get clean
 
 # 從源碼編譯 FFmpeg 支持 CUDA
