@@ -847,6 +847,7 @@ footer {
     bottom: 0;
     display: flex !important;
     justify-content: space-between;
+    align-items: center;
     padding-right: 2rem;
     padding-left: 2rem;
     margin-bottom: .5rem;
