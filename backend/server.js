@@ -12,7 +12,7 @@ import cookieParser from "cookie-parser";
 import userRouter from "./routers/userRouter.js";
 import roomRouter from "./routers/roomRouter.js";
 import jwt from "jsonwebtoken";
-import { authenticateJWT } from "../public/utils/authenticateJWT.js";
+import { authenticateJWT } from "./utils/authenticateJWT.js";
 import { checkMainRoomExist } from "../models/checkMainRoomExist.js";
 import { adminJoinMainRoom } from "../models/adminJoinMainRoom.js";
 import { findMainRoomAdmin } from "../models/findMainRoomAdmin.js";

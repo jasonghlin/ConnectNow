@@ -459,7 +459,7 @@ body.panel-open .many-participants .video-wrapper, body.panel-open .many-partici
     margin-bottom: 0 !important;
 }
 
-.waiting-approval {
+.waiting-approval, .waiting-upload {
     position: fixed;
     top: 0;
     left: 0;

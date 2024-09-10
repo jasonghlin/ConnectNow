@@ -139,9 +139,11 @@ async function startRecording() {
   }
 }
 
+const waitingUploadElement = document.getElementById("waiting-for-upload");
 function stopRecording() {
   mediaRecorder.stop();
   isRecordingOrNot(isRecording);
+  waitingUploadElement.classList.remove("hidden");
   console.log("錄影結束");
 }
 
@@ -183,6 +185,7 @@ async function handleStop() {
 
     if (uploadResponse.ok) {
       console.log("影片成功上傳到 S3");
+      waitingUploadElement.classList.add("hidden");
       Swal.fire("影片上傳成功，正在進行轉檔與字幕生成", "", "success");
       await fetch("/videoRecord", {
         method: "POST",

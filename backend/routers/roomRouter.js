@@ -4,7 +4,7 @@ import { join } from "path";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
-import { authenticateJWT } from "../../public/utils/authenticateJWT.js";
+import { authenticateJWT } from "../utils/authenticateJWT.js";
 import { createMainRoom } from "../../models/createMainRoom.js";
 import { createBreakoutRoom } from "../../models/createBreakoutRoom.js";
 import { joinBreakoutRoom } from "../../models/joinBreakoutRoom.js";
