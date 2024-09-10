@@ -78,7 +78,7 @@ async function chatLogic() {
 
     const messageInfo = document.createElement("div");
     messageInfo.classList.add("message-info");
-    messageInfo.textContent = message; // Use textContent to prevent XSS
+    messageInfo.textContent = message;
 
     nameTime.appendChild(messageName);
     nameTime.appendChild(messageTime);

@@ -223,7 +223,7 @@ async def check_sqs_and_shutdown():
         await asyncio.sleep(30)  # Check every 30 seconds
 
 async def listen_to_sqs():
-    global last_message_time  # 添加這一行以使用全局變數
+    global last_message_time  
     while True:
         # Poll SQS for new messages
         print("Polling SQS...")

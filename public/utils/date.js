@@ -34,7 +34,6 @@ function date() {
 // 初始更新顯示時間
 date();
 
-// 每分鐘更新一次時間
 setInterval(date, 1000);
 
 export { date };

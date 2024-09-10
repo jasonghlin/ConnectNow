@@ -53,13 +53,13 @@ const s3Client = new S3Client({
 //   next();
 // });
 
-// 設置 session 中介軟體
+// set session middleware
 router.use(
   session({
-    secret: "your-secret-key", // 建議使用強隱秘的 key
+    secret: "your-secret-key",
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: false }, // 如果使用 HTTPS，將 `secure` 設為 true
+    cookie: { secure: false },
   })
 );
 
@@ -70,7 +70,7 @@ passport.serializeUser((user, done) => {
 
 passport.deserializeUser((token, done) => {
   try {
-    const user = jwt.verify(token, JWT_SECRET_KEY); // 解析 token
+    const user = jwt.verify(token, JWT_SECRET_KEY);
     done(null, user);
   } catch (error) {
     done(error, null);
@@ -91,7 +91,7 @@ passport.use(
           : "/static/images/user.png";
 
       try {
-        // 在這裡直接使用 Google 提供的用戶資訊生成 JWT
+        // use google info generate JWT
         const email = {};
         email.email = profile.emails[0].value;
         let user = await getUser(email);
@@ -124,9 +124,9 @@ passport.use(
   )
 );
 
-// 初始化 passport 中介軟體
+// 初始化 passport middleware
 router.use(passport.initialize());
-router.use(passport.session()); // 用於處理登入會話
+router.use(passport.session()); // 用於處理登入 session
 
 // Register
 router.post("/api/user", async (req, res) => {
@@ -177,7 +177,7 @@ router.put("/api/user/auth", async (req, res) => {
                 .cookie("token", token, {
                   httpOnly: false,
                   secure: req.protocol === "https",
-                  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 天的有效期
+                  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 天
                 })
                 .json({ token, username: user[0].name, userId: user[0].id });
             } catch (tokenError) {
@@ -255,7 +255,7 @@ router.post("/api/groups", authenticateJWT, async (req, res) => {
     console.log("create groups:", groups);
     console.log(groups[0].groupId);
     console.log("result: ", result);
-    // 通知所有客戶端
+    // 通知所有 client
     // io.to(groups[0].groupId).emit("start-grouping", result);
 
     res
@@ -289,7 +289,7 @@ router.patch("/api/user/userInfo", authenticateJWT, async (req, res) => {
           .cookie("token", token, {
             httpOnly: false,
             secure: req.protocol === "https",
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 天的有效期
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 天
           })
           .json({ token, username: req.body.name });
       }
@@ -316,7 +316,7 @@ router.patch("/api/user/userInfo", authenticateJWT, async (req, res) => {
             .cookie("token", token, {
               httpOnly: false,
               secure: req.protocol === "https",
-              maxAge: 7 * 24 * 60 * 60 * 1000, // 7 天的有效期
+              maxAge: 7 * 24 * 60 * 60 * 1000, // 7 天
             })
             .json({ token });
         }
@@ -406,7 +406,7 @@ router.get(
     res.cookie("token", token, {
       httpOnly: false,
       secure: req.protocol === "https",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 天有效期
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 天
     });
 
     // 使用 JS 代碼將資料儲存在 localStorage 中
@@ -416,7 +416,7 @@ router.get(
       window.location.href = '/'; // 重定向到您希望的頁面
     `;
 
-    // 將這段腳本傳送給瀏覽器執行
+    // 將這段 script 傳送給瀏覽器執行
     res.send(`<script>${script}</script>`);
   }
 );

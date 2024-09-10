@@ -324,7 +324,7 @@ function updateLocalStream(updatedStream) {
 
   videoElement.onloadedmetadata = () => {
     videoElement.play();
-    const canvas = document.querySelector(".local-stream"); // 你的 canvas 元素
+    const canvas = document.querySelector(".local-stream");
     const context = canvas.getContext("2d");
 
     function drawFrame() {
@@ -354,10 +354,10 @@ async function updateVideoSource(newVideoDeviceId) {
       ...newVideoStream.getVideoTracks(),
     ]);
 
-    // 在本地 canvas 或 video 上更新流
+    // 在本地 canvas 或 video 上更新 stream
     currentStream = updatedStream;
     updateLocalStream(updatedStream);
-    // 檢查新視訊流的裝置是否為內建鏡頭
+    // 檢查新視訊 stream 的裝置是否為內建鏡頭
     const devices = await navigator.mediaDevices.enumerateDevices();
     const videoTrack = newVideoStream.getVideoTracks()[0];
     const videoDeviceInfo = devices.find(
@@ -371,7 +371,7 @@ async function updateVideoSource(newVideoDeviceId) {
       // 僅當裝置是內建鏡頭時啟動背景分割
       initializeSegmenter();
     }
-    // 通知其他參與者視訊流已更新
+    // 通知其他參與者視訊 stream 已更新
     socket.emit("update-video-stream", roomId, myPeerId, myUserId);
   } catch (error) {
     console.error("Failed to update video source:", error);
@@ -413,17 +413,17 @@ function updateCanvasStream(stream) {
 
 async function updateAudioSource(newAudioDeviceId) {
   try {
-    // 使用新的 audioDeviceId 获取新的音频流
+    // 使用新的 audioDeviceId 獲取新的 audio stream
     const updatedStream = await navigator.mediaDevices.getUserMedia({
       video: true, // 不需要更新视频流
       audio: { deviceId: { exact: newAudioDeviceId } },
     });
 
-    // 更新 canvas stream，使其包含新的音频轨道
+    // 更新 canvas stream，使其包含新的音訊軌道
     localStream = updatedStream;
     currentStream = localStream;
 
-    // 继续使用 localStream 在 canvas 上绘制视频内容
+    // 繼續使用 localStream 在 canvas 上繪製影像内容
     updateCanvasStream(localStream);
     initializeSegmenter();
     const canvasElementStream = document
@@ -433,7 +433,7 @@ async function updateAudioSource(newAudioDeviceId) {
       ...updatedStream.getAudioTracks(),
       ...canvasElementStream.getVideoTracks(),
     ]);
-    // 通知其他参与者音频流已更新
+    // 通知其他 Client audio stream 已更新
     socket.emit("update-audio-source", roomId, myPeerId, myUserId);
   } catch (error) {
     console.error("Failed to update audio source:", error);
@@ -483,7 +483,7 @@ function toggleMicList() {
   } else {
     micList.classList.remove("hidden");
   }
-  isMicListActive = !isMicListActive; // 切换状态
+  isMicListActive = !isMicListActive;
 }
 
 function toggleVideoList() {
@@ -492,7 +492,7 @@ function toggleVideoList() {
   } else {
     videoList.classList.remove("hidden");
   }
-  isVideoListActive = !isVideoListActive; // 切换状态
+  isVideoListActive = !isVideoListActive;
 }
 
 // 關閉視訊
@@ -508,13 +508,13 @@ document
       localStream.getVideoTracks()[0].enabled = false;
       updateCanvasStream(localStream); // 更新畫布為黑色
     } else {
-      // 重新擷取視訊流
+      // 重新擷取視訊 stream
       const newVideoStream = await navigator.mediaDevices.getUserMedia({
-        video: true, // 重新取得視訊流
+        video: true, // 重新取得視訊 stream
         audio: false,
       });
 
-      // 保留現有的音訊軌道，並結合新的視訊流
+      // 保留現有的音訊軌道，並結合新的視訊 stream
       const updatedStream = new MediaStream([
         ...localStream.getAudioTracks(),
         ...newVideoStream.getVideoTracks(),
@@ -523,7 +523,7 @@ document
       localStream = updatedStream;
       initializeSegmenter();
       updateCanvasStream(localStream); // 更新畫布為新視訊內容
-      // 通知其他參與者視訊流已更新
+      // 通知其他參與者視訊 stream 已更新
       const canvasElementStream = document
         .querySelector(".local-stream")
         .captureStream();
@@ -552,18 +552,17 @@ document
 // socket listener
 
 function updateRemoteVideos(peerId, userVideoStream) {
-  // 检查页面上是否已经有这个用户的视频元素
+  // 检查頁面上是否已經有這個 client 的視訊
   let videoElement = document.querySelector(`video[data-peer-id="${peerId}"]`);
 
   if (!videoElement) {
-    // 如果还没有该用户的视频元素，则创建一个新的
+    // 如果沒有就創建一個新的
     videoElement = document.createElement("video");
-    videoElement.setAttribute("data-peer-id", peerId); // 设置 data-peer-id 属性
+    videoElement.setAttribute("data-peer-id", peerId);
     videoElement.autoplay = true;
     videoElement.playsInline = true;
 
-    // 可选：如果你希望远程视频静音，可以设置 muted
-    videoElement.muted = false; // 远程视频通常不需要静音
+    videoElement.muted = false;
 
     // add wrapper
     const videoWrapper = document.createElement("div");
@@ -604,16 +603,16 @@ function updateRemoteVideos(peerId, userVideoStream) {
     videoWrapper.appendChild(maximizeButton);
     videoWrapper.appendChild(videoElement);
 
-    // 将新创建的视频元素插入到指定的容器中
+    // 将新建立的視訊插入到指定的容器中
     const videoContainer = document.querySelector(".video-stream"); // 假设你有一个视频容器
     videoContainer.appendChild(videoWrapper);
   }
 
-  // 将新的视频流赋值给视频元素
+  // 将新的視訊 stream 赋值给 video element
   videoElement.srcObject = userVideoStream;
   console.log("updateRemoteVideo function 1");
   updateVideoLayout();
-  // 处理播放错误
+  // handle play error
   videoElement.addEventListener("loadedmetadata", () => {
     videoElement.play().catch((error) => {
       console.error("Error playing video stream: ", error);
@@ -621,16 +620,16 @@ function updateRemoteVideos(peerId, userVideoStream) {
   });
 }
 
-// 添加 connectToNewUser 函数，用于呼叫新连接的用户
+// 添加 connectToNewUser 函数，用于呼叫新連接的用户
 function connectToNewUser(peerId, stream) {
   const call = peerInstance.call(peerId, stream);
 
   call.on("stream", (userVideoStream) => {
-    updateRemoteVideos(peerId, userVideoStream); // 更新视频流
+    updateRemoteVideos(peerId, userVideoStream); // 更新視訊 stream
   });
 
   call.on("close", () => {
-    // 清理关闭后的资源
+    // 清理關閉後的資源
     console.log(`Call with ${peerId} ended`);
     removeVideoElement(call.peer);
   });
@@ -659,16 +658,16 @@ socket.on("user-disconnected-mainRoom", (peerId, userId) => {
 });
 
 window.addEventListener("beforeunload", (event) => {
-  // 触发 disconnect 事件
+  // 觸發 disconnect 事件
   socket.emit("user-leaving");
-  // 标准浏览器要求设置 returnValue 属性
+  // 標準瀏覽器要求設置 returnValue 属性
   event.returnValue = "";
 });
 
 window.addEventListener("unload", (event) => {
   // 触发 disconnect 事件
   socket.emit("user-leaving");
-  // 标准浏览器要求设置 returnValue 属性
+  //  標準瀏覽器要求設置 returnValue 属性
   event.returnValue = "";
 });
 
@@ -715,14 +714,14 @@ socket.on("user-mic-status-changed-by-usersPanel", ({ userId, isMuted }) => {
 socket.on("update-video-stream", (roomId, peerId, userId) => {
   console.log(`${userId} switched their media source, Updating...`);
   if (peerId !== myPeerId) {
-    connectToNewUser(peerId, currentStream); // 重新連接，使用更新後的流
+    connectToNewUser(peerId, currentStream); // 重新連接，使用更新後的 stream
   }
 });
 
 socket.on("user-audio-source-updated", (peerId, userId) => {
   console.log(`User ${userId} updated their audio source. Updating...`);
   if (peerId !== myPeerId) {
-    connectToNewUser(peerId, currentStream); // 重新連接，使用更新後的流
+    connectToNewUser(peerId, currentStream); // 重新連接，使用更新後的 stream
   }
 });
 
@@ -746,7 +745,7 @@ socket.on("toggle-video-status", (peerId, isVideoMuted) => {
     } else {
       // 恢復播放視訊
       if (peerId !== myPeerId) {
-        connectToNewUser(peerId, currentStream); // 重新連接，使用更新後的流
+        connectToNewUser(peerId, currentStream); // 重新連接，使用更新後的 stream
       }
     }
   }
@@ -756,7 +755,7 @@ socket.on("toggle-video-status", (peerId, isVideoMuted) => {
 socket.on("user-connected-breakoutRoom", (peerId, userId) => {
   console.log("New user connected to breakout room:", peerId, userId);
   if (peerId !== myPeerId) {
-    connectToNewUser(peerId, currentStream); // 使用更新後的流重新連接
+    connectToNewUser(peerId, currentStream); // 使用更新後的 stream 重新連接
   }
 });
 

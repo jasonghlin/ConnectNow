@@ -200,9 +200,6 @@ async function handleStop() {
     } else {
       throw new Error("影片上傳失敗");
     }
-
-    // 如果需要在上傳後生成字幕，可以在這裡發送通知到後端
-    // 例如： await sendToFastAPI(fileName); 來觸發字幕生成
   } catch (error) {
     console.error("影片上傳時發生錯誤:", error);
     Swal.fire("上傳影片時發生錯誤", error.message, "error");

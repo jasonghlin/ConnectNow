@@ -5,3 +5,4 @@ user_data*.bash
 code.bash
 .DS_Store
 *.bash
+loaderTest.js

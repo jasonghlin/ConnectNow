@@ -218,7 +218,7 @@ document.querySelector(".close-whiteboard").addEventListener("click", (e) => {
       video.classList.add("main-video");
       video.style.maxWidth = "";
       video.style.height = "";
-      videoStream.appendChild(video); // 確保視訊移回 video-stream 容器
+      videoStream.appendChild(video); // 確保視訊移回 video-stream
     });
 
     // 移除小視訊容器

@@ -27,7 +27,7 @@ function onResults(results) {
   backgroundCanvas.width = videoElement.videoWidth;
   backgroundCanvas.height = videoElement.videoHeight;
 
-  // 清除画布
+  // 清除畫布
   backgroundCanvasCtx.clearRect(
     0,
     0,
@@ -35,7 +35,7 @@ function onResults(results) {
     backgroundCanvas.height
   );
 
-  // 绘制背景
+  // 繪製背景
   if (backgroundMode === "blur") {
     backgroundCanvasCtx.filter = "blur(10px)";
     backgroundCanvasCtx.drawImage(
@@ -63,7 +63,7 @@ function onResults(results) {
     );
   }
 
-  // 绘制前景
+  // 繪製前景
   backgroundCanvasCtx.globalCompositeOperation = "destination-atop";
   backgroundCanvasCtx.drawImage(
     results.segmentationMask,
@@ -73,7 +73,7 @@ function onResults(results) {
     backgroundCanvas.height
   );
 
-  // 恢复正常的绘制操作
+  // 恢復正常的繪畫操作
   backgroundCanvasCtx.globalCompositeOperation = "destination-over";
   backgroundCanvasCtx.drawImage(
     videoElement,
@@ -92,7 +92,7 @@ async function startCamera() {
 
   videoElement.srcObject = stream;
 
-  // 确保视频流加载完毕后再进行播放
+  // 確保 stream 加載完畢後再播放
   await new Promise((resolve) => {
     videoElement.onloadedmetadata = () => {
       resolve();

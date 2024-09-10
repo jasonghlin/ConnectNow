@@ -29,7 +29,7 @@ async function updateUsersList() {
     });
     const usersList = await usersResponse.json();
 
-    // 获取当前房间的用户静音状态
+    // 獲取當前房間用戶的靜音狀態
     const muteStatusResponse = await fetch(`/api/muteStatus/${roomId}`, {
       method: "GET",
       headers: {
@@ -60,7 +60,7 @@ async function updateUsersList() {
       participantsList.insertAdjacentHTML("beforeend", html);
     });
 
-    // 初始化靜音按鈕事件處理
+    // 初始化靜音按鈕 event handler
     if (roomAdminId == payload.payload.userId) {
       initializeMuteMicHandler();
     }

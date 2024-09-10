@@ -75,7 +75,7 @@ export default function socketMainRoom(io, socket, redisClient) {
       });
 
       // send white board state
-      // 从 Redis 获取当前房间的白板状态
+      // 从 Redis 獲取當前房間的白板狀態
       const whiteboardState = await redisClient.lRange(
         `whiteboard:${roomName}`,
         0,
@@ -85,7 +85,7 @@ export default function socketMainRoom(io, socket, redisClient) {
       // 将状态数据从字符串解析为对象数组
       const parsedState = whiteboardState.map((line) => JSON.parse(line));
 
-      // 发送当前的白板状态给客户端
+      // 將當前的白板狀態傳給 client
       socket.emit("current-whiteboard-state", parsedState);
     } catch (error) {
       console.log(error);
