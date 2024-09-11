@@ -48,7 +48,7 @@ if (ENV === "production") {
 const io = new Server(server, {
   cors: {
     origin: [
-      "https://static.connectnow.website",
+      "https://www.connectnow.website",
       "http://127.0.0.1:8080",
       "https://static.connectnow.website",
     ],
@@ -90,7 +90,7 @@ app.use(cookieParser());
 app.use(
   cors({
     origin: [
-      "https://static.connectnow.website",
+      "https://www.connectnow.website",
       "http://127.0.0.1:8080",
       "https://static.connectnow.website",
     ],
