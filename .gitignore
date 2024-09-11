@@ -6,3 +6,4 @@ code.bash
 .DS_Store
 *.bash
 loaderTest.js
+jwt-server.js

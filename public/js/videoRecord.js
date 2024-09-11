@@ -188,7 +188,7 @@ async function handleStop() {
       console.log("影片成功上傳到 S3");
       waitingUploadElement.classList.add("hidden");
       Swal.fire("影片上傳成功，正在進行轉檔與字幕生成", "", "success");
-      await fetch`${BASE_URL}/videoRecord`, {
+      await fetch(`${BASE_URL}/videoRecord`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
