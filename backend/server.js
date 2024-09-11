@@ -47,7 +47,11 @@ if (ENV === "production") {
 
 const io = new Server(server, {
   cors: {
-    origin: ["https://static.connectnow.website", "http://127.0.0.1:8080"],
+    origin: [
+      "https://static.connectnow.website",
+      "http://127.0.0.1:8080",
+      "https://static.connectnow.website",
+    ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "my-custom-header"],
     credentials: true,
@@ -85,7 +89,11 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: ["https://static.connectnow.website", "http://127.0.0.1:8080"],
+    origin: [
+      "https://static.connectnow.website",
+      "http://127.0.0.1:8080",
+      "https://static.connectnow.website",
+    ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "my-custom-header"],
     credentials: true,
