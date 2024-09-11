@@ -162,7 +162,7 @@ app.get("/roomId/:roomId", authenticateJWT, async (req, res) => {
     try {
       // 下載遠端檔案
       const fileUrl =
-        "https://static.connectnow.website/connectnow/static/routerRoom.html";
+        "https://static.connectnow.website/connectnow/static/room.html";
       const response = await axios({
         method: "GET",
         url: fileUrl,
