@@ -1,6 +1,8 @@
 import { handleFinishGrouping } from "./groupHandler.js";
 import { roomId, socket } from "./script.js";
 
+const BASE_URL = "https://www.connectnow.website";
+
 // 使用 MutationObserver 監聽 DOM 變化
 const breakoutRoomObserver = new MutationObserver((mutations) => {
   mutations.forEach((mutation) => {
@@ -47,7 +49,7 @@ async function createGroups() {
   const token = localStorage.getItem("session");
   let users;
   try {
-    const usersResponse = await fetch("/api/allUsers", {
+    const usersResponse = await fetch(`${BASE_URL}/api/allUsers`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -167,7 +169,7 @@ async function finishGrouping() {
   });
 
   // Send the groups data to the backend
-  fetch("/api/groups", {
+  fetch(`${BASE_URL}api/groups`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

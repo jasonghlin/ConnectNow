@@ -1,3 +1,4 @@
+const BASE_URL = "https://www.connectnow.website";
 function registerUser() {
   const registerForm = document.querySelector(".register-form");
   registerForm?.addEventListener("submit", async (e) => {
@@ -5,7 +6,7 @@ function registerUser() {
     let registerName = e.target["register-name"].value;
     let registerEmail = e.target["register-email"].value;
     let registerPassword = e.target["register-password"].value;
-    let response = await fetch("/api/user", {
+    let response = await fetch(`${BASE_URL}/api/user`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -36,7 +37,7 @@ function loginUser() {
     e.preventDefault();
     let loginEmail = e.target["login-email"].value;
     let loginPassword = e.target["login-password"].value;
-    let response = await fetch("/api/user/auth", {
+    let response = await fetch(`${BASE_URL}/api/user/auth`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -78,7 +79,7 @@ async function checkStatus() {
 
   if (token) {
     try {
-      const response = await fetch("/api/user/auth", {
+      const response = await fetch(`${BASE_URL}/api/user/auth`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

@@ -1,4 +1,6 @@
-import { checkStatus } from "/static/utils/loginOutAndRegister.js";
+import { checkStatus } from "https://static.connectnow.website/connectnow/static/utils/loginOutAndRegister.js";
+
+const BASE_URL = "https://www.connectnow.website";
 
 const logo = document.querySelector(".logo-container");
 const login = document.querySelector(".login-register");
@@ -77,7 +79,7 @@ function handleRegister() {
   const registerForm = document.querySelector(".register-form");
 
   const registerUser = async (name, email, password) => {
-    const response = await fetch("/api/user", {
+    const response = await fetch(`${BASE_URL}/api/user`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -132,7 +134,7 @@ function handleLogin() {
   const loginForm = document.querySelector(".login-form");
 
   const loginUser = async (email, password) => {
-    const response = await fetch("/api/user/auth", {
+    const response = await fetch(`${BASE_URL}/api/user/auth`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

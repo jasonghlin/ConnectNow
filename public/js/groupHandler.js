@@ -2,10 +2,13 @@ async function handleFinishGrouping(groupsData, timerInputValue) {
   const { socket, updateCurrentRoom, currentRoom, peerInstance } = await import(
     "./script.js"
   );
+
+  const BASE_URL = "https://www.connectnow.website";
+
   const currentUrl = window.location.href;
   const mainRoomName = localStorage.getItem("mainRoom");
   // 獲取用戶認證信息
-  const response = await fetch("/api/user/auth", {
+  const response = await fetch(`${BASE_URL}/api/user/auth`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",

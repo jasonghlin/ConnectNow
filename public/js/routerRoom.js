@@ -1,28 +1,33 @@
-import { checkStatus } from "/static/utils/loginOutAndRegister.js";
-import { date } from "/static/utils/date.js";
+import { checkStatus } from "https://static.connectnow.website/connectnow/static/utils/loginOutAndRegister.js";
+import { date } from "https://static.connectnow.website/connectnow/static/utils/date.js";
+
+const BASE_URL = "https://www.connectnow.website";
 
 async function routerRoom() {
   date();
   const payload = await checkStatus();
   let userImgUrl = localStorage.getItem("proImg");
   if (payload && !userImgUrl) {
-    let response = await fetch("/api/userImg", {
+    let response = await fetch(`${BASE_URL}/api/userImg`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${localStorage.getItem("session")}`,
       },
     });
     if (response.ok) {
-      // 確保請求成功
       const data = await response.json();
-      console.log(data); // 檢查返回的數據格式
-      userImgUrl = data.url || "/static/images/user.png"; // 確保 url 存在
+      console.log(data);
+      userImgUrl =
+        data.url ||
+        "https://static.connectnow.website/connectnow/static/images/user.png"; // 確保 url 存在
     } else {
       console.error("Failed to fetch user image");
-      userImgUrl = "/static/images/user.png"; // 默認圖片
+      userImgUrl =
+        "https://static.connectnow.website/connectnow/static/images/user.png"; // 默認圖片
     }
   } else if (!userImgUrl) {
-    userImgUrl = "/static/images/user.png"; // 默認圖片
+    userImgUrl =
+      "https://static.connectnow.website/connectnow/static/images/user.png"; // 默認圖片
   }
   if (payload) {
     document.querySelector(
@@ -62,7 +67,7 @@ async function routerRoom() {
     //   return;
     // }
     try {
-      const createRoomId = await fetch("/api/mainRoom", {
+      const createRoomId = await fetch(`${BASE_URL}/api/mainRoom`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

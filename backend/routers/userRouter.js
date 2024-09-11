@@ -88,7 +88,7 @@ passport.use(
       const profileImage =
         profile.photos && profile.photos.length > 0
           ? profile.photos[0].value
-          : "/static/images/user.png";
+          : "https://static.connectnow.website/connectnow/static/images/user.png";
 
       try {
         // use google info generate JWT

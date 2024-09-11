@@ -59,7 +59,27 @@ router.get(
         breakoutRoomId
       );
       console.log("joinBreakoutRoomSuccess: ", joinBreakOutRoomSuccess);
-      res.sendFile(join(workingDirectory, "public", "room.html"));
+
+      try {
+        // 下載遠端檔案
+        const fileUrl =
+          "https://static.connectnow.website/connectnow/static/room.html";
+        const response = await axios({
+          method: "GET",
+          url: fileUrl,
+          responseType: "stream", // 使用stream來處理大檔案
+        });
+
+        // 設置正確的 Content-Type
+        res.setHeader("Content-Type", response.headers["content-type"]);
+
+        // 將下載的檔案流傳送給前端
+        response.data.pipe(res);
+      } catch (error) {
+        res.status(500).send("Error downloading the file");
+      }
+
+      // res.sendFile(join(workingDirectory, "public", "room.html"));
     } catch (error) {
       console.log(error);
     }

@@ -1,6 +1,7 @@
 let mediaRecorder;
 let recordedChunks = [];
 let isRecording = false;
+const BASE_URL = "https://www.connectnow.website";
 
 function isRecordingOrNot(isRecording) {
   if (isRecording) {
@@ -162,7 +163,7 @@ async function handleStop() {
     const roomId = pathSegments[pathSegments.length - 1];
     const fileName = `video_${roomId}_${Date.now()}.webm`;
     const response = await fetch(
-      `/presignedUrl?fileName=${encodeURIComponent(
+      `${BASE_URL}/presignedUrl?fileName=${encodeURIComponent(
         fileName
       )}&fileType=${encodeURIComponent("video/webm")}`,
       {
@@ -175,7 +176,7 @@ async function handleStop() {
     const { url } = await response.json();
 
     // 使用預簽名 URL 上傳影片
-    const uploadResponse = await fetch(url, {
+    const uploadResponse = await fetch(`${BASE_URL}/url`, {
       method: "PUT",
       headers: {
         "Content-Type": "video/webm",
@@ -187,7 +188,7 @@ async function handleStop() {
       console.log("影片成功上傳到 S3");
       waitingUploadElement.classList.add("hidden");
       Swal.fire("影片上傳成功，正在進行轉檔與字幕生成", "", "success");
-      await fetch("/videoRecord", {
+      await fetch`${BASE_URL}/videoRecord`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -205,5 +206,5 @@ async function handleStop() {
     Swal.fire("上傳影片時發生錯誤", error.message, "error");
   }
 
-  recordedChunks = []; // 清空錄製數據
+  recordedChunks = []; // 清空錄製資料
 }

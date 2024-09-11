@@ -3,6 +3,8 @@ import { updateVideoLayout } from "./videoLayout.js";
 
 const canvas = document.getElementById("whiteboard-canvas");
 const context = canvas.getContext("2d");
+const BASE_URL = "https://www.connectnow.website";
+
 let drawing = false;
 let isErasing = false; // 判斷是否使用橡皮擦
 let current = {
@@ -154,7 +156,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const pathSegments = window.location.pathname.split("/");
   const roomId = pathSegments[pathSegments.length - 1]; // 替換為實際的房間 ID 獲取邏輯
   const token = localStorage.getItem("session");
-  const response = await fetch("/api/user/auth", {
+  const response = await fetch(`${BASE_URL}/api/user/auth`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",

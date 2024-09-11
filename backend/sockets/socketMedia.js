@@ -3,7 +3,7 @@ export const userMuteStatus = {}; // 儲存每個房間中使用者的靜音狀�
 export default function socketMedia(io, socket) {
   // toggle mic
   socket.on("toggle-mic-status", (roomName, peerId, userId, isMicMuted) => {
-    // 更新静音状态
+    // 更新靜音狀態
     if (!userMuteStatus[roomName]) {
       userMuteStatus[roomName] = {};
     }

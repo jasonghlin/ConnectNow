@@ -1,4 +1,4 @@
-import { checkStatus } from "/static/utils/loginOutAndRegister.js";
+import { checkStatus } from "https://static.connectnow.website/connectnow/static/utils/loginOutAndRegister.js";
 // import { MainRoom } from "/static/utils/MainRoomClass.js";
 import { convertCanvasToStream } from "./backgroundEffects.js";
 import {
@@ -13,6 +13,8 @@ import { MainRoom } from "../utils/MainRoomClass.js";
 // 獲取房間 ID
 const pathSegments = window.location.pathname.split("/");
 const roomId = pathSegments[pathSegments.length - 1];
+const BASE_URL = "https://www.connectnow.website";
+
 document.getElementById("currentRoomId").textContent = roomId;
 
 // 建立 Socket.io 以及 Peer.js 連接
@@ -175,16 +177,19 @@ function initializeMainRoom() {
       currentUrl = window.location.href;
       roomUrl = currentUrl.substring(currentUrl.lastIndexOf("/") + 1);
       console.log("roomUrl: ", roomUrl);
-      const roomAdminResponse = await fetch(`/api/roomAdmin/${roomId}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("session")}`,
-        },
-      });
+      const roomAdminResponse = await fetch(
+        `${BASE_URL}/api/roomAdmin/${roomId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("session")}`,
+          },
+        }
+      );
       const roomAdmin = await roomAdminResponse.json();
       const roomAdminId = roomAdmin[0].admin_user_id;
-      const usersResponse = await fetch("/api/allUsers", {
+      const usersResponse = await fetch(`${BASE_URL}/api/allUsers`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

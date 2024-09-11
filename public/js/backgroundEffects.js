@@ -15,7 +15,8 @@ let applyForegroundReplacement = false;
 let applyForegroundBlur = false;
 
 let foregroundImage = new Image();
-foregroundImage.src = "/static/images/bgs/bg-1.jpeg";
+foregroundImage.src =
+  "https://static.connectnow.website/connectnow/static/images/bgs/bg-1.jpeg";
 
 // Function to create image segmenter
 const stream = await navigator.mediaDevices.getUserMedia({
@@ -200,7 +201,7 @@ async function convertCanvasToStream(canvas, isMicMuted = false) {
       );
     }
 
-    // 創建一個翻轉的 canvas，用於發送視頻流
+    // 創建一個翻轉的 canvas，用於發送 stream
     const flippedCanvas = document.createElement("canvas");
     flippedCanvas.width = canvas.width;
     flippedCanvas.height = canvas.height;
@@ -222,7 +223,7 @@ async function convertCanvasToStream(canvas, isMicMuted = false) {
     }
     flipCanvas();
 
-    const flippedStream = flippedCanvas.captureStream(); // 捕獲翻轉後的流
+    const flippedStream = flippedCanvas.captureStream(); // capture 翻轉後的 stream
 
     const mic = await navigator.mediaDevices.getUserMedia({
       audio: true,
@@ -255,7 +256,9 @@ document.querySelectorAll(".bg-img").forEach((el, index) => {
   el.addEventListener("click", () => {
     applyForegroundReplacement = true;
     applyForegroundBlur = false;
-    foregroundImage.src = `/static/images/bgs/flip/bg-${index + 1}.jpeg`;
+    foregroundImage.src = `https://static.connectnow.website/connectnow/static/images/bgs/flip/bg-${
+      index + 1
+    }.jpeg`;
   });
 });
 

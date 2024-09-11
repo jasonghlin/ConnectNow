@@ -1,11 +1,13 @@
 import { initializeMuteMicHandler } from "./muteMic.js";
 import { socket, roomId } from "./script.js";
-import { checkStatus } from "/static/utils/loginOutAndRegister.js";
+import { checkStatus } from "https://static.connectnow.website/connectnow/static/utils/loginOutAndRegister.js";
+
+const BASE_URL = "https://www.connectnow.website";
 
 // users panel
 async function updateUsersList() {
   const payload = await checkStatus();
-  const roomAdminResponse = await fetch(`/api/roomAdmin/${roomId}`, {
+  const roomAdminResponse = await fetch(`${BASE_URL}/api/roomAdmin/${roomId}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -20,7 +22,7 @@ async function updateUsersList() {
   const token = localStorage.getItem("session");
 
   try {
-    const usersResponse = await fetch("/api/allUsers", {
+    const usersResponse = await fetch(`${BASE_URL}/api/allUsers`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -30,13 +32,16 @@ async function updateUsersList() {
     const usersList = await usersResponse.json();
 
     // 獲取當前房間用戶的靜音狀態
-    const muteStatusResponse = await fetch(`/api/muteStatus/${roomId}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("session")}`,
-      },
-    });
+    const muteStatusResponse = await fetch(
+      `${BASE_URL}/api/muteStatus/${roomId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("session")}`,
+        },
+      }
+    );
     const muteStatus = await muteStatusResponse.json();
 
     usersList.forEach((user) => {
@@ -45,7 +50,8 @@ async function updateUsersList() {
                 <div class="avater-userName-wrapper">
                     <div class="avatar">
                         <img src="${
-                          user.avatar_url || "/static/images/user.png"
+                          user.avatar_url ||
+                          "https://static.connectnow.website/connectnow/static/images/user.png"
                         }" alt="avatar">
                     </div>
                     <div class="user-name">${user.name}</div>

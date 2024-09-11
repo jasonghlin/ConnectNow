@@ -1,4 +1,5 @@
 import express from "express";
+import axios from "axios";
 import dotenv from "dotenv";
 import { Server } from "socket.io";
 import { createClient } from "redis";
@@ -46,9 +47,9 @@ if (ENV === "production") {
 
 const io = new Server(server, {
   cors: {
-    origin: "*",
-    methods: ["GET", "POST"],
-    allowedHeaders: ["my-custom-header"],
+    origin: "https://static.connectnow.website",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "my-custom-header"],
     credentials: true,
     allowEIO3: true,
   },
@@ -84,28 +85,64 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: "*",
-    methods: ["GET", "POST"],
-    allowedHeaders: ["my-custom-header"],
+    origin: "https://static.connectnow.website",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "my-custom-header"],
     credentials: true,
   })
 );
 
-app.use("/static", express.static(join(workingDirectory, "public")));
+// app.use("/static", express.static(join(workingDirectory, "public")));
 app.use(userRouter);
 app.use(roomRouter);
 
 // 其他路由
-app.get("/", (req, res) => {
-  res.sendFile(join(workingDirectory, "public", "routerRoom.html"));
+app.get("/", async (req, res) => {
+  try {
+    // 下載遠端檔案
+    const fileUrl =
+      "https://static.connectnow.website/connectnow/static/routerRoom.html";
+    const response = await axios({
+      method: "GET",
+      url: fileUrl,
+      responseType: "stream", // 使用stream來處理大檔案
+    });
+
+    // 設置正確的 Content-Type
+    res.setHeader("Content-Type", response.headers["content-type"]);
+
+    // 將下載的檔案流傳送給前端
+    response.data.pipe(res);
+  } catch (error) {
+    res.status(500).send("Error downloading the file");
+  }
+  // res.sendFile(join(workingDirectory, "public", "routerRoom.html"));
 });
 
 app.get("/health", (req, res) => {
   res.status(200).send("OK");
 });
 
-app.get("/member", authenticateJWT, (req, res) => {
-  res.sendFile(join(workingDirectory, "public", "member.html"));
+app.get("/member", authenticateJWT, async (req, res) => {
+  try {
+    // 下載遠端檔案
+    const fileUrl =
+      "https://static.connectnow.website/connectnow/static/member.html";
+    const response = await axios({
+      method: "GET",
+      url: fileUrl,
+      responseType: "stream", // 使用stream來處理大檔案
+    });
+
+    // 設置正確的 Content-Type
+    res.setHeader("Content-Type", response.headers["content-type"]);
+
+    // 將下載的檔案流傳送給前端
+    response.data.pipe(res);
+  } catch (error) {
+    res.status(500).send("Error downloading the file");
+  }
+  // res.sendFile(join(workingDirectory, "public", "member.html"));
 });
 
 // create and join main room
@@ -122,7 +159,26 @@ app.get("/roomId/:roomId", authenticateJWT, async (req, res) => {
       await adminJoinMainRoom(req.payload, roomName);
     }
 
-    res.sendFile(join(workingDirectory, "public", "room.html"));
+    try {
+      // 下載遠端檔案
+      const fileUrl =
+        "https://static.connectnow.website/connectnow/static/routerRoom.html";
+      const response = await axios({
+        method: "GET",
+        url: fileUrl,
+        responseType: "stream", // 使用stream來處理大檔案
+      });
+
+      // 設置正確的 Content-Type
+      res.setHeader("Content-Type", response.headers["content-type"]);
+
+      // 將下載的檔案流傳送給前端
+      response.data.pipe(res);
+    } catch (error) {
+      res.status(500).send("Error downloading the file");
+    }
+
+    // res.sendFile(join(workingDirectory, "public", "room.html"));
 
     // if (!joinMainRoomSuccess) {
     //   res.status(403).json({ error: "user already in room!" });

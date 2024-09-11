@@ -27,4 +27,4 @@ function roomTime() {
 roomTime();
 
 // 每分鐘更新一次時間
-setInterval(roomTime, 1000); // 每 60000 毫秒（1 分鐘）更新一次
+setInterval(roomTime, 1000);

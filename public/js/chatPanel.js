@@ -1,4 +1,4 @@
-import { checkStatus } from "/static/utils/loginOutAndRegister.js";
+import { checkStatus } from "https://static.connectnow.website/connectnow/static/utils/loginOutAndRegister.js";
 import { socket } from "./script.js";
 
 async function chatLogic() {

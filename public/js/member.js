@@ -1,5 +1,11 @@
-import { checkStatus, logOutUser } from "/static/utils/loginOutAndRegister.js";
-import { date } from "/static/utils/date.js";
+import {
+  checkStatus,
+  logOutUser,
+} from "https://static.connectnow.website/connectnow/static/utils/loginOutAndRegister.js";
+import { date } from "https://static.connectnow.website/connectnow/static/utils/date.js";
+
+const BASE_URL = "https://www.connectnow.website";
+
 async function init() {
   const payload = await checkStatus();
   await getUserInfo();
@@ -28,7 +34,7 @@ function logoRetrun() {
 let userInfo;
 // get userInfo
 async function getUserInfo() {
-  let response = await fetch("/api/user/auth", {
+  let response = await fetch(`${BASE_URL}/api/user/auth`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -49,7 +55,7 @@ async function saveName(newName) {
   }
 
   let token = localStorage.getItem("session");
-  let response = await fetch("/api/user/userInfo", {
+  let response = await fetch(`${BASE_URL}/api/user/userInfo`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -137,7 +143,7 @@ async function saveEmail(newEmail) {
   }
   if (validateEmail(newEmail)) {
     let token = localStorage.getItem("session");
-    let response = await fetch("/api/user/userInfo", {
+    let response = await fetch(`${BASE_URL}/api/user/userInfo`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -242,7 +248,7 @@ async function savePassword() {
 
   if (validatePassword(newPasswordInput, newPasswordInputValidate)) {
     let token = localStorage.getItem("session");
-    let response = await fetch("/api/user/userInfo", {
+    let response = await fetch(`${BASE_URL}/api/user/userInfo`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -339,7 +345,7 @@ async function uploadImage(event) {
   let formData = new FormData();
   formData.append("file", file);
   try {
-    let response = await fetch("/api/userImg", {
+    let response = await fetch(`${BASE_URL}/api/userImg`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -374,7 +380,7 @@ async function userImg() {
   if (sessionImgURL) {
     document.querySelector(".photo > img").src = sessionImgURL;
   } else {
-    let response = await fetch("/api/userImg", {
+    let response = await fetch(`${BASE_URL}/api/userImg`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${localStorage.getItem("session")}`,
@@ -432,7 +438,7 @@ function populateTable(data) {
 }
 
 async function videoRecords() {
-  let response = await fetch("/api/roomVideoRecords", {
+  let response = await fetch(`${BASE_URL}/api/roomVideoRecords`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${localStorage.getItem("session")}`,

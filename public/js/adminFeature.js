@@ -1,18 +1,23 @@
-import { checkStatus } from "/static/utils/loginOutAndRegister.js";
+import { checkStatus } from "https://static.connectnow.website/connectnow/static/utils/loginOutAndRegister.js";
 import { socket } from "./script.js";
+
+const BASE_URL = "https://www.connectnow.website";
 
 async function adminFeature() {
   const path = window.location.pathname.split("/");
   const roomId = path[path.length - 1];
   try {
     const payload = await checkStatus();
-    const roomAdminResponse = await fetch(`/api/roomAdmin/${roomId}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("session")}`,
-      },
-    });
+    const roomAdminResponse = await fetch(
+      `${BASE_URL}/api/roomAdmin/${roomId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("session")}`,
+        },
+      }
+    );
     const roomAdmin = await roomAdminResponse.json();
     const roomAdminId = roomAdmin[0].admin_user_id;
     if (roomAdminId == payload.payload.userId) {
