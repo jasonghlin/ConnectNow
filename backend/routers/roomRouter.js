@@ -21,6 +21,7 @@ const {
   AWS_SECRET_KEY,
   BUCKET_NAME,
   SQS_URL,
+  STATIC_FILE_URL,
 } = process.env;
 
 const router = express.Router();
@@ -62,8 +63,7 @@ router.get(
 
       try {
         // 下載遠端檔案
-        const fileUrl =
-          "https://static.connectnow.website/connectnow/static/room.html";
+        const fileUrl = `${STATIC_FILE_URL}/static/room.html`;
         const response = await axios({
           method: "GET",
           url: fileUrl,

@@ -33,6 +33,8 @@ const {
   BUCKET_NAME,
   GOOGLE_AUTO_CLIENT_ID,
   GOOGLE_AUTO_CLIENT_SECRET,
+  STATIC_FILE_URL,
+  CDN_URL,
 } = process.env;
 
 const router = express.Router();
@@ -88,7 +90,7 @@ passport.use(
       const profileImage =
         profile.photos && profile.photos.length > 0
           ? profile.photos[0].value
-          : "https://static.connectnow.website/connectnow/static/images/user.png";
+          : `${STATIC_FILE_URL}/static/images/user.png`;
 
       try {
         // use google info generate JWT
@@ -373,7 +375,7 @@ router.post(
       await s3Client.send(new PutObjectCommand(uploadParams));
 
       // Get file URL
-      const fileUrl = `https://d3u8ez3u55dl9n.cloudfront.net/${fileKey}`;
+      const fileUrl = `${CDN_URL}/${fileKey}`;
       await updateDbUserImg(req.payload.userId, fileUrl);
 
       return res.json({ message: "File uploaded successfully", url: fileUrl });
@@ -413,7 +415,7 @@ router.get(
     const script = `
       localStorage.setItem('proImg', '${profileImage}');
       localStorage.setItem('session', '${token}');
-      window.location.href = '/'; // 重定向到您希望的頁面
+      window.location.href = '/'; // 重定向到首頁
     `;
 
     // 將這段 script 傳送給瀏覽器執行

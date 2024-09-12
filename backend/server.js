@@ -28,7 +28,8 @@ import socketWhiteboard from "./sockets/socketWhiteboard.js";
 import socketVideo from "./sockets/socketVideo.js";
 
 dotenv.config();
-const { ENV } = process.env;
+const { ENV, REDIS_URL, STATIC_FILE_URL, DOMAIN } = process.env;
+let BASE_URL = ENV === "production" ? STATIC_FILE_URL : "http://127.0.0.1:8080";
 
 const port = 8080;
 
@@ -47,11 +48,7 @@ if (ENV === "production") {
 
 const io = new Server(server, {
   cors: {
-    origin: [
-      "https://www.connectnow.website",
-      "http://127.0.0.1:8080",
-      "https://static.connectnow.website",
-    ],
+    origin: [DOMAIN, "http://127.0.0.1:8080", STATIC_FILE_URL],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "my-custom-header"],
     credentials: true,
@@ -62,7 +59,7 @@ const io = new Server(server, {
 let redisClient;
 if (ENV === "production") {
   redisClient = createClient({
-    url: "rediss://clustercfg.connectnow-redis-server.z2mtgi.usw2.cache.amazonaws.com:6379",
+    url: REDIS_URL,
   });
 } else {
   redisClient = createClient();
@@ -74,7 +71,7 @@ await redisClient.connect();
 const pubClient = createClient(
   ENV === "production"
     ? {
-        url: "rediss://clustercfg.connectnow-redis-server.z2mtgi.usw2.cache.amazonaws.com:6379",
+        url: REDIS_URL,
       }
     : { url: "redis://localhost:6379" }
 );
@@ -89,11 +86,7 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: [
-      "https://www.connectnow.website",
-      "http://127.0.0.1:8080",
-      "https://static.connectnow.website",
-    ],
+    origin: [DOMAIN, "http://127.0.0.1:8080", STATIC_FILE_URL],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "my-custom-header"],
     credentials: true,
@@ -108,8 +101,7 @@ app.use(roomRouter);
 app.get("/", async (req, res) => {
   try {
     // 下載遠端檔案
-    const fileUrl =
-      "https://static.connectnow.website/connectnow/static/routerRoom.html";
+    const fileUrl = `${STATIC_FILE_URL}/static/routerRoom.html`;
     const response = await axios({
       method: "GET",
       url: fileUrl,
@@ -134,8 +126,7 @@ app.get("/health", (req, res) => {
 app.get("/member", authenticateJWT, async (req, res) => {
   try {
     // 下載遠端檔案
-    const fileUrl =
-      "https://static.connectnow.website/connectnow/static/member.html";
+    const fileUrl = `${STATIC_FILE_URL}/static/member.html`;
     const response = await axios({
       method: "GET",
       url: fileUrl,
@@ -169,8 +160,7 @@ app.get("/roomId/:roomId", authenticateJWT, async (req, res) => {
 
     try {
       // 下載遠端檔案
-      const fileUrl =
-        "https://static.connectnow.website/connectnow/static/room.html";
+      const fileUrl = `${STATIC_FILE_URL}/static/room.html`;
       const response = await axios({
         method: "GET",
         url: fileUrl,
