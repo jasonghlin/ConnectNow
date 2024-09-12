@@ -76,6 +76,10 @@ async function getAllUsers(url_param) {
     // Step 3: Get names from users where id is in the found user ids
     const usersQuery = `SELECT id, name, avatar_url FROM users WHERE id IN (?)`;
     const usersValues = [userIds];
+    console.log("usersValues.length: ", usersValues.length, usersValues);
+    if (userIds.length === 0) {
+      return false;
+    }
 
     const usersResult = await new Promise((resolve, reject) => {
       pool.getConnection((err, connection) => {

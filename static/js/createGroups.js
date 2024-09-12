@@ -1,7 +1,10 @@
 import { handleFinishGrouping } from "./groupHandler.js";
 import { roomId, socket } from "./script.js";
 
-const BASE_URL = "https://www.connectnow.website";
+const BASE_URL =
+  window.location.protocol == "https:"
+    ? "https://www.connectnow.website"
+    : "http://127.0.0.1:8080";
 
 // 使用 MutationObserver 監聽 DOM 變化
 const breakoutRoomObserver = new MutationObserver((mutations) => {

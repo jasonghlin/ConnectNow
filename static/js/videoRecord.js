@@ -1,7 +1,10 @@
 let mediaRecorder;
 let recordedChunks = [];
 let isRecording = false;
-const BASE_URL = "https://www.connectnow.website";
+const BASE_URL =
+  window.location.protocol == "https:"
+    ? "https://www.connectnow.website"
+    : "http://127.0.0.1:8080";
 
 function isRecordingOrNot(isRecording) {
   if (isRecording) {

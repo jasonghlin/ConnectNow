@@ -115,7 +115,7 @@ export default function socketMainRoom(io, socket, redisClient) {
       if (userId == roomAdmin[0].user_id) {
         const users = await getAllUsers(roomName);
         const randomAdminIndex = Math.floor(Math.random() * users.length);
-        const newAdminId = users[randomAdminIndex].id;
+        const newAdminId = users[randomAdminIndex]?.id;
         console.log("newAdminId: ", newAdminId);
         await updateMainRoomAdmin(newAdminId, roomName);
         io.to(roomName).emit("room-admin-update", newAdminId);

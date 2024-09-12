@@ -13,7 +13,10 @@ import { MainRoom } from "../utils/MainRoomClass.js";
 // 獲取房間 ID
 const pathSegments = window.location.pathname.split("/");
 const roomId = pathSegments[pathSegments.length - 1];
-const BASE_URL = "https://www.connectnow.website";
+const BASE_URL =
+  window.location.protocol == "https:"
+    ? "https://www.connectnow.website"
+    : "http://127.0.0.1:8080";
 
 document.getElementById("currentRoomId").textContent = roomId;
 

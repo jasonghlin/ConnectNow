@@ -3,7 +3,10 @@ import { updateVideoLayout } from "./videoLayout.js";
 
 const canvas = document.getElementById("whiteboard-canvas");
 const context = canvas.getContext("2d");
-const BASE_URL = "https://www.connectnow.website";
+const BASE_URL =
+  window.location.protocol == "https:"
+    ? "https://www.connectnow.website"
+    : "http://127.0.0.1:8080";
 
 let drawing = false;
 let isErasing = false; // 判斷是否使用橡皮擦

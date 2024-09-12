@@ -1,4 +1,7 @@
-const BASE_URL = "https://www.connectnow.website";
+const BASE_URL =
+  window.location.protocol == "https:"
+    ? "https://www.connectnow.website"
+    : "http://127.0.0.1:8080";
 function registerUser() {
   const registerForm = document.querySelector(".register-form");
   registerForm?.addEventListener("submit", async (e) => {

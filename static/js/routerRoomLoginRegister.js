@@ -1,6 +1,9 @@
 import { checkStatus } from "https://static.connectnow.website/connectnow/static/utils/loginOutAndRegister.js";
 
-const BASE_URL = "https://www.connectnow.website";
+const BASE_URL =
+  window.location.protocol == "https:"
+    ? "https://www.connectnow.website"
+    : "http://127.0.0.1:8080";
 
 const logo = document.querySelector(".logo-container");
 const login = document.querySelector(".login-register");

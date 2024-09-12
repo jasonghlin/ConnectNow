@@ -4,7 +4,10 @@ import {
 } from "https://static.connectnow.website/connectnow/static/utils/loginOutAndRegister.js";
 import { date } from "https://static.connectnow.website/connectnow/static/utils/date.js";
 
-const BASE_URL = "https://www.connectnow.website";
+const BASE_URL =
+  window.location.protocol == "https:"
+    ? "https://www.connectnow.website"
+    : "http://127.0.0.1:8080";
 
 async function init() {
   const payload = await checkStatus();
