@@ -1,45 +1,28 @@
-import {
-  pool,
-  createDatabase,
-  useDatabase,
-  createMainRoomTable,
-} from "./mysql.js";
+import { pool } from "./mysql.js";
 
 async function checkMainRoomExist(roomName) {
+  const checkMainRoomExistQuery = "SELECT * FROM main_room WHERE name = (?)";
+  const mainRoomValues = [roomName];
+  let connection;
+
   try {
-    await createDatabase();
-    await useDatabase();
-    await createMainRoomTable();
+    // 取得連線
+    connection = await pool.getConnection();
 
-    // 先從 main_room table 查詢房間 id
-    const checkMainRoomExistQuery = "SELECT * FROM main_room WHERE name = (?)";
-    const mainRoomValues = [roomName];
+    // 執行查詢
+    const [results] = await connection.query(
+      checkMainRoomExistQuery,
+      mainRoomValues
+    );
 
-    return new Promise((resolve, reject) => {
-      pool.getConnection((err, connection) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        connection.query(
-          checkMainRoomExistQuery,
-          mainRoomValues,
-          (error, results) => {
-            connection.release();
-            if (error) {
-              reject(error);
-            } else if (results.length > 0) {
-              resolve(results);
-            } else {
-              resolve(false);
-            }
-          }
-        );
-      });
-    });
+    // 若查到結果，回傳結果；否則回傳 false
+    return results.length > 0 ? results : false;
   } catch (err) {
     console.error("Error in checkMainRoomExist:", err);
     throw err;
+  } finally {
+    // 確保連線被釋放
+    if (connection) connection.release();
   }
 }
 

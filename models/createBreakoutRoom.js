@@ -1,36 +1,20 @@
-import {
-  pool,
-  createDatabase,
-  useDatabase,
-  createBreakoutRoomTable,
-} from "./mysql.js";
+import { pool } from "./mysql.js";
 
 async function createBreakoutRoom(roomId) {
-  try {
-    await createDatabase();
-    await useDatabase();
-    await createBreakoutRoomTable();
-    const query = "INSERT INTO breakout_room (name) VALUES (?)";
-    const values = [roomId];
+  const query = "INSERT INTO breakout_room (name) VALUES (?)";
+  const values = [roomId];
 
-    return new Promise((resolve, reject) => {
-      pool.getConnection((err, connection) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        connection.query(query, values, (error, results, fields) => {
-          connection.release();
-          if (error) {
-            reject(error);
-          } else {
-            resolve(results.insertId);
-          }
-        });
-      });
-    });
+  try {
+    const connection = await pool.getConnection();
+    try {
+      const [results] = await connection.query(query, values);
+      return results.insertId;
+    } finally {
+      connection.release(); // 確保無論如何都會釋放連線
+    }
   } catch (error) {
-    console.log(error);
+    console.error("Error creating breakout room:", error);
+    throw error; // 傳遞錯誤給呼叫者
   }
 }
 

@@ -172,7 +172,7 @@ async function finishGrouping() {
   });
 
   // Send the groups data to the backend
-  fetch(`${BASE_URL}api/groups`, {
+  fetch(`${BASE_URL}/api/groups`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

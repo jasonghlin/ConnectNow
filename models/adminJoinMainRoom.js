@@ -1,118 +1,64 @@
-import {
-  pool,
-  createDatabase,
-  useDatabase,
-  createMainRoomTable,
-  createUsersRoomsRelationTable,
-} from "./mysql.js";
+import { pool } from "./mysql.js";
 
 async function insertUsersRoomsRelation(userInfo, mainRoomId) {
   const query =
     "INSERT INTO users_rooms_relation (user_id, main_room_id, admin_user_id) VALUES (?, ?, ?)";
   const values = [userInfo.userId, mainRoomId, userInfo.userId];
 
-  return new Promise((resolve, reject) => {
-    pool.getConnection((err, connection) => {
-      if (err) {
-        reject(err);
-        return;
-      }
-      connection.query(query, values, (error, results, fields) => {
-        connection.release();
-        if (error) {
-          reject(error);
-        } else {
-          resolve(results.insertId);
-        }
-      });
-    });
-  });
+  const connection = await pool.getConnection();
+  try {
+    const [results] = await connection.query(query, values);
+    return results.insertId;
+  } catch (error) {
+    throw error;
+  } finally {
+    connection.release();
+  }
 }
 
 async function findRoom(roomName) {
-  try {
-    await createDatabase();
-    await useDatabase();
-    await createMainRoomTable();
-    await createUsersRoomsRelationTable();
+  const query = "SELECT * FROM main_room WHERE name = (?)";
+  const values = [roomName];
 
-    const query = "SELECT * FROM main_room WHERE name = (?)";
-    const values = [roomName];
-    return new Promise((resolve, reject) => {
-      pool.getConnection((err, connection) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        connection.query(query, values, (error, results, fields) => {
-          connection.release();
-          if (error) {
-            reject(error);
-          } else {
-            resolve(results);
-          }
-        });
-      });
-    });
-  } catch (err) {
-    console.error("Error in find main_room:", err);
-    throw err;
+  const connection = await pool.getConnection();
+  try {
+    const [results] = await connection.query(query, values);
+    return results;
+  } catch (error) {
+    throw error;
+  } finally {
+    connection.release();
   }
 }
 
 async function checkUserInRoom(userInfo, roomName) {
+  const mainRoomId = await findRoom(roomName);
+  const query =
+    "SELECT * FROM users_rooms_relation WHERE user_id = (?) AND main_room_id = (?)";
+  const values = [userInfo.userId, mainRoomId[0].id];
+
+  const connection = await pool.getConnection();
   try {
-    await createDatabase();
-    await useDatabase();
-    await createMainRoomTable();
-    await createUsersRoomsRelationTable();
-    const mainRoomId = await findRoom(roomName);
-    const query =
-      "SELECT * FROM users_rooms_relation WHERE user_id = (?) AND main_room_id = (?)";
-    const values = [userInfo.userId, mainRoomId[0].id];
-    return new Promise((resolve, reject) => {
-      pool.getConnection((err, connection) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        connection.query(query, values, (error, results, fields) => {
-          connection.release();
-          if (error) {
-            reject(error);
-          } else {
-            resolve(results);
-          }
-        });
-      });
-    });
-  } catch (err) {
-    console.error("Error in checkUserInRoom:", err);
-    throw err;
+    const [results] = await connection.query(query, values);
+    return results;
+  } catch (error) {
+    throw error;
+  } finally {
+    connection.release(); // 確保連線被釋放
   }
 }
 
 async function adminJoinMainRoom(userInfo, roomName) {
-  try {
-    await createDatabase();
-    await useDatabase();
-    await createMainRoomTable();
-    await createUsersRoomsRelationTable();
-    const isUserInRoom = await checkUserInRoom(userInfo, roomName);
-    if (isUserInRoom.length !== 0) {
-      return false;
-    }
-
+  const isUserInRoom = await checkUserInRoom(userInfo, roomName);
+  if (isUserInRoom.length === 0) {
     const mainRoomId = await findRoom(roomName);
     const insertSuccess = await insertUsersRoomsRelation(
       userInfo,
       mainRoomId[0].id
     );
-
     return insertSuccess ? true : false;
-  } catch (err) {
-    console.error("Error in joinMainRoom:", err);
-    throw err;
+  } else {
+    return false;
   }
 }
 
