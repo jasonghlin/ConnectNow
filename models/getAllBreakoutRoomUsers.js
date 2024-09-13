@@ -14,7 +14,7 @@ async function getAllBreakoutRoomUsers(url_param) {
     await createUserTable();
     await createBreakoutRoomTable();
     await createUsersRoomsRelationTable();
-    // Step 1: Get the id from breakout_room where name is url_param
+    // Step 1: 從 breakout_room 中取得名稱為 url_param 的 id
     const breakouroomName = url_param.replace("breakout-", "");
     const breakoutRoomIdQuery = "SELECT id FROM breakout_room WHERE name = ?";
     const breakoutRoomIdValues = [breakouroomName];
@@ -46,7 +46,7 @@ async function getAllBreakoutRoomUsers(url_param) {
 
     const breakoutRoomId = breakoutRoomIdResult[0].id;
 
-    // Step 2: Get user ids from users_rooms_relation where breakout_room is the found id
+    // Step 2: 從 users_rooms_relation 中取得在 breakout_room 找到的 id 的用戶 id
     const userIdsQuery =
       "SELECT user_id FROM users_rooms_relation WHERE breakout_room_id = ?";
     const userIdsValues = [breakoutRoomId];
@@ -74,7 +74,7 @@ async function getAllBreakoutRoomUsers(url_param) {
 
     const userIds = userIdsResult.map((row) => row.user_id);
 
-    // Step 3: Get names from users where id is in the found user ids
+    // Step 3: 從 users 中取得 id 位於找到的 id list 中的 row
     const usersQuery = `SELECT id, name, avatar_url FROM users WHERE id IN (?)`;
     const usersValues = [userIds];
 

@@ -11,7 +11,7 @@ import { joinBreakoutRoom } from "../../models/joinBreakoutRoom.js";
 import { findMainRoomAdmin } from "../../models/findMainRoomAdmin.js";
 import { createRoomVideoSrtUrl } from "../../models/createRoomVideoSrtUrl.js";
 import { getRoomVideoRecords } from "../../models/getRoomVideoRecords.js";
-import { userMuteStatus } from "../sockets/socketMedia.js";
+import { userMuteStatus } from "../sockets/media.js";
 
 dotenv.config();
 const {
@@ -78,8 +78,6 @@ router.get(
       } catch (error) {
         res.status(500).send("Error downloading the file");
       }
-
-      // res.sendFile(join(workingDirectory, "public", "room.html"));
     } catch (error) {
       console.log(error);
     }

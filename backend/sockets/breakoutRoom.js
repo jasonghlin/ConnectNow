@@ -20,8 +20,7 @@ export default function socketBreakoutRoom(io, socket) {
         "peerId:",
         peerId
       );
-      // socket.data.roomName = roomName;
-      // socket.data.userId = userId;
+
       socket.data.peerId = peerId;
 
       console.log("Data stored in socket:", socket.data);
@@ -44,7 +43,7 @@ export default function socketBreakoutRoom(io, socket) {
     }, timerInputValue * 1000);
   });
 
-  // return to main room
+  // 返回 main room
   socket.on("rejoin-main-room", (roomName, peerId, userId) => {
     io.to(roomName).emit("rejoin-main-room", peerId, userId);
   });

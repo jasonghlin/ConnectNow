@@ -38,12 +38,17 @@ export default function socketPolling(io, socket) {
   });
 
   function calculateResults(poll) {
-    const totalVotes = Object.values(poll.votes).length;
+    const votes = Object.values(poll.votes);
+    const totalVotes = votes.length;
     console.log("totalVotes: ", totalVotes);
+
+    const optionCounts = votes.reduce((counts, vote) => {
+      counts.set(vote, (counts.get(vote) || 0) + 1);
+      return counts;
+    }, new Map());
+
     return poll.options.map((option) => {
-      const voteCount = Object.values(poll.votes).filter(
-        (vote) => vote === option
-      ).length;
+      const voteCount = optionCounts.get(option) || 0;
       const percentage = totalVotes
         ? Math.round((voteCount / totalVotes) * 100)
         : 0;

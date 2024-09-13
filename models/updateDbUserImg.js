@@ -5,7 +5,7 @@ async function updateDbUserImg(user_id, img_url) {
     await createDatabase();
     await useDatabase();
 
-    // Check if user exists
+    // 檢查使用者是否已經存在
     const imgExistQuery = "SELECT * FROM users WHERE id = ?";
     const rows = await new Promise((resolve, reject) => {
       pool.getConnection((err, connection) => {
@@ -24,7 +24,7 @@ async function updateDbUserImg(user_id, img_url) {
       });
     });
 
-    // Validate the result
+    // Validate 結果
     if (!rows || rows.length === 0 || rows[0] === undefined) {
       console.log("no image exist");
     }
@@ -32,7 +32,7 @@ async function updateDbUserImg(user_id, img_url) {
     let query;
     const values = [img_url, user_id];
 
-    // Update if image exists, else insert a new record
+    // 如果 image 已存在就 update，反之 insert new record
     if (rows.length > 0) {
       query = "UPDATE users SET avatar_url = ? WHERE id = ?";
     } else {
@@ -60,13 +60,13 @@ async function updateDbUserImg(user_id, img_url) {
       });
     });
 
-    // Check if the operation was successful
+    // 檢查操作是否成功
     if (result.affectedRows > 0) {
       console.log("Operation successful for user ID:", user_id);
-      return true; // Successfully updated or inserted
+      return true;
     } else {
       console.log("No rows affected.");
-      return false; // No rows were updated or inserted
+      return false;
     }
   } catch (err) {
     console.error("Error in updating user image:", err);

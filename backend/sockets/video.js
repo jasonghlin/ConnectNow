@@ -14,7 +14,7 @@ export default function socketVideo(io, socket) {
     }
   });
 
-  // srt ready
+  // srt 完成
   socket.on("srt_ready", async (urlObj) => {
     try {
       const roomId = urlObj.url.split("_")[1];

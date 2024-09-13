@@ -36,8 +36,6 @@ export default function socketMainRoom(io, socket, redisClient) {
         "peerId:",
         peerId
       );
-      // socket.data.roomName = roomName;
-      // socket.data.userId = userId;
       socket.data.peerId = peerId;
 
       console.log("Data stored in socket:", socket.data);
@@ -68,14 +66,14 @@ export default function socketMainRoom(io, socket, redisClient) {
       );
 
       // 通知房間其他用戶有新用戶加入
-      //   socket.to(roomName).emit("user-connected-mainRoom", peerId, userId);
+
       roomUsers.forEach((user) => {
         console.log("user: ", user);
         socket.to(roomName).emit("user-connected-mainRoom", peerId, userId);
       });
 
-      // send white board state
-      // 从 Redis 獲取當前房間的白板狀態
+      // send 小白板 state
+      // 從 Redis 獲取當前房間的白板狀態
       const whiteboardState = await redisClient.lRange(
         `whiteboard:${roomName}`,
         0,

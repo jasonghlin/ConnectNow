@@ -1,4 +1,4 @@
-export const userMuteStatus = {}; // 儲存每個房間中使用者的靜音狀態，键为 roomId, 值为包含用户静音状态的对象
+export const userMuteStatus = {}; // 儲存每個房間中使用者的靜音狀態，key 是 roomId, 值为包含用户静音状态的对象
 
 export default function socketMedia(io, socket) {
   // toggle mic
@@ -34,7 +34,7 @@ export default function socketMedia(io, socket) {
     io.to(roomName).emit("sync-mic-icons", { userId, isMuted });
   });
 
-  //   change video audio
+  //   變更 video audio
   socket.on("update-video-stream", (roomName, peerId, userId) => {
     console.log(`${userId} updated their video source in room: ${roomName}`);
     socket.to(roomName).emit("update-video-stream", roomName, peerId, userId);

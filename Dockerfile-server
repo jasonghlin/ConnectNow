@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm install --no-audit
 
-# 複製其他文件，並排除 .env 和 node_modules
+# 複製其他文件，並排除 .env
 COPY . .
 RUN rm -rf .env
 

@@ -99,21 +99,17 @@ async function adminJoinMainRoom(userInfo, roomName) {
     await createMainRoomTable();
     await createUsersRoomsRelationTable();
     const isUserInRoom = await checkUserInRoom(userInfo, roomName);
-    if (isUserInRoom.length === 0) {
-      const mainRoomId = await findRoom(roomName);
-
-      const insertSuccess = await insertUsersRoomsRelation(
-        userInfo,
-        mainRoomId[0].id
-      );
-      if (insertSuccess) {
-        return true;
-      } else {
-        return false;
-      }
-    } else {
+    if (isUserInRoom.length !== 0) {
       return false;
     }
+
+    const mainRoomId = await findRoom(roomName);
+    const insertSuccess = await insertUsersRoomsRelation(
+      userInfo,
+      mainRoomId[0].id
+    );
+
+    return insertSuccess ? true : false;
   } catch (err) {
     console.error("Error in joinMainRoom:", err);
     throw err;

@@ -6,10 +6,10 @@ WORKDIR /usr/src/app
 # 複製 package.json 和 package-lock.json 來安裝依賴
 COPY package*.json ./
 
-# 排除 node_modules 資料夾
+# 安裝套件
 RUN npm install --no-audit
 
-# 複製其他文件，並排除 .env 和 node_modules
+# 複製其他文件，並排除 .env
 COPY . .
 RUN rm -rf .env
 

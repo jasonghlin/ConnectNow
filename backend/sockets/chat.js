@@ -5,7 +5,7 @@ export default function socketChat(io, socket, redisClient) {
     if (message && message.trim() !== "") {
       const chatMessage = { userName, message };
       console.log(chatMessage);
-      // Save the message in Redis
+      // 將訊息存到 Redis
       await redisClient.rPush(`chat:${roomName}`, JSON.stringify(chatMessage));
 
       // Emit the message to all users in the room
@@ -13,7 +13,7 @@ export default function socketChat(io, socket, redisClient) {
     }
   });
 
-  // Load messages for a specific room
+  // 從 Redis 讀取特定會議室的 chat
   socket.on("load-chat", async (roomName, callback) => {
     const messages = await redisClient.lRange(`chat:${roomName}`, 0, -1);
     const parsedMessages = messages.map((msg) => JSON.parse(msg));

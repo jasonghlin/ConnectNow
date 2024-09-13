@@ -47,14 +47,6 @@ const s3Client = new S3Client({
   },
 });
 
-// 強制 HTTPS 的中介軟體
-// router.use((req, res, next) => {
-//   if (req.headers["x-forwarded-proto"] !== "https") {
-//     return res.redirect("https://" + req.headers.host + req.url);
-//   }
-//   next();
-// });
-
 // set session middleware
 router.use(
   session({
@@ -157,50 +149,57 @@ router.post("/api/user", async (req, res) => {
 router.put("/api/user/auth", async (req, res) => {
   try {
     const user = await getUser(req.body);
-    if (user.length > 0) {
-      bcrypt.compare(
-        req.body.password,
-        user[0].password_hash,
-        async (error, result) => {
-          if (error) {
-            console.error("Error comparing passwords:", error);
-            res
-              .status(500)
-              .json({ error: "Internal Server Error", details: error.message });
-          } else if (result) {
-            try {
-              const token = await createAccessToken(
-                user[0].id,
-                user[0].name,
-                user[0].email
-              );
-              res
-                .status(200)
-                .cookie("token", token, {
-                  httpOnly: false,
-                  secure: req.protocol === "https",
-                  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 天
-                })
-                .json({ token, username: user[0].name, userId: user[0].id });
-            } catch (tokenError) {
-              console.error("Error creating token:", tokenError);
-              res.status(500).json({
-                error: "Internal Server Error",
-                details: tokenError.message,
-              });
-            }
-          } else {
-            res
-              .status(401)
-              .json({ error: "Unauthorized", details: "密碼錯誤" });
-          }
-        }
-      );
-    } else {
-      res
+
+    // 使用者不存在，回傳 401
+    if (user.length === 0) {
+      return res
         .status(401)
         .json({ error: "Unauthorized", details: "登入失敗，帳號或密碼錯誤" });
     }
+
+    // 比對密碼
+    bcrypt.compare(
+      req.body.password,
+      user[0].password_hash,
+      async (error, result) => {
+        if (error) {
+          console.error("Error comparing passwords:", error);
+          return res
+            .status(500)
+            .json({ error: "Internal Server Error", details: error.message });
+        }
+
+        // 密碼錯誤，回傳 403
+        if (!result) {
+          return res
+            .status(403)
+            .json({ error: "Forbidden", details: "密碼錯誤" });
+        }
+
+        // 密碼比對成功，產生 token
+        try {
+          const token = await createAccessToken(
+            user[0].id,
+            user[0].name,
+            user[0].email
+          );
+          return res
+            .status(200)
+            .cookie("token", token, {
+              httpOnly: false,
+              secure: req.protocol === "https",
+              maxAge: 7 * 24 * 60 * 60 * 1000, // 7 天
+            })
+            .json({ token, username: user[0].name, userId: user[0].id });
+        } catch (tokenError) {
+          console.error("Error creating token:", tokenError);
+          return res.status(500).json({
+            error: "Internal Server Error",
+            details: tokenError.message,
+          });
+        }
+      }
+    );
   } catch (error) {
     console.error("Error fetching user:", error);
     res
@@ -257,8 +256,6 @@ router.post("/api/groups", authenticateJWT, async (req, res) => {
     console.log("create groups:", groups);
     console.log(groups[0].groupId);
     console.log("result: ", result);
-    // 通知所有 client
-    // io.to(groups[0].groupId).emit("start-grouping", result);
 
     res
       .status(200)

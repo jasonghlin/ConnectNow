@@ -34,10 +34,10 @@ async function updateUserPassword(new_password, user_id) {
     // 判斷是否有行受到影響
     if (result.affectedRows > 0) {
       console.log("User password updated with ID:", user_id);
-      return true; // 成功更新
+      return true;
     } else {
       console.log("No rows updated.");
-      return false; // 沒有行被更新
+      return false;
     }
   } catch (err) {
     console.error("Error in update UserEmail:", err);

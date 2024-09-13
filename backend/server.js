@@ -17,15 +17,15 @@ import { authenticateJWT } from "./utils/authenticateJWT.js";
 import { checkMainRoomExist } from "../models/checkMainRoomExist.js";
 import { adminJoinMainRoom } from "../models/adminJoinMainRoom.js";
 import { findMainRoomAdmin } from "../models/findMainRoomAdmin.js";
-import socketAuth from "./sockets/socketAuth.js";
-import socketMainRoom from "./sockets/socketMainRoom.js";
-import socketBreakoutRoom from "./sockets/socketBreakoutRoom.js";
-import socketMedia from "./sockets/socketMedia.js";
-import socketPolling from "./sockets/socketPolling.js";
-import socketEmoji from "./sockets/socketEmoji.js";
-import socketChat from "./sockets/socketChat.js";
-import socketWhiteboard from "./sockets/socketWhiteboard.js";
-import socketVideo from "./sockets/socketVideo.js";
+import socketAuth from "./sockets/auth.js";
+import socketMainRoom from "./sockets/mainroom.js";
+import socketBreakoutRoom from "./sockets/breakoutRoom.js";
+import socketMedia from "./sockets/media.js";
+import socketPolling from "./sockets/polling.js";
+import socketEmoji from "./sockets/emoji.js";
+import socketChat from "./sockets/chat.js";
+import socketWhiteboard from "./sockets/whiteboard.js";
+import socketVideo from "./sockets/video.js";
 
 dotenv.config();
 const { ENV, REDIS_URL, STATIC_FILE_URL, DOMAIN } = process.env;
@@ -39,12 +39,7 @@ const workingDirectory = dirname(__dirname);
 
 const app = express();
 
-let server;
-if (ENV === "production") {
-  server = http.createServer(app);
-} else {
-  server = http.createServer(app);
-}
+let server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
@@ -93,7 +88,6 @@ app.use(
   })
 );
 
-// app.use("/static", express.static(join(workingDirectory, "public")));
 app.use(userRouter);
 app.use(roomRouter);
 
@@ -116,7 +110,6 @@ app.get("/", async (req, res) => {
   } catch (error) {
     res.status(500).send("Error downloading the file");
   }
-  // res.sendFile(join(workingDirectory, "public", "routerRoom.html"));
 });
 
 app.get("/health", (req, res) => {
@@ -141,7 +134,6 @@ app.get("/member", authenticateJWT, async (req, res) => {
   } catch (error) {
     res.status(500).send("Error downloading the file");
   }
-  // res.sendFile(join(workingDirectory, "public", "member.html"));
 });
 
 // create and join main room
@@ -175,8 +167,6 @@ app.get("/roomId/:roomId", authenticateJWT, async (req, res) => {
     } catch (error) {
       res.status(500).send("Error downloading the file");
     }
-
-    // res.sendFile(join(workingDirectory, "public", "room.html"));
 
     // if (!joinMainRoomSuccess) {
     //   res.status(403).json({ error: "user already in room!" });
