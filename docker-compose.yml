@@ -6,7 +6,7 @@ services:
     environment:
       - NODE_PATH=/app/node_modules
     env_file:
-      - .env
+      - /home/ubuntu/ConnectNow/.env
     ports:
       - "8080:8080"
     container_name: server-app
