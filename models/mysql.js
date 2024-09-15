@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 dotenv.config();
-import mysql from "mysql2";
+import mysql from "mysql2/promise";
 
 const { MYSQL_USER, MYSQL_HOST, MYSQL_PASSWORD, ENV } = process.env;
 

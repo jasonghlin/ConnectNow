@@ -10,11 +10,10 @@ async function createBreakoutRoom(roomId) {
       const [results] = await connection.query(query, values);
       return results.insertId;
     } finally {
-      connection.release(); // 確保無論如何都會釋放連線
+      connection.release();
     }
   } catch (error) {
     console.error("Error creating breakout room:", error);
-    throw error; // 傳遞錯誤給呼叫者
   }
 }
 

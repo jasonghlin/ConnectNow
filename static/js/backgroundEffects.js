@@ -15,6 +15,7 @@ let applyForegroundReplacement = false;
 let applyForegroundBlur = false;
 
 let foregroundImage = new Image();
+foregroundImage.crossOrigin = "Anonymous";
 foregroundImage.src =
   "https://static.connectnow.website/connectnow/static/images/bgs/bg-1.jpeg";
 
@@ -256,9 +257,10 @@ document.querySelectorAll(".bg-img").forEach((el, index) => {
   el.addEventListener("click", () => {
     applyForegroundReplacement = true;
     applyForegroundBlur = false;
+    foregroundImage.crossOrigin = "Anonymous";
     foregroundImage.src = `https://static.connectnow.website/connectnow/static/images/bgs/flip/bg-${
       index + 1
-    }.jpeg`;
+    }.jpeg?stopGivingMeHeadaches=true`;
   });
 });
 

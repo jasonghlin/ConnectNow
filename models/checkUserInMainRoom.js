@@ -28,8 +28,7 @@ export async function checkUserInMainRoom(roomName, adminId) {
     return checkUserResults; // 回傳結果
   } catch (err) {
     console.error("Error in checkUserInMainRoom:", err);
-    throw err;
   } finally {
-    if (connection) connection.release(); // 確保連線被釋放
+    if (connection) connection.release();
   }
 }

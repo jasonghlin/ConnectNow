@@ -1,32 +1,22 @@
-import { pool, createDatabase, useDatabase, createUserTable } from "./mysql.js";
+import { pool } from "./mysql.js";
 
 async function getUser(request_body) {
+  let connection;
   try {
-    await createDatabase();
-    await useDatabase();
-    await createUserTable();
     const query = "SELECT * FROM users WHERE email = ?";
     const values = [request_body.email];
 
-    return new Promise((resolve, reject) => {
-      pool.getConnection((err, connection) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        connection.query(query, values, (error, results, fields) => {
-          connection.release();
-          if (error) {
-            reject(error);
-          } else {
-            resolve(results);
-          }
-        });
-      });
-    });
+    connection = await pool.getConnection();
+
+    const [results] = await connection.query(query, values);
+
+    return results;
   } catch (err) {
-    console.error("Error in get_user function:", err);
-    throw err;
+    console.error("Error in getUser function:", err);
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 }
 

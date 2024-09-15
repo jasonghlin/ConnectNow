@@ -1,37 +1,15 @@
-import { pool, createDatabase, useDatabase, createUserTable } from "./mysql.js";
+import { pool } from "./mysql.js";
 
 async function updateUserPassword(new_password, user_id) {
+  let connection;
   try {
-    await createDatabase();
-    await useDatabase();
-    await createUserTable();
-
     const query = "UPDATE users SET password_hash = ? WHERE id = ?";
     const values = [new_password, user_id];
 
-    const connection = await new Promise((resolve, reject) => {
-      pool.getConnection((err, connection) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(connection);
-        }
-      });
-    });
+    connection = await pool.getConnection();
 
-    const result = await new Promise((resolve, reject) => {
-      connection.query(query, values, (error, results, fields) => {
-        connection.release();
-        if (error) {
-          reject(error);
-        } else {
-          console.log("UserPassword updated with ID:", user_id);
-          resolve(results);
-        }
-      });
-    });
+    const [result] = await connection.query(query, values);
 
-    // 判斷是否有行受到影響
     if (result.affectedRows > 0) {
       console.log("User password updated with ID:", user_id);
       return true;
@@ -40,7 +18,12 @@ async function updateUserPassword(new_password, user_id) {
       return false;
     }
   } catch (err) {
-    console.error("Error in update UserEmail:", err);
+    console.error("Error in update UserPassword:", err);
+    return false;
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 }
 

@@ -10,7 +10,7 @@ async function insertUsersRoomsRelation(userInfo, mainRoomId) {
     const [results] = await connection.query(query, values);
     return results.insertId;
   } catch (error) {
-    throw error;
+    console.error("Error in insertUsersRoomsRelation function: ", error);
   } finally {
     connection.release();
   }
@@ -25,7 +25,7 @@ async function findRoom(roomName) {
     const [results] = await connection.query(query, values);
     return results;
   } catch (error) {
-    throw error;
+    console.error("Error in findRoom function: ", error);
   } finally {
     connection.release();
   }
@@ -42,7 +42,7 @@ async function checkUserInRoom(userInfo, roomName) {
     const [results] = await connection.query(query, values);
     return results;
   } catch (error) {
-    throw error;
+    console.error("Error in checkUserInRoom function: ", error);
   } finally {
     connection.release(); // 確保連線被釋放
   }

@@ -1,28 +1,13 @@
-import { pool, createDatabase, useDatabase } from "./mysql.js";
+import { pool } from "./mysql.js";
 
 async function updateDbUserImg(user_id, img_url) {
+  let connection;
   try {
-    await createDatabase();
-    await useDatabase();
+    connection = await pool.getConnection();
 
     // 檢查使用者是否已經存在
     const imgExistQuery = "SELECT * FROM users WHERE id = ?";
-    const rows = await new Promise((resolve, reject) => {
-      pool.getConnection((err, connection) => {
-        if (err) {
-          reject(err);
-        } else {
-          connection.query(imgExistQuery, [user_id], (error, results) => {
-            connection.release();
-            if (error) {
-              reject(error);
-            } else {
-              resolve(results);
-            }
-          });
-        }
-      });
-    });
+    const [rows] = await connection.query(imgExistQuery, [user_id]);
 
     // Validate 結果
     if (!rows || rows.length === 0 || rows[0] === undefined) {
@@ -39,26 +24,7 @@ async function updateDbUserImg(user_id, img_url) {
       query = "INSERT INTO users (avatar_url, id) VALUES (?, ?)";
     }
 
-    const result = await new Promise((resolve, reject) => {
-      pool.getConnection((err, connection) => {
-        if (err) {
-          reject(err);
-        } else {
-          connection.query(query, values, (error, results) => {
-            connection.release();
-            if (error) {
-              reject(error);
-            } else {
-              console.log(
-                "Image URL updated or inserted for user ID:",
-                user_id
-              );
-              resolve(results);
-            }
-          });
-        }
-      });
-    });
+    const result = await connection.query(query, values);
 
     // 檢查操作是否成功
     if (result.affectedRows > 0) {
@@ -71,6 +37,10 @@ async function updateDbUserImg(user_id, img_url) {
   } catch (err) {
     console.error("Error in updating user image:", err);
     return false;
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 }
 

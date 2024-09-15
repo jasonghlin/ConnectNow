@@ -1,34 +1,23 @@
-import { pool, createDatabase, useDatabase, createUserTable } from "./mysql.js";
+import { pool } from "./mysql.js";
 
 async function getDbUserImg(user_id) {
+  let connection;
   try {
-    const connection = await new Promise((resolve, reject) => {
-      pool.getConnection((err, connection) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(connection);
-        }
-      });
-    });
+    connection = await pool.getConnection();
 
     const imgQuery = "SELECT * FROM users WHERE id = ?";
     const values = [user_id];
 
-    const result = await new Promise((resolve, reject) => {
-      connection.query(imgQuery, values, (error, results) => {
-        connection.release();
-        if (error) {
-          reject(error);
-        } else {
-          resolve(results[0]);
-        }
-      });
-    });
-    return result;
+    const [rows] = await connection.query(imgQuery, values);
+
+    return rows[0]; // 回傳查詢結果中的第一筆資料
   } catch (err) {
     console.error("Error when retrieving user image:", err);
     return {};
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 }
 

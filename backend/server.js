@@ -18,7 +18,7 @@ import { checkMainRoomExist } from "../models/checkMainRoomExist.js";
 import { adminJoinMainRoom } from "../models/adminJoinMainRoom.js";
 import { findMainRoomAdmin } from "../models/findMainRoomAdmin.js";
 import socketAuth from "./sockets/auth.js";
-import socketMainRoom from "./sockets/mainroom.js";
+import socketMainRoom from "./sockets/mainRoom.js";
 import socketBreakoutRoom from "./sockets/breakoutRoom.js";
 import socketMedia from "./sockets/media.js";
 import socketPolling from "./sockets/polling.js";
@@ -29,7 +29,7 @@ import socketVideo from "./sockets/video.js";
 
 dotenv.config();
 const { ENV, REDIS_URL, STATIC_FILE_URL, DOMAIN } = process.env;
-let BASE_URL = ENV === "production" ? STATIC_FILE_URL : "http://127.0.0.1:8080";
+let BASE_URL = STATIC_FILE_URL;
 
 const port = 8080;
 
@@ -43,7 +43,7 @@ let server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: [DOMAIN, "http://127.0.0.1:8080", STATIC_FILE_URL],
+    origin: [DOMAIN, "http://127.0.0.1:8080", BASE_URL],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "my-custom-header"],
     credentials: true,
@@ -77,11 +77,9 @@ io.adapter(createAdapter(pubClient, subClient));
 app.use(bodyParser.json());
 app.use(cookieParser());
 
-// 使用 userRouter
-
 app.use(
   cors({
-    origin: [DOMAIN, "http://127.0.0.1:8080", STATIC_FILE_URL],
+    origin: [DOMAIN, "http://127.0.0.1:8080", BASE_URL],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "my-custom-header"],
     credentials: true,
@@ -95,7 +93,7 @@ app.use(roomRouter);
 app.get("/", async (req, res) => {
   try {
     // 下載遠端檔案
-    const fileUrl = `${STATIC_FILE_URL}/static/routerRoom.html`;
+    const fileUrl = `${BASE_URL}/static/routerRoom.html`;
     const response = await axios({
       method: "GET",
       url: fileUrl,
@@ -119,7 +117,7 @@ app.get("/health", (req, res) => {
 app.get("/member", authenticateJWT, async (req, res) => {
   try {
     // 下載遠端檔案
-    const fileUrl = `${STATIC_FILE_URL}/static/member.html`;
+    const fileUrl = `${BASE_URL}/static/member.html`;
     const response = await axios({
       method: "GET",
       url: fileUrl,
@@ -152,7 +150,7 @@ app.get("/roomId/:roomId", authenticateJWT, async (req, res) => {
 
     try {
       // 下載遠端檔案
-      const fileUrl = `${STATIC_FILE_URL}/static/room.html`;
+      const fileUrl = `${BASE_URL}/static/room.html`;
       const response = await axios({
         method: "GET",
         url: fileUrl,

@@ -125,6 +125,7 @@ function setBackground(mode, imageSrc) {
   backgroundMode = mode;
   if (mode === "image" && imageSrc) {
     backgroundImage = new Image();
+    backgroundImage.crossOrigin = "Anonymous";
     backgroundImage.src = imageSrc;
     backgroundImage.onload = () => {
       // 更新背景图像

@@ -1,68 +1,44 @@
-import {
-  pool,
-  createDatabase,
-  useDatabase,
-  createBreakoutRoomTable,
-  createUsersRoomsRelationTable,
-  createMainRoomTable,
-} from "./mysql.js";
+import { pool } from "./mysql.js";
 
 async function updateMainRoomAdmin(newAdminId, roomName) {
+  let connection;
   try {
     const mainRoomId = await findMainRoom(roomName);
+
     const query =
-      "UPDATE  users_rooms_relation SET admin_user_id = (?) WHERE main_room_id = (?)";
+      "UPDATE users_rooms_relation SET admin_user_id = ? WHERE main_room_id = ?";
     const values = [newAdminId, mainRoomId[0].id];
 
-    return new Promise((resolve, reject) => {
-      pool.getConnection((err, connection) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        connection.query(query, values, (error, results, fields) => {
-          connection.release();
-          if (error) {
-            reject(error);
-          } else {
-            resolve(results.insertId);
-          }
-        });
-      });
-    });
+    connection = await pool.getConnection();
+
+    const [result] = await connection.query(query, values);
+
+    return result.insertId;
   } catch (error) {
-    console.log(error);
+    console.error("Error in updateMainRoomAdmin:", error);
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 }
 
 async function findMainRoom(roomName) {
+  let connection;
   try {
-    await createDatabase();
-    await useDatabase();
-    await createMainRoomTable();
-    await createUsersRoomsRelationTable();
-
-    const query = "SELECT * FROM main_room WHERE name = (?)";
+    const query = "SELECT * FROM main_room WHERE name = ?";
     const values = [roomName];
-    return new Promise((resolve, reject) => {
-      pool.getConnection((err, connection) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        connection.query(query, values, (error, results, fields) => {
-          connection.release();
-          if (error) {
-            reject(error);
-          } else {
-            resolve(results);
-          }
-        });
-      });
-    });
+
+    connection = await pool.getConnection();
+
+    const [results] = await connection.query(query, values);
+    return results;
   } catch (err) {
-    console.error("Error in find main_room:", err);
-    throw err;
+    console.error("Error in findMainRoom:", err);
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 }
 

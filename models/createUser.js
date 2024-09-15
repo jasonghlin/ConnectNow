@@ -1,37 +1,27 @@
-import { pool, createDatabase, useDatabase, createUserTable } from "./mysql.js";
+import { pool } from "./mysql.js";
 
 async function createUser(name, email, hash_password) {
+  let connection;
   try {
-    await createDatabase();
-    await useDatabase();
-    await createUserTable();
     const query =
       "INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)";
     const values = [name, email, hash_password];
 
-    const connection = await new Promise((resolve, reject) => {
-      pool.getConnection((err, connection) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(connection);
-        }
-      });
-    });
+    // 使用 async/await 獲取連接
+    connection = await pool.getConnection();
 
-    await new Promise((resolve, reject) => {
-      connection.query(query, values, (error, results, fields) => {
-        connection.release();
-        if (error) {
-          reject(error);
-        } else {
-          console.log("User inserted with ID:", results.insertId);
-          resolve(results.insertId);
-        }
-      });
-    });
+    // 使用 async/await 執行查詢
+    const [results] = await connection.query(query, values);
+
+    console.log("User inserted with ID:", results.insertId);
+
+    return results.insertId; // 回傳插入結果
   } catch (err) {
     console.error("Error in createUser function:", err);
+  } finally {
+    if (connection) {
+      connection.release(); // 確保釋放連接
+    }
   }
 }
 

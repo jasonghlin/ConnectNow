@@ -1,62 +1,35 @@
 import { pool } from "./mysql.js";
 
 async function removeUserFromMainRoom(mainRoomName, userId) {
+  let connection;
   try {
-    // 先取得 main_room_id
+    connection = await pool.getConnection();
     const getMainRoomIdQuery = "SELECT id FROM main_room WHERE name = ?";
-    const mainRoomId = await new Promise((resolve, reject) => {
-      pool.getConnection((err, connection) => {
-        if (err) {
-          reject(err);
-        } else {
-          connection.query(
-            getMainRoomIdQuery,
-            [mainRoomName],
-            (error, results) => {
-              connection.release();
-              if (error) {
-                reject(error);
-              } else if (results.length > 0) {
-                resolve(results[0].id);
-              } else {
-                reject(new Error("Main room not found"));
-              }
-            }
-          );
-        }
-      });
-    });
+    const [mainRoomResults] = await connection.query(getMainRoomIdQuery, [
+      mainRoomName,
+    ]);
 
-    const query =
+    if (mainRoomResults.length === 0) {
+      console.error("Main room not found");
+    }
+
+    const mainRoomId = mainRoomResults[0].id;
+
+    const deleteQuery =
       "DELETE FROM users_rooms_relation WHERE user_id = ? AND main_room_id = ?";
-    const values = [userId, mainRoomId];
-
-    const connection = await new Promise((resolve, reject) => {
-      pool.getConnection((err, connection) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(connection);
-        }
-      });
-    });
-
-    const results = await new Promise((resolve, reject) => {
-      connection.query(query, values, (error, results) => {
-        connection.release();
-        if (error) {
-          reject(error);
-        } else {
-          resolve(results);
-        }
-      });
-    });
+    const [deleteResults] = await connection.query(deleteQuery, [
+      userId,
+      mainRoomId,
+    ]);
 
     console.log("User deleted from users_rooms_relation with ID:", userId);
-    return results;
+    return deleteResults;
   } catch (err) {
-    console.error("Error in deleteUser function:", err);
-    throw err;
+    console.error("Error in removeUserFromMainRoom function:", err);
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 }
 
