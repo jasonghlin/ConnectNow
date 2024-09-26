@@ -43,10 +43,3 @@ jobs:
       - name: Deploy to Server
         run: |
           ssh ubuntu@50.112.45.245 "cd /home/ubuntu/ConnectNow && git checkout main && git pull origin main && sudo systemctl restart connectnowdocker.service"
-
-notifications:
-  email:
-    recipients:
-      - fortest0204@gmail.com
-    on_success: always
-    on_failure: always
