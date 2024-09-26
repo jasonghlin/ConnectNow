@@ -8,3 +8,4 @@ code.bash
 loaderTest.js
 jwt-server.js
 test1.js
+coverage/
