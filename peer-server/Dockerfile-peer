@@ -3,18 +3,13 @@ FROM node:latest
 
 WORKDIR /usr/src/app
 
-# 複製 package.json 和 package-lock.json 來安裝依賴
 COPY package*.json ./
 
-# 安裝套件
 RUN npm install --no-audit
 
-# 複製其他文件，並排除 .env
 COPY . .
 RUN rm -rf .env
 
-# 曝露應用的端口
 EXPOSE 9001
 
-# 啟動應用時指定 .env 文件
 CMD ["node", "peer.js"]

@@ -1,6 +1,6 @@
-# Project Name: ConnectNow
+# Project Name: Connect Now
 
-**ConnectNow** is an easy-to-use web-based video conferencing platform designed to facilitate seamless communication and collaboration for multiple participants. This project offers a robust set of features, including:
+[**Connect Now**](https://www.connectnow.website/) is an easy-to-use web-based video conferencing platform designed to facilitate seamless communication and collaboration for multiple participants. This project offers a robust set of features, including:
 
 - Real-time video and audio streaming
 - Dynamic room creation
@@ -10,7 +10,7 @@
 
 ![mainVisual](static/images/README/mainVisual.png)
 ## Table of Contents
-- [Project Name: ConnectNow](#project-name-connectnow)
+- [Project Name: Connect Now](#project-name-connect-now)
   - [Table of Contents](#table-of-contents)
   - [Features](#features)
   - [Technologies](#technologies)
@@ -20,8 +20,14 @@
     - [Cloud Service (AWS)](#cloud-service-aws)
     - [Testing \& CI/CD](#testing--cicd)
     - [Other Tools](#other-tools)
-  - [Installation](#installation)
-  - [Usage](#usage)
+  - [Overall System Architechture](#overall-system-architechture)
+  - [1. AWS-based Infrastructure](#1-aws-based-infrastructure)
+  - [2. Efficient Data Workflows](#2-efficient-data-workflows)
+  - [3. Resource Optimization via AWS Lambda](#3-resource-optimization-via-aws-lambda)
+  - [4. Horizontal Scalability](#4-horizontal-scalability)
+  - [5. Backend and Caching](#5-backend-and-caching)
+  - [Getting Started](#getting-started)
+    - [Installation](#installation)
 
 ---
 
@@ -71,15 +77,43 @@
 
 ---
 
-## Installation
+## Overall System Architechture
+
+![System Architecture](static/images/README/architecture.png)
+
+Our system architecture is designed for flexibility, scalability, and efficient resource utilization. It integrates media processing, subtitle generation, and real-time communication using optimized AWS services.
+
+## 1. AWS-based Infrastructure
+The architecture leverages key AWS services such as EC2, S3, Lambda, and Elasticache to handle video processing, subtitle generation, and WebRTC-based peer-to-peer communication. These components are deployed in isolated environments using Docker to ensure security, performance, and scalability.
+
+## 2. Efficient Data Workflows
+The system handles media processing and communication through streamlined workflows:
+  - **Video Transformation**: Video files uploaded to AWS S3 are processed by Lambda functions for format conversions (e.g., using FFmpeg). Once converted, the files are stored back in S3 for user access.
+  - **Subtitle Generation**: Whisper, running in Docker containers on EC2 instances, transcribes video audio into subtitles. The generated subtitle files are stored in S3 and linked to the corresponding video.
+  - **Real-time Communication**: WebRTC-based peer-to-peer communication is facilitated by PeerJS, with the Node.js backend managing the application logic and service integration. This enables seamless video and audio streaming between users.
+
+## 3. Resource Optimization via AWS Lambda
+AWS Lambda is used to optimize resource allocation by controlling EC2 instance lifecycles. EC2 instances are only activated when required for tasks like video processing and are automatically shut down when no jobs are queued (e.g., when no SQS messages are detected). This approach minimizes operational costs while maintaining resource availability during peak usage.
+
+## 4. Horizontal Scalability
+The system supports horizontal scaling, allowing additional EC2 instances to be provisioned when media processing demand increases or user traffic is high. This ensures smooth performance, even when many users are using the service simultaneously.
+
+## 5. Backend and Caching
+The backend server, built with Node.js, handles user requests, application logic, and session management. Elasticache (Redis) is used to cache real-time data, reducing latency and improving performance during video conferencing and peer-to-peer connections.
+
+---
+
+## Getting Started
+
+You can either visit [www.connectnow.website](https://www.connectnow.website/) to start using ConnectNow services immediately or follow the steps below to set it up locally.
+
+### Installation
 
 1. Clone the repository:
    ```bash
    git clone https://github.com/your-username/connectnow.git
-   cd connectnow
-2. Install dependencies for the back-end:
-   ```bash
-   npm install
+   cd ConnectNow
+2. Replace the domain name and AWS CloudFront URL with your own in the frontend static JS files.
 3. Set up the environment variables for the cloud services and database connections
    ```bash
     MYSQL_USER
@@ -100,11 +134,11 @@
     STATIC_FILE_URL
     DOMAIN
 
-4. Replace the domain name and AWS CloudFront URL with your own in the frontend static JS files.
----
+4. Start the application using Docker by running the Dockerfile-server, peerjs, and videosrt Docker files located in their respective folders
 
-## Usage
-1. Start the server
+5. Alternatively, you can install dependencies for the back-end:
    ```bash
+   npm install
    npm start
-2. Access the web application at http://localhost:8080 or your own domain.
+   ```
+   Access the web application at http://localhost:8080 or your own domain.
