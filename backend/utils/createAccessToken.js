@@ -1,9 +1,14 @@
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
-const { JWT_SECRET_KEY, ENV } = process.env;
+// const { JWT_SECRET_KEY, ENV } = process.env;
 
-export async function createAccessToken(userId, userName, userEmail, expire) {
+export default async function createAccessToken(
+  userId,
+  userName,
+  userEmail,
+  expire
+) {
   const payload = {
     userId,
     userName,
@@ -12,6 +17,8 @@ export async function createAccessToken(userId, userName, userEmail, expire) {
   const options = {
     expiresIn: "7d",
   };
+
+  const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 
   return new Promise((resolve, reject) => {
     jwt.sign(payload, JWT_SECRET_KEY, options, (err, token) => {

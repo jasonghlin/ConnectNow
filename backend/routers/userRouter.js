@@ -10,7 +10,7 @@ import pkg from "passport-google-oauth20";
 import session from "express-session";
 import { getUser } from "../../models/registerAndLoginGetUser.js";
 import { createUser } from "../../models/createUser.js";
-import { createAccessToken } from "../utils/createAccessToken.js";
+import createAccessToken from "../utils/createAccessToken.js";
 import { hashPassword } from "../utils/hashPassword.js";
 import { authenticateJWT } from "../utils/authenticateJWT.js";
 import { getAllUsers } from "../../models/getAllUsers.js";

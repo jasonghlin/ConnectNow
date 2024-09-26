@@ -1,0 +1,52 @@
+name: Deploy to Ubuntu Server
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types:
+      - closed
+    
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the code
+      - uses: actions/checkout@v2
+
+      # Run Node.js tests
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
+
+  deploy:
+  needs: test # 只有測試成功後才執行部署
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install SSH Key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          known_hosts: ${{ secrets.KNOWN_HOSTS }}
+
+      - name: Deploy to Server
+        run: |
+          ssh ubuntu@50.112.45.245 "cd /home/ubuntu/ConnectNow && git checkout main && git pull origin main && sudo systemctl restart connectnowdocker.service"
+notifications:
+  email:
+    recipients:
+      - fortest0204@gmail.com
+    on_success: always
+    on_failure: always

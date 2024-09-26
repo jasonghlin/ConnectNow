@@ -512,8 +512,12 @@ main {
     z-index: 99 !important;
 }
 
+.carousel-inner {
+    height: 60rem
+}
+
 .feature-3 .carousel-caption {
-    bottom: -5rem !important;
+    bottom: -8rem !important;
 }
 
 .feature-1 h5, .feature-2 h5, .feature-3 h5 {
