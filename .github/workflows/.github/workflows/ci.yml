@@ -7,7 +7,6 @@ on:
   pull_request:
     types:
       - closed
-    
 
 jobs:
   test:
@@ -30,7 +29,7 @@ jobs:
         run: npm test
 
   deploy:
-  needs: test # 只有測試成功後才執行部署
+    needs: test # 只有測試成功後才執行部署
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -44,6 +43,7 @@ jobs:
       - name: Deploy to Server
         run: |
           ssh ubuntu@50.112.45.245 "cd /home/ubuntu/ConnectNow && git checkout main && git pull origin main && sudo systemctl restart connectnowdocker.service"
+
 notifications:
   email:
     recipients:
