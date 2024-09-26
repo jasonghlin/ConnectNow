@@ -45,8 +45,8 @@ jobs:
         run: ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.SERVER_IP }} "echo 'SSH connection established'"
 
       - name: Force Clean Local Changes
-      run: |
-        ssh ubuntu@${{ secrets.SERVER_IP }} "cd /home/ubuntu/ConnectNow && git reset --hard && git clean -fd"
+        run: |
+          ssh ubuntu@${{ secrets.SERVER_IP }} "cd /home/ubuntu/ConnectNow && git reset --hard && git clean -fd"
 
       - name: Deploy to Server
         run: |
