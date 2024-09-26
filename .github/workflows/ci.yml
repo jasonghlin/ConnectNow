@@ -39,7 +39,7 @@ jobs:
         with:
           key: ${{ secrets.SERVER_SSH_KEY }}
           known_hosts: |
-            $(ssh-keyscan ${{ secrets.SERVER_IP }})
+            $(ssh-keyscan -H ${{ secrets.SERVER_IP }})
 
       - name: Deploy to Server
         run: |
