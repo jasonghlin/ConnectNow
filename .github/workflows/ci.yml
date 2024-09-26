@@ -38,8 +38,8 @@ jobs:
         uses: shimataro/ssh-key-action@v2
         with:
           key: ${{ secrets.SERVER_SSH_KEY }}
-         known_hosts: |
-          $(ssh-keyscan ${{ secrets.SERVER_IP }})
+          known_hosts: |
+            $(ssh-keyscan ${{ secrets.SERVER_IP }})
 
       - name: Deploy to Server
         run: |
