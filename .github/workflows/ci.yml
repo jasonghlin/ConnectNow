@@ -14,11 +14,11 @@ jobs:
 
     steps:
       # Checkout the code
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       # Run Node.js tests
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: "22"
 
@@ -29,18 +29,21 @@ jobs:
         run: npm test
 
   deploy:
-    needs: test # 只有測試成功後才執行部署
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
+  needs: test # 只有測試成功後才執行部署
+  runs-on: ubuntu-latest
+  steps:
+    - uses: actions/checkout@v2
 
-      - name: Install SSH Key
-        uses: shimataro/ssh-key-action@v2
-        with:
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          known_hosts: |
-            $(ssh-keyscan -H ${{ secrets.SERVER_IP }})
+    - name: Install SSH Key
+      uses: shimataro/ssh-key-action@v2
+      with:
+        key: ${{ secrets.SERVER_SSH_KEY }}
+        known_hosts: |
+          $(ssh-keyscan -H ${{ secrets.SERVER_IP }})
 
-      - name: Deploy to Server
-        run: |
-          ssh ubuntu@${{ secrets.SERVER_IP }} "cd /home/ubuntu/ConnectNow && git checkout main && git pull origin main && sudo systemctl restart connectnowdocker.service"
+    - name: Verify SSH Connection
+      run: ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.SERVER_IP }} "echo 'SSH connection established'"
+
+    - name: Deploy to Server
+      run: |
+        ssh ubuntu@${{ secrets.SERVER_IP }} "cd /home/ubuntu/ConnectNow && git checkout main && git pull origin main && sudo systemctl restart connectnowdocker.service"
