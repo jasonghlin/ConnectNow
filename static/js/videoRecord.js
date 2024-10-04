@@ -80,6 +80,9 @@ const observer = new MutationObserver((mutations) => {
 // 啟動 observer 監聽 document body 上的變化
 observer.observe(document.body, { childList: true, subtree: true });
 
+// 限制影片錄製時間為30分鐘
+let recordingLimit = 30 * 60 * 1000;
+
 async function startRecording() {
   try {
     const displayStream = await navigator.mediaDevices.getDisplayMedia({
@@ -138,6 +141,21 @@ async function startRecording() {
 
     console.log("Recording started");
     Swal.fire("開始錄影");
+
+    // 設定錄製時間限制
+    setTimeout(() => {
+      if (isRecording) {
+        let videoRecordButton = document.querySelector(".video-record");
+
+        if (videoRecordButton) {
+          videoRecordButton.click();
+        } else {
+          console.log("找不到 class 為 'video-record' 的元素");
+        }
+
+        Swal.fire("錄製時間已達 30 分鐘", "錄製自動結束", "info");
+      }
+    }, recordingLimit);
   } catch (err) {
     console.error("Error: " + err);
   }

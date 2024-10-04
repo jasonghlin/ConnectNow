@@ -21,6 +21,9 @@ export default function socketWhiteboard(io, socket, redisClient) {
         `whiteboard:${data.roomId}`,
         JSON.stringify(data)
       );
+
+      // set key expired after 1 day, count as second
+      await redisClient.expire(`whiteboard:${data.roomId}`, 24 * 60 * 60);
       socket.to(data.roomId).emit("draw", data);
     } catch (error) {
       console.error("Error saving whiteboard data to Redis:", error);

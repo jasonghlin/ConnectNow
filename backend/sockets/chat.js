@@ -8,6 +8,8 @@ export default function socketChat(io, socket, redisClient) {
       // 將訊息存到 Redis
       await redisClient.rPush(`chat:${roomName}`, JSON.stringify(chatMessage));
 
+      // set key expired after 1 day, count as second
+      await redisClient.expire(`chat:${roomName}`, 24 * 60 * 60);
       // Emit the message to all users in the room
       io.to(roomName).emit("receive-message", chatMessage);
     }
