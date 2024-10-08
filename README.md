@@ -28,6 +28,7 @@
   - [5. Backend and Caching](#5-backend-and-caching)
   - [Getting Started](#getting-started)
     - [Installation](#installation)
+  - [Contact](#contact)
 
 ---
 
@@ -142,3 +143,11 @@ You can either visit [www.connectnow.website](https://www.connectnow.website/) t
    npm start
    ```
    Access the web application at http://localhost:8080 or your own domain.
+
+## Contact
+
+Email : m338107001@tmu.edu.tw
+
+Linkedin : https://www.linkedin.com/in/gan-hong-lin-28b861288/
+
+Phone : (+886) 905787809

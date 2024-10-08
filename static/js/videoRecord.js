@@ -1,3 +1,4 @@
+import { roomId, socket } from "./script.js";
 let mediaRecorder;
 let recordedChunks = [];
 let isRecording = false;
@@ -5,6 +6,33 @@ const BASE_URL =
   window.location.protocol == "https:"
     ? "https://www.connectnow.website"
     : "http://127.0.0.1:8080";
+
+// 新增錄影中的圖示
+function addRecordingOverlay() {
+  const overlay = document.createElement("div");
+  overlay.id = "recording-overlay";
+  overlay.style.position = "fixed";
+  overlay.style.top = "0";
+  overlay.style.left = "0";
+  overlay.style.width = "100%";
+  overlay.style.height = "100%";
+  overlay.style.zIndex = "9999"; // 確保在最上層
+  overlay.style.backgroundColor = "rgba(0, 0, 0, 0.5)"; // 半透明背景
+  overlay.innerHTML = `
+    <div style="position: absolute; top: 10px; left: 10px; color: red; font-size: 24px;">
+      <i class="fas fa-record-vinyl"></i> 錄影中...
+    </div>
+  `;
+  document.body.prepend(overlay);
+}
+
+// 移除錄影中的圖示
+function removeRecordingOverlay() {
+  const overlay = document.getElementById("recording-overlay");
+  if (overlay) {
+    overlay.remove();
+  }
+}
 
 function isRecordingOrNot(isRecording) {
   if (isRecording) {
@@ -141,6 +169,7 @@ async function startRecording() {
 
     console.log("Recording started");
     Swal.fire("開始錄影");
+    socket.emit("start-recording", roomId);
 
     // 設定錄製時間限制
     setTimeout(() => {
@@ -167,6 +196,7 @@ function stopRecording() {
   isRecordingOrNot(isRecording);
   waitingUploadElement.classList.remove("hidden");
   console.log("錄影結束");
+  socket.emit("stop-recording", roomId);
 }
 
 function handleDataAvailable(event) {
@@ -197,7 +227,7 @@ async function handleStop() {
     const { url } = await response.json();
 
     // 使用預簽名 URL 上傳影片
-    const uploadResponse = await fetch(`${BASE_URL}/url`, {
+    const uploadResponse = await fetch(`${url}`, {
       method: "PUT",
       headers: {
         "Content-Type": "video/webm",
@@ -229,3 +259,11 @@ async function handleStop() {
 
   recordedChunks = []; // 清空錄製資料
 }
+
+socket.on("start-recording", () => {
+  addRecordingOverlay(); // 開始錄影時添加 overlay
+});
+
+socket.on("stop-recording", () => {
+  removeRecordingOverlay(); // 錄影結束時移除 overlay
+});

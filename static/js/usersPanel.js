@@ -47,7 +47,15 @@ async function updateUsersList() {
     );
     const muteStatus = await muteStatusResponse.json();
 
-    usersList.forEach((user) => {
+    const currentUserId = localStorage.getItem("userId");
+    console.log("currentUserId:", currentUserId);
+    const sortedUserList = usersList.sort((a, b) => {
+      if (String(a.id) === String(currentUserId)) return -1; // 當 a 是當前使用者時，a 應排在前面
+      if (String(b.id) === String(currentUserId)) return 1; // 當 b 是當前使用者時，a 應排在前面，b 在後面
+      return 0; // 其他項目順序不變
+    });
+
+    sortedUserList.forEach((user) => {
       const isMuted = muteStatus[user.id] || false; // 默认不静音
       const html = `<div class="users-container">
                 <div class="avater-userName-wrapper">

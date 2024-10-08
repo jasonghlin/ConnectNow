@@ -47,7 +47,16 @@ function drawLine(x0, y0, x1, y1, color, width, emit) {
   }
   const pathSegments = window.location.pathname.split("/");
   const roomId = pathSegments[pathSegments.length - 1];
-  socket.emit("draw", { roomId, x0, y0, x1, y1, color, width });
+  socket.emit("draw", {
+    roomId,
+    x0,
+    y0,
+    x1,
+    y1,
+    color,
+    width,
+    version: whiteboardVersion,
+  });
 }
 
 // 橡皮擦按鈕
@@ -123,16 +132,26 @@ function redrawWhiteboard(whiteboardState) {
 }
 
 socket.on("draw", (data) => {
+  if (data.version !== whiteboardVersion) {
+    console.warn(
+      `Received draw data with version ${data.version}, but current version is ${whiteboardVersion}`
+    );
+    return;
+  }
   drawLine(data.x0, data.y0, data.x1, data.y1, data.color, data.width, false);
 });
 
 socket.on("clear-whiteboard", () => {
   context.clearRect(0, 0, canvas.width, canvas.height);
+  whiteboardVersion += 1; // 版本号递增
 });
 
 // 處理接收到的白板狀態
-socket.on("current-whiteboard-state", (whiteboardState) => {
-  redrawWhiteboard(whiteboardState);
+let whiteboardVersion = 0;
+socket.on("current-whiteboard-state", (data) => {
+  const { parsedState, version } = data;
+  whiteboardVersion = version;
+  redrawWhiteboard(parsedState);
 });
 
 // 防止事件過於頻繁

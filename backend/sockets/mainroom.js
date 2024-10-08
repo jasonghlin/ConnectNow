@@ -80,11 +80,15 @@ export default function socketMainRoom(io, socket, redisClient) {
         -1
       );
 
-      // 将状态数据从字符串解析为对象数组
+      // 獲取當前版本號碼
+      const currentVersion = await redisClient.get(
+        `whiteboard_version:${roomName}`
+      );
+      const version = currentVersion != null ? parseInt(currentVersion) : 0;
+
       const parsedState = whiteboardState.map((line) => JSON.parse(line));
 
-      // 將當前的白板狀態傳給 client
-      socket.emit("current-whiteboard-state", parsedState);
+      socket.emit("current-whiteboard-state", { parsedState, version });
     } catch (error) {
       console.log(error);
     }

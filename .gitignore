@@ -9,3 +9,4 @@ loaderTest.js
 jwt-server.js
 test1.js
 coverage/
+k6*.txt
