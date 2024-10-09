@@ -193,6 +193,15 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("start-recording", (roomName) => {
+    console.log(`Ｒeceived start-recording event for room: ${roomName}`);
+    io.to(roomName).emit("start-recording");
+  });
+
+  socket.on("stop-recording", (roomName) => {
+    console.log(`Ｒeceived stop-recording event for room: ${roomName}`);
+    io.to(roomName).emit("stop-recording");
+  });
   socketMainRoom(io, socket, redisClient);
   socketBreakoutRoom(io, socket);
   socketMedia(io, socket);
@@ -201,7 +210,7 @@ io.on("connection", (socket) => {
   socketChat(io, socket, redisClient);
   socketWhiteboard(io, socket, redisClient);
   socketVideo(io, socket);
-  socketVideoRecord(io, socket);
+  // socketVideoRecord(io, socket);
 });
 
 //
