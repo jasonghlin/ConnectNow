@@ -26,7 +26,7 @@ import socketEmoji from "./sockets/emoji.js";
 import socketChat from "./sockets/chat.js";
 import socketWhiteboard from "./sockets/whiteboard.js";
 import socketVideo from "./sockets/video.js";
-import socketVideoRecord from "./sockets/videoRecord.js";
+// import socketVideoRecord from "./sockets/videoRecord.js";
 
 dotenv.config();
 const { ENV, REDIS_URL, STATIC_FILE_URL, DOMAIN } = process.env;
@@ -194,19 +194,6 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.onAny((event, ...args) => {
-    console.log(`Received event: ${event} with args:`, args);
-  });
-
-  socket.on("start-recording", (roomName) => {
-    console.log(`Received start-recording event for room: ${roomName}`);
-    io.to(roomName).emit("start-recording");
-  });
-
-  socket.on("stop-recording", (roomName) => {
-    console.log(`Received stop-recording event for room: ${roomName}`);
-    io.to(roomName).emit("stop-recording");
-  });
   socketMainRoom(io, socket, redisClient);
   socketBreakoutRoom(io, socket);
   socketMedia(io, socket);
@@ -215,7 +202,7 @@ io.on("connection", (socket) => {
   socketChat(io, socket, redisClient);
   socketWhiteboard(io, socket, redisClient);
   socketVideo(io, socket);
-  // socketVideoRecord(io, socket);
+  socketVideoRecord(io, socket);
 });
 
 //

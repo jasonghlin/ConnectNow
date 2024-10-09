@@ -170,6 +170,7 @@ async function startRecording() {
     console.log("Recording started");
     Swal.fire("開始錄影");
     socket.emit("start-recording", roomId);
+    console.log("Emitting start-recording event for room:", roomId);
 
     // 設定錄製時間限制
     setTimeout(() => {
