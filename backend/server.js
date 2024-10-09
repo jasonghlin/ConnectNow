@@ -186,6 +186,7 @@ app.use((req, res, next) => {
 io.use(socketAuth(io, jwt));
 
 io.on("connection", (socket) => {
+  console.log("A user connected:", socket.id);
   socket.on("connect-to-server", (userId, mainRoom) => {
     if (userId && mainRoom) {
       socket.data.roomName = mainRoom;
@@ -193,13 +194,17 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.onAny((event, ...args) => {
+    console.log(`Received event: ${event} with args:`, args);
+  });
+
   socket.on("start-recording", (roomName) => {
-    console.log(`Ｒeceived start-recording event for room: ${roomName}`);
+    console.log(`Received start-recording event for room: ${roomName}`);
     io.to(roomName).emit("start-recording");
   });
 
   socket.on("stop-recording", (roomName) => {
-    console.log(`Ｒeceived stop-recording event for room: ${roomName}`);
+    console.log(`Received stop-recording event for room: ${roomName}`);
     io.to(roomName).emit("stop-recording");
   });
   socketMainRoom(io, socket, redisClient);
