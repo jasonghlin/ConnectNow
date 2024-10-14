@@ -1,6 +1,16 @@
 import { socket } from "./script.js";
 import { updateVideoLayout } from "./videoLayout.js";
 
+function initializeCanvas() {
+  // Set the canvas dimensions
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  // Fill the canvas with a white background
+  context.fillStyle = "#FFFFFF"; // or any color you prefer
+  context.fillRect(0, 0, canvas.width, canvas.height);
+}
+
 const canvas = document.getElementById("whiteboard-canvas");
 const context = canvas.getContext("2d");
 const BASE_URL =
@@ -33,21 +43,40 @@ document
   .querySelector(".clear-whiteboard")
   .addEventListener("click", clearWhiteboard);
 
-function drawLine(x0, y0, x1, y1, color, width, emit) {
+function drawLine(x0, y0, x1, y1, color, width, isErasing, emit) {
+  console.log("draw line function:", {
+    x0,
+    y0,
+    x1,
+    y1,
+    color,
+    width,
+    isErasing,
+    emit,
+  });
   context.beginPath();
   context.moveTo(x0, y0);
   context.lineTo(x1, y1);
-  context.strokeStyle = color;
   context.lineWidth = width;
+  context.lineCap = "round";
+
+  if (isErasing) {
+    // Use the background color to simulate erasing
+    context.strokeStyle = "#FFFFFF"; // Ensure this matches the canvas background
+  } else {
+    context.strokeStyle = color;
+  }
+
   context.stroke();
   context.closePath();
 
   if (!emit) {
     return;
   }
+
   const pathSegments = window.location.pathname.split("/");
   const roomId = pathSegments[pathSegments.length - 1];
-  socket.emit("draw", {
+  console.log("Emitting draw data:", {
     roomId,
     x0,
     y0,
@@ -55,19 +84,18 @@ function drawLine(x0, y0, x1, y1, color, width, emit) {
     y1,
     color,
     width,
-    version: whiteboardVersion,
+    isErasing,
   });
+  socket.emit("draw", { roomId, x0, y0, x1, y1, color, width, isErasing });
 }
 
 // 橡皮擦按鈕
 document.querySelector(".eraser-tool").addEventListener("click", () => {
-  isErasing = !isErasing; // 切換橡皮擦模式
+  isErasing = !isErasing; // 切换橡皮擦模式
   if (isErasing) {
     document.querySelector(".eraser-tool").textContent = "畫筆模式";
-    context.globalCompositeOperation = "destination-out"; // 使用 compositing mode 來擦除
   } else {
     document.querySelector(".eraser-tool").textContent = "橡皮擦";
-    context.globalCompositeOperation = "source-over"; // 恢復正常的畫筆模式
   }
 });
 
@@ -103,6 +131,7 @@ function onMouseMove(e) {
     pos.y,
     current.color,
     current.width,
+    isErasing,
     true
   );
   current.x = pos.x;
@@ -110,14 +139,16 @@ function onMouseMove(e) {
 }
 
 function clearWhiteboard() {
-  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.fillStyle = "#FFFFFF"; // Use the same background color
+  context.fillRect(0, 0, canvas.width, canvas.height);
   const pathSegments = window.location.pathname.split("/");
   const roomId = pathSegments[pathSegments.length - 1];
   socket.emit("clear-whiteboard", roomId);
 }
 
 function redrawWhiteboard(whiteboardState) {
-  context.clearRect(0, 0, canvas.width, canvas.height);
+  initializeCanvas(); // 清除并初始化画布
+
   whiteboardState?.forEach((lineData) => {
     drawLine(
       lineData.x0,
@@ -126,32 +157,33 @@ function redrawWhiteboard(whiteboardState) {
       lineData.y1,
       lineData.color,
       lineData.width,
+      lineData.isErasing,
       false
     );
   });
 }
 
 socket.on("draw", (data) => {
-  if (data.version !== whiteboardVersion) {
-    console.warn(
-      `Received draw data with version ${data.version}, but current version is ${whiteboardVersion}`
-    );
-    return;
-  }
-  drawLine(data.x0, data.y0, data.x1, data.y1, data.color, data.width, false);
+  console.log("Received draw data:", data);
+  drawLine(
+    data.x0,
+    data.y0,
+    data.x1,
+    data.y1,
+    data.color,
+    data.width,
+    data.isErasing,
+    false
+  );
 });
 
 socket.on("clear-whiteboard", () => {
   context.clearRect(0, 0, canvas.width, canvas.height);
-  whiteboardVersion += 1; // 版本号递增
 });
 
 // 處理接收到的白板狀態
-let whiteboardVersion = 0;
-socket.on("current-whiteboard-state", (data) => {
-  const { parsedState, version } = data;
-  whiteboardVersion = version;
-  redrawWhiteboard(parsedState);
+socket.on("current-whiteboard-state", (whiteboardState) => {
+  redrawWhiteboard(whiteboardState);
 });
 
 // 防止事件過於頻繁
@@ -255,3 +287,5 @@ document.querySelector(".close-whiteboard").addEventListener("click", (e) => {
   videoStream.style.flexDirection = "row";
   whiteBoardCanvas.classList.add("hidden");
 });
+
+initializeCanvas(); // 初始化画布
