@@ -28,6 +28,7 @@ dotenv.config();
 const {
   ENV,
   JWT_SECRET_KEY,
+  SESSION_KEY,
   AWS_ACCESS_KEY,
   AWS_SECRET_KEY,
   BUCKET_NAME,
@@ -50,7 +51,7 @@ const s3Client = new S3Client({
 // set session middleware
 router.use(
   session({
-    secret: "your-secret-key",
+    secret: SESSION_KEY,
     resave: false,
     saveUninitialized: false,
     cookie: { secure: ENV === "production" ? true : false },
