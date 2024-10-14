@@ -25,10 +25,14 @@ let peerInstance = null;
 const socket =
   window.location.protocol == "https:"
     ? io("https://www.connectnow.website", {
-        withCredentials: true, // 允許在請求中攜帶 Cookie
+        auth: {
+          token: localStorage.getItem("session"),
+        },
       })
     : io("http://localhost:8080", {
-        withCredentials: true,
+        auth: {
+          token: localStorage.getItem("session"),
+        },
       });
 
 export const getPeer =
@@ -182,6 +186,7 @@ function initializeMainRoom() {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("session")}`,
           },
         }
       );
@@ -191,6 +196,7 @@ function initializeMainRoom() {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("session")}`,
         },
       });
       const usersList = await usersResponse.json();
