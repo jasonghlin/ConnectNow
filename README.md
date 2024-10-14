@@ -80,7 +80,7 @@
 
 ## Overall System Architechture
 
-![System Architecture](static/images/README/Connect Now architecture.png)
+![System Architecture](static/images/README/ConnectNow_architecture.png)
 
 Our system architecture is designed for flexibility, scalability, and efficient resource utilization. It integrates media processing, subtitle generation, and real-time communication using optimized AWS services.
 
