@@ -52,8 +52,8 @@ router.use(
   session({
     secret: "your-secret-key",
     resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false },
+    saveUninitialized: false,
+    cookie: { secure: ENV === "production" ? true : false },
   })
 );
 
@@ -186,9 +186,10 @@ router.put("/api/user/auth", async (req, res) => {
           return res
             .status(200)
             .cookie("token", token, {
-              httpOnly: false,
+              httpOnly: true,
               secure: req.protocol === "https",
-              maxAge: 7 * 24 * 60 * 60 * 1000, // 7 天
+              maxAge: 7 * 24 * 60 * 60 * 1000, // 7 天,
+              sameSite: true,
             })
             .json({ token, username: user[0].name, userId: user[0].id });
         } catch (tokenError) {

@@ -7,7 +7,8 @@ const { JWT_SECRET_KEY } = process.env;
 export default function socketAuth(io, jwt) {
   return (socket, next) => {
     // get token
-    const token = socket.handshake.auth.token;
+    const req = socket.request;
+    const token = req.session ? req.session.token : null;
 
     if (!token) {
       const err = new Error("Authentication error: No token provided");
