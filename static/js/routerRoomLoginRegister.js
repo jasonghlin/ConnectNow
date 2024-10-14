@@ -180,6 +180,7 @@ if (loginStatus?.payload) {
 // handle logout
 
 document.querySelector(".google-login").addEventListener("click", (e) => {
+  e.preventDefault();
   const protocol =
     window.location.protocol === "https:" ? "https://" : "http://";
   window.location.href = `${protocol}www.connectnow.website/auth/google`;

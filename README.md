@@ -80,7 +80,7 @@
 
 ## Overall System Architechture
 
-![System Architecture](static/images/README/architecture.png)
+![System Architecture](static/images/README/Connect Now architecture.png)
 
 Our system architecture is designed for flexibility, scalability, and efficient resource utilization. It integrates media processing, subtitle generation, and real-time communication using optimized AWS services.
 
@@ -122,6 +122,7 @@ You can either visit [www.connectnow.website](https://www.connectnow.website/) t
     MYSQL_PASSWORD
     REDIS_URL
     JWT_SECRET_KEY
+    SESSION_KEY
     AWS_ACCESS_KEY
     AWS_SECRET_KEY
     BUCKET_NAME
