@@ -8,7 +8,9 @@ export default function socketAuth(io, jwt) {
   return (socket, next) => {
     // get token
     const req = socket.request;
+    console.log("req: ", req);
     const token = req.session ? req.session.token : null;
+    console.log("token: ", token);
 
     if (!token) {
       const err = new Error("Authentication error: No token provided");
