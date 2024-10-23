@@ -8,6 +8,14 @@
 - Subtitle generation and transformation
 - Interactive tools such as polls, chat, and breakout rooms
 
+**Demo Account**
+
+* Email: test@gmail.com
+* Password: test
+
+* Email: admin@gmail.com
+* Password: Test1234567
+
 ![mainVisual](static/images/README/mainVisual.png)
 ## Table of Contents
 - [Project Name: Connect Now](#project-name-connect-now)
