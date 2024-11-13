@@ -177,6 +177,7 @@ function initializeMainRoom() {
         roomId
       );
 
+      localStorage.setItem("peerId", myPeerId);
       currentUrl = window.location.href;
       roomUrl = currentUrl.substring(currentUrl.lastIndexOf("/") + 1);
       console.log("roomUrl: ", roomUrl);
@@ -263,6 +264,8 @@ function initializeMainRoom() {
           });
         }
       } else {
+        currentUrl = window.location.href;
+        roomUrl = currentUrl.substring(currentUrl.lastIndexOf("/") + 1);
         let breakoutRoomId = roomUrl;
         console.log(userId, peerId, myUserId, myPeerId);
         socket.emit("join-breakout-room", breakoutRoomId, myPeerId, userId);

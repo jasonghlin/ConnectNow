@@ -45,9 +45,25 @@ async function handleFinishGrouping(groupsData, timerInputValue) {
   if (userGroup) {
     const groupName = localStorage.getItem(`breakoutRoom`);
     const mainRoomName = localStorage.getItem("mainRoom");
+    const peerId = localStorage.getItem("peerId");
     updateCurrentRoom(groupName); // 更新 URL 並重定向
     console.log(currentRoom);
     const newUrl = `${window.location.origin}/breakoutRoom/${mainRoomName}/${groupName}`;
+
+    const joinBreakoutRoomRequest = await fetch(newUrl);
+
+    if (!joinBreakoutRoomRequest.ok) {
+      // 取得錯誤訊息，假設後端有返回錯誤訊息
+      const errorMessage = await joinBreakoutRoomRequest.text();
+      throw new Error(
+        errorMessage ||
+          `Failed to join breakout room: ${joinBreakoutRoomRequest.status}`
+      );
+    }
+
+    // 成功的情況，解析 JSON 資料
+    const data = await joinBreakoutRoomRequest.json();
+    console.log("Response data:", data);
 
     // 斷開所有當前的 peer 連接
     peerInstance.disconnect();
@@ -63,12 +79,7 @@ async function handleFinishGrouping(groupsData, timerInputValue) {
 
     console.log("peerInstance.id: ", peerInstance.id);
     // 加入新的組
-    socket.emit(
-      "join-breakout-room",
-      currentRoom,
-      peerInstance.id,
-      currentUserId
-    );
+    socket.emit("join-breakout-room", groupName, peerId, currentUserId);
     peerInstance.reconnect(peerInstance.id);
     // 發送倒計時開始事件
     startCountdown(timerInputValue);

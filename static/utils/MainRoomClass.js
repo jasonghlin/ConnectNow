@@ -1,7 +1,7 @@
 class MainRoom {
   constructor(roomId) {
     this.roomId = roomId;
-    this.breakoutRooms = new Map();
+    // this.breakoutRooms = new Map();
   }
 }
 

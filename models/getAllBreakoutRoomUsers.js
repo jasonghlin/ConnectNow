@@ -6,7 +6,8 @@ async function getAllBreakoutRoomUsers(url_param) {
     // 取得連線
     connection = await pool.getConnection();
 
-    const breakouroomName = url_param.replace("breakout-", "");
+    // const breakouroomName = url_param.replace("breakout-", "");
+    const breakouroomName = url_param;
     const breakoutRoomIdQuery = "SELECT id FROM breakout_room WHERE name = ?";
     const breakoutRoomIdValues = [breakouroomName];
 

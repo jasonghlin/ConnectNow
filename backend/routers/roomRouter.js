@@ -63,18 +63,19 @@ router.get(
 
       try {
         // 下載遠端檔案
-        const fileUrl = `${STATIC_FILE_URL}/static/room.html`;
-        const response = await axios({
-          method: "GET",
-          url: fileUrl,
-          responseType: "stream", // 使用stream來處理大檔案
-        });
+        // const fileUrl = `${STATIC_FILE_URL}/static/room.html`;
+        // const response = await axios({
+        //   method: "GET",
+        //   url: fileUrl,
+        //   responseType: "stream", // 使用stream來處理大檔案
+        // });
 
-        // 設置正確的 Content-Type
-        res.setHeader("Content-Type", response.headers["content-type"]);
+        // // 設置正確的 Content-Type
+        // res.setHeader("Content-Type", response.headers["content-type"]);
 
-        // 將下載的檔案流傳送給前端
-        response.data.pipe(res);
+        // // 將下載的檔案流傳送給前端
+        // response.data.pipe(res);
+        res.json({ status: "ok" });
       } catch (error) {
         res.status(500).send("Error downloading the file");
       }
