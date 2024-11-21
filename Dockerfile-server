@@ -1,5 +1,5 @@
 # 使用最新的 Node.js 版本
-FROM node:latest
+FROM node:22
 
 # 設定工作目錄為 /app
 WORKDIR /app
@@ -10,7 +10,6 @@ RUN npm install --no-audit
 
 # 複製其他文件，並排除 .env
 COPY . .
-RUN rm -rf .env
 
 # 設置 NODE_PATH 環境變量
 ENV NODE_PATH=/app/node_modules
@@ -21,5 +20,5 @@ EXPOSE 8080
 # 將 NODE_PATH 添加到 .bashrc
 RUN echo "export NODE_PATH=/app/node_modules" >> /root/.bashrc
 
-# 啟動應用時指定 .env 文件
+
 CMD ["node", "/app/backend/server.js"]

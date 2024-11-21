@@ -1,5 +1,5 @@
 # 使用最新的 Python 版本
-FROM python:latest
+FROM python:3.12.1
 
 # Set environment variables
 ENV PYTHONUNBUFFERED 1
@@ -9,10 +9,14 @@ WORKDIR /app
 
 # Install dependencies
 COPY requirements.txt /app/
-RUN pip install --no-cache-dir -r requirements.txt
-RUN apt-get update && apt-get install -y ffmpeg
 
-# Copy the Python script into the container
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends ffmpeg && \
+    pip install --no-cache-dir -r requirements.txt && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+    # Copy the Python script into the container
 COPY convertVideoToMov.py /app/
 
 # Run the script
