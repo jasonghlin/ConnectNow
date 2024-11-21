@@ -8,7 +8,6 @@ let labels;
 let webcamRunning = false;
 let runningMode = "VIDEO";
 
-let lastStreamUpdate = 0;
 const canvasElement = document.createElement("canvas");
 const canvasCtx = canvasElement.getContext("2d");
 let applyForegroundReplacement = false;
@@ -19,20 +18,34 @@ foregroundImage.crossOrigin = "Anonymous";
 foregroundImage.src =
   "https://static.connectnow.website/connectnow/static/images/bgs/bg-1.jpeg";
 
-// Function to create image segmenter
-const stream = await navigator.mediaDevices.getUserMedia({
-  video: true,
-  audio: true,
-});
-
-// 取得自己視訊的stream，包含畫面和聲音！
-let myStream = await convertCanvasToStream(canvasElement);
 let localVideo = document.createElement("video");
 localVideo.classList.add("local-stream");
 localVideo.classList.add("invert-screen");
 localVideo.muted = true;
 
+const stream = await navigator.mediaDevices.getUserMedia({
+  video: true,
+  audio: true,
+});
+
 localVideo.srcObject = stream;
+
+localVideo.addEventListener("loadedmetadata", async () => {
+  canvasElement.width = localVideo.videoWidth;
+  canvasElement.height = localVideo.videoHeight;
+
+  try {
+    let myStream = await convertCanvasToStream(canvasElement);
+
+    // 初始化 segmenter
+    initializeSegmenter().catch((error) => {
+      console.error("Failed to initialize segmenter:", error);
+    });
+  } catch (error) {
+    console.error("Error in convertCanvasToStream:", error);
+  }
+});
+
 localVideo.play();
 
 const initializeSegmenter = async () => {
@@ -40,18 +53,12 @@ const initializeSegmenter = async () => {
   startBackgroundEffects();
 };
 
-localVideo.addEventListener("loadedmetadata", () => {
-  canvasElement.width = localVideo.videoWidth;
-  canvasElement.height = localVideo.videoHeight;
-  initializeSegmenter();
-});
-
 const createImageSegmenter = async () => {
-  const audio = await FilesetResolver.forVisionTasks(
+  const visionFileset = await FilesetResolver.forVisionTasks(
     "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.2/wasm"
   );
 
-  imageSegmenter = await ImageSegmenter.createFromOptions(audio, {
+  imageSegmenter = await ImageSegmenter.createFromOptions(visionFileset, {
     baseOptions: {
       modelAssetPath:
         "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter_landscape/float16/latest/selfie_segmenter_landscape.tflite",
@@ -64,8 +71,12 @@ const createImageSegmenter = async () => {
   labels = imageSegmenter.getLabels();
 };
 
-let lastWebcamTime = -1;
 async function predictWebcam() {
+  if (!webcamRunning) {
+    return;
+  }
+
+  // 绘制当前帧
   canvasCtx.drawImage(
     localVideo,
     0,
@@ -81,11 +92,16 @@ async function predictWebcam() {
 
   if (imageSegmenter) {
     let startTimeMs = performance.now();
-    imageSegmenter.segmentForVideo(localVideo, startTimeMs, callbackForVideo);
-  } else {
-    if (webcamRunning) {
-      setTimeout(predictWebcam);
-    }
+
+    // 调用 segmentForVideo，并在回调中处理结果
+    imageSegmenter.segmentForVideo(localVideo, startTimeMs, (result) => {
+      callbackForVideo(result);
+
+      // 使用 requestAnimationFrame 来异步调用 predictWebcam
+      requestAnimationFrame(() => {
+        predictWebcam();
+      });
+    });
   }
 }
 
@@ -121,17 +137,15 @@ function callbackForVideo(result) {
     for (let i = 0; i < mask.length; i++) {
       let pixelIndex = i * 4;
       if (mask[i] > 0.1) {
-        // 替換前景
+        // 替换前景
         pixels[pixelIndex] = fgImageData[pixelIndex];
         pixels[pixelIndex + 1] = fgImageData[pixelIndex + 1];
         pixels[pixelIndex + 2] = fgImageData[pixelIndex + 2];
         pixels[pixelIndex + 3] = fgImageData[pixelIndex + 3];
-      } else {
-        // 保持背景
       }
     }
 
-    // 平滑邊緣
+    // 平滑边缘
     for (let y = 1; y < localVideo.videoHeight - 1; y++) {
       for (let x = 1; x < localVideo.videoWidth - 1; x++) {
         let i = y * localVideo.videoWidth + x;
@@ -156,10 +170,6 @@ function callbackForVideo(result) {
   }
 
   canvasCtx.putImageData(imageData, 0, 0);
-  if (webcamRunning === true) {
-    window.requestAnimationFrame(predictWebcam);
-    // setTimeout(predictWebcam, 1000 / 120);
-  }
 }
 
 async function startBackgroundEffects() {
@@ -195,6 +205,10 @@ function applyBlurEffect(pixels, mask, width, height) {
 
 async function convertCanvasToStream(canvas, isMicMuted = false) {
   try {
+    if (canvas.width === 0 || canvas.height === 0) {
+      throw new Error("Canvas width or height is zero.");
+    }
+
     const videoOutput = await canvas.captureStream();
     if (!videoOutput.getTracks) {
       throw new Error(
@@ -202,16 +216,16 @@ async function convertCanvasToStream(canvas, isMicMuted = false) {
       );
     }
 
-    // 創建一個翻轉的 canvas，用於發送 stream
+    // 创建一个翻转的 canvas，用于发送 stream
     const flippedCanvas = document.createElement("canvas");
     flippedCanvas.width = canvas.width;
     flippedCanvas.height = canvas.height;
     const flippedCtx = flippedCanvas.getContext("2d");
 
-    // 每次繪製時將內容水平翻轉
+    // 每次绘制时将内容水平翻转
     function flipCanvas() {
       flippedCtx.save();
-      flippedCtx.scale(-1, 1); // 水平翻轉
+      flippedCtx.scale(-1, 1); // 水平翻转
       flippedCtx.drawImage(
         canvas,
         -canvas.width,
@@ -220,17 +234,17 @@ async function convertCanvasToStream(canvas, isMicMuted = false) {
         canvas.height
       );
       flippedCtx.restore();
-      requestAnimationFrame(flipCanvas); // 持續翻轉畫布
+      requestAnimationFrame(flipCanvas); // 持续翻转画布
     }
     flipCanvas();
 
-    const flippedStream = flippedCanvas.captureStream(); // capture 翻轉後的 stream
+    const flippedStream = flippedCanvas.captureStream(); // capture 翻转后的 stream
 
     const mic = await navigator.mediaDevices.getUserMedia({
       audio: true,
       video: false,
     });
-    // Mute or unmute the audio based on the isMicMuted parameter
+    // 根据 isMicMuted 参数来静音或取消静音音频
     mic.getAudioTracks()[0].enabled = !isMicMuted;
 
     const combine = new MediaStream([
@@ -240,6 +254,7 @@ async function convertCanvasToStream(canvas, isMicMuted = false) {
     return combine;
   } catch (error) {
     console.log(error);
+    throw error;
   }
 }
 
@@ -280,9 +295,9 @@ function backgroundPanelDisplay() {
   });
 }
 backgroundPanelDisplay();
-export {
-  initializeSegmenter,
-  myStream,
-  startBackgroundEffects,
-  convertCanvasToStream,
-};
+
+window.addEventListener("unhandledrejection", function (event) {
+  console.error("Unhandled promise rejection:", event.reason);
+});
+
+export { initializeSegmenter, startBackgroundEffects, convertCanvasToStream };

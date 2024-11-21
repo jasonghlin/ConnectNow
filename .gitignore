@@ -11,3 +11,4 @@ test1.js
 coverage/
 k6*.txt
 fargate/
+terraform/
